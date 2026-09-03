@@ -67,7 +67,7 @@ export function AskPanel({ ids, query }: { ids: string[]; query: string }) {
         <button
           onClick={() => ask(question)}
           disabled={busy || !question.trim()}
-          className="rounded-[3px] bg-action-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-action-500 disabled:opacity-40"
+          className="rounded-[2px] bg-action-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-action-500 disabled:opacity-40"
         >
           {busy ? 'Thinking…' : 'Ask'}
         </button>
@@ -79,7 +79,7 @@ export function AskPanel({ ids, query }: { ids: string[]; query: string }) {
             key={s}
             onClick={() => ask(s)}
             disabled={busy}
-            className="rounded-full border border-ink-200 px-2.5 py-1 text-[11px] text-ink-600 transition hover:border-signal-300 hover:text-signal-600 disabled:opacity-40"
+            className="rounded-full border border-ink-200 px-2.5 py-1 text-[11px] text-ink-600 transition-colors hover:border-signal-300 hover:text-signal-600 disabled:opacity-40"
           >
             {s}
           </button>

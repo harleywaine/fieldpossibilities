@@ -47,7 +47,7 @@ export function WorkflowConsole({ reference = 'RFQ-10482' }: { reference?: strin
       {/* ---------------------------------------------------- incoming email */}
       <section className="card overflow-hidden">
         <div className="border-b border-ink-100 bg-ink-50 px-4 py-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+          <span className="label">
             Incoming enquiry
           </span>
         </div>
@@ -65,7 +65,7 @@ export function WorkflowConsole({ reference = 'RFQ-10482' }: { reference?: strin
           <button
             onClick={run}
             disabled={running}
-            className="mt-4 rounded-[3px] bg-action-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-action-500 disabled:opacity-40"
+            className="mt-4 rounded-[2px] bg-action-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-action-500 disabled:opacity-40"
           >
             {running ? 'Processing…' : pkg ? 'Run again' : 'Process this RFQ'}
           </button>
@@ -76,7 +76,7 @@ export function WorkflowConsole({ reference = 'RFQ-10482' }: { reference?: strin
       {/* --------------------------------------------------------- pipeline */}
       {pkg && (
         <section className="card p-4">
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+          <h2 className="mb-3 label">
             Processing pipeline
           </h2>
           <ol className="space-y-2">
@@ -115,7 +115,7 @@ export function WorkflowConsole({ reference = 'RFQ-10482' }: { reference?: strin
           </section>
 
           <section className="card p-4">
-            <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+            <h2 className="mb-3 label">
               Extracted from the enquiry
             </h2>
             <dl className="grid gap-3 text-sm sm:grid-cols-3">
@@ -138,7 +138,7 @@ export function WorkflowConsole({ reference = 'RFQ-10482' }: { reference?: strin
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`rounded-[3px] px-3 py-1.5 text-sm font-medium transition ${
+                className={`rounded-[2px] px-3 py-1.5 text-sm font-medium transition ${
                   tab === key ? 'bg-signal-600 text-white' : 'border border-ink-200 bg-white text-signal-600 hover:bg-ink-50'
                 }`}
               >
@@ -163,7 +163,7 @@ function Metric({ value, label, tone }: { value: number; label: string; tone: 'n
   }[tone];
   return (
     <div className="card p-4">
-      <div className={`text-2xl font-semibold tabular-nums ${colour}`}>{value}</div>
+      <div className={`text-2xl font-semibold figure ${colour}`}>{value}</div>
       <div className="mt-0.5 text-xs text-ink-500">{label}</div>
     </div>
   );
@@ -172,7 +172,7 @@ function Metric({ value, label, tone }: { value: number; label: string; tone: 'n
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div>
-      <dt className="text-[11px] font-medium uppercase tracking-wider text-ink-400">{k}</dt>
+      <dt className="label">{k}</dt>
       <dd className="mt-0.5 text-sm text-ink-800">{v}</dd>
     </div>
   );
@@ -182,7 +182,7 @@ function Exceptions({ pkg }: { pkg: any }) {
   const flagged = pkg.lines.filter((l: any) => l.status !== 'matched');
   return (
     <section className="space-y-3">
-      <div className="rounded-[3px] border border-[color:var(--color-caution-600)]/30 bg-[color:var(--color-caution-600)]/8 p-4">
+      <div className="rounded-[2px] border border-[color:var(--color-caution-600)]/30 bg-[color:var(--color-caution-600)]/8 p-4">
         <h2 className="text-sm font-semibold text-[color:var(--color-caution-600)]">
           {flagged.length} items require human attention
         </h2>
@@ -198,7 +198,7 @@ function Exceptions({ pkg }: { pkg: any }) {
             <span className="mono text-xs font-semibold text-ink-500">
               Item {String(l.line).padStart(2, '0')}
             </span>
-            <span className={`rounded-[3px] px-2 py-0.5 text-[11px] font-semibold ${
+            <span className={`rounded-[2px] px-2 py-0.5 text-[11px] font-semibold ${
               l.status === 'unmatched'
                 ? 'bg-action-600/10 text-action-600'
                 : 'bg-[color:var(--color-caution-600)]/12 text-[color:var(--color-caution-600)]'
@@ -212,7 +212,7 @@ function Exceptions({ pkg }: { pkg: any }) {
             {l.reviewReason}
           </p>
           {l.product && (
-            <p className="mono mt-2 rounded-[3px] bg-ink-50 px-2 py-1 text-[11px] text-ink-600">
+            <p className="mono mt-2 rounded-[2px] bg-ink-50 px-2 py-1 text-[11px] text-ink-600">
               Closest catalogue record: {l.product.partNumber} — {l.product.name.slice(0, 60)}
             </p>
           )}
@@ -277,7 +277,7 @@ function Package({ pkg }: { pkg: any }) {
         </p>
       </div>
 
-      <div className="rounded-[3px] border border-signal-600/25 bg-signal-600/5 p-5">
+      <div className="rounded-[2px] border border-signal-600/25 bg-signal-600/5 p-5">
         <h3 className="text-sm font-medium text-ink-900">Where humans remain responsible</h3>
         <p className="mt-1 text-xs text-ink-600">
           AI automates the routine work. Humans make the consequential decisions.

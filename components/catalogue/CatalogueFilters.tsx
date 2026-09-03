@@ -27,7 +27,7 @@ export function CatalogueFilters({
   return (
     <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
       <div>
-        <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+        <label className="mb-1.5 block label">
           Keyword or part number
         </label>
         <input
@@ -77,7 +77,7 @@ function FacetGroup({
   if (items.length === 0) return null;
   return (
     <div>
-      <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">{title}</h3>
+      <h3 className="mb-1.5 label">{title}</h3>
       <ul className="space-y-0.5">
         {items.slice(0, max).map((f) => {
           const on = value === f.value;

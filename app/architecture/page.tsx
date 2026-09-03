@@ -24,7 +24,7 @@ export default function ArchitecturePage() {
       </header>
 
       {/* --------------------------------------------------- headline principle */}
-      <section className="mb-10 rounded-[3px] border border-signal-600/25 bg-signal-600/5 p-6">
+      <section className="mb-10 rounded-[2px] border border-signal-600/25 bg-signal-600/5 p-6">
         <h2 className="text-lg font-medium text-ink-950">AI is not the system of record.</h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-700">
           The catalogue, the document store and the operational data remain authoritative. AI sits
@@ -38,13 +38,12 @@ export default function ArchitecturePage() {
       <section className="space-y-6">
         {PIPELINES.map((p, i) => (
           <article key={p.level} className="card p-5">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-[3px] bg-signal-600/10 px-2 py-0.5 text-[11px] font-semibold text-signal-600">
-                Level {p.level}
-              </span>
-              <h3 className="text-base font-medium text-ink-900">{LEVELS[i].title}</h3>
-              <Link href={LEVELS[i].href} className="ml-auto text-xs text-signal-600 underline underline-offset-2">
-                View demo
+            <div className="mb-5 flex flex-wrap items-center gap-2.5">
+              <span className="mono text-[11px] text-signal-400">0{p.level}</span>
+              <span className="h-3 w-px bg-ink-200" />
+              <h3 className="text-[15px] font-medium text-ink-900">{LEVELS[i].title}</h3>
+              <Link href={LEVELS[i].href} className="ml-auto text-[12px] text-signal-600 transition-colors hover:text-action-600">
+                View demo →
               </Link>
             </div>
 
@@ -52,7 +51,7 @@ export default function ArchitecturePage() {
 
             <p className="mt-4 text-xs leading-relaxed text-ink-600">{p.note}</p>
             {p.newThisLevel && (
-              <p className="mt-2 rounded-[3px] bg-ink-50 px-3 py-2 text-xs text-ink-600">
+              <p className="mt-2 rounded-[2px] bg-ink-50 px-3 py-2 text-xs text-ink-600">
                 <span className="font-medium text-ink-800">New at this level: </span>{p.newThisLevel}
               </p>
             )}
@@ -122,7 +121,7 @@ export default function ArchitecturePage() {
         </div>
       </section>
 
-      <section className="mt-10 rounded-[3px] border border-ink-200 bg-white p-5">
+      <section className="mt-10 rounded-[2px] border border-ink-200 bg-white p-5">
         <h2 className="text-sm font-medium text-ink-900">Deployment note</h2>
         <p className="mt-2 text-xs leading-relaxed text-ink-600">
           This prototype persists everything in SQLite with FTS5 and a locally-built vector index,
@@ -136,25 +135,27 @@ export default function ArchitecturePage() {
   );
 }
 
+/** Reads as a schematic: a narrow column, hairline nodes, a continuous spine. */
 function Flow({ nodes }: { nodes: string[][] }) {
   return (
-    <ol className="space-y-1.5">
+    <ol className="relative mx-auto max-w-md">
+      {/* The spine runs behind the nodes so the chain reads as continuous. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-3 left-1/2 w-px -translate-x-1/2 bg-ink-100"
+      />
       {nodes.map((row, i) => (
-        <li key={i}>
-          <div className={`grid gap-1.5 ${row.length > 1 ? 'sm:grid-cols-2' : ''}`}>
+        <li key={i} className="relative py-1">
+          <div className={`grid gap-2 ${row.length > 1 ? 'grid-cols-2' : ''}`}>
             {row.map((n) => (
-              <div key={n} className="rounded-[3px] border border-ink-200 bg-white px-3 py-1.5 text-center text-xs font-medium text-ink-700">
+              <div
+                key={n}
+                className="rounded-[2px] border border-ink-200 bg-white px-3 py-2 text-center text-[12px] leading-snug text-ink-700"
+              >
                 {n}
               </div>
             ))}
           </div>
-          {i < nodes.length - 1 && (
-            <div className="flex justify-center py-0.5" aria-hidden="true">
-              <svg viewBox="0 0 10 14" className="h-3 w-2 text-ink-300">
-                <path d="M5 0v10M1.5 7 5 10.5 8.5 7" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          )}
         </li>
       ))}
     </ol>
@@ -228,7 +229,7 @@ const GOVERNANCE = [
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card p-5">
-      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">{title}</h2>
+      <h2 className="mb-3 label">{title}</h2>
       {children}
     </div>
   );

@@ -48,10 +48,10 @@ export default function OperatingLayerPage() {
 
         {/* --------------------------------------------- executive question */}
         <section className="card p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+          <p className="label">
             Executive question
           </p>
-          <p className="mt-1.5 text-lg font-light text-ink-900">
+          <p className="mt-2 text-[19px] font-light leading-snug text-ink-900">
             “Where are we losing time and money in our current operation?”
           </p>
         </section>
@@ -63,11 +63,11 @@ export default function OperatingLayerPage() {
             <AIBadge provider="deterministic-model" />
           </div>
 
-          <div className="rounded-[3px] border border-signal-600/25 bg-signal-600/5 p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+          <div className="rounded-[2px] border border-signal-600/25 bg-signal-600/5 p-5">
+            <p className="label">
               Estimated annual productivity opportunity
             </p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums tracking-tight text-signal-700">
+            <p className="figure mt-2 text-[2.75rem] font-light leading-none text-signal-700">
               {gbp(roi.totals.productivityValueGbp)}
             </p>
             <p className="mt-1.5 text-xs text-ink-500">
@@ -92,7 +92,7 @@ export default function OperatingLayerPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-base font-semibold tabular-nums text-signal-700">
+                    <p className="text-base font-semibold figure text-signal-700">
                       {gbp(o.productivityValueGbp)}
                     </p>
                     <p className="text-[11px] text-ink-400">{o.annualHoursRecovered.toLocaleString()} hours</p>
@@ -107,7 +107,7 @@ export default function OperatingLayerPage() {
 
           <Link
             href="/roi"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-action-600 transition hover:gap-2.5"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-action-600 transition-colors hover:gap-2.5"
           >
             Change the assumptions in the ROI model <span aria-hidden="true">→</span>
           </Link>
@@ -115,12 +115,12 @@ export default function OperatingLayerPage() {
 
         {/* --------------------------------------------------- recommendation */}
         <section className="mt-10">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+          <p className="label">
             Executive question
           </p>
-          <p className="mt-1.5 text-lg font-light text-ink-900">“What should we implement first?”</p>
+          <p className="mt-2 text-[19px] font-light leading-snug text-ink-900">“What should we implement first?”</p>
 
-          <div className="mt-3 rounded-[3px] border border-action-600/25 bg-action-600/5 p-5">
+          <div className="mt-3 rounded-[2px] border border-action-600/25 bg-action-600/5 p-5">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <h3 className="text-lg font-medium text-ink-900">Start with {rec.process}</h3>
               <AIBadge provider="deterministic-model" />
@@ -131,7 +131,7 @@ export default function OperatingLayerPage() {
           <ol className="mt-4 space-y-2">
             {rec.ranked.slice(1, 4).map((o, i) => (
               <li key={o.process} className="card flex flex-wrap items-baseline gap-x-3 gap-y-1 p-3">
-                <span className="text-[11px] font-semibold tabular-nums text-ink-400">
+                <span className="text-[11px] font-semibold figure text-ink-400">
                   Then {i + 2}
                 </span>
                 <span className="text-sm font-medium text-ink-800">{o.process}</span>
@@ -151,7 +151,7 @@ export default function OperatingLayerPage() {
             {LEVELS.map((l, i) => (
               <article key={l.slug} className="card p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-[3px] bg-signal-600/10 px-2 py-0.5 text-[11px] font-semibold text-signal-600">
+                  <span className="rounded-[2px] bg-signal-600/10 px-2 py-0.5 text-[11px] font-semibold text-signal-600">
                     {['NOW', 'NEXT', 'THEN', 'FUTURE'][i]}
                   </span>
                   <h3 className="text-sm font-medium text-ink-900">{l.title}</h3>
@@ -183,7 +183,7 @@ export default function OperatingLayerPage() {
         </section>
 
         {/* ------------------------------------------------------------ CTA */}
-        <section className="mt-12 rounded-[3px] border border-signal-600/25 bg-signal-600/5 p-6">
+        <section className="mt-12 rounded-[2px] border border-signal-600/25 bg-signal-600/5 p-6">
           <h2 className="text-xl font-light text-ink-950">
             Find Field’s highest-value AI opportunities
           </h2>
@@ -192,7 +192,7 @@ export default function OperatingLayerPage() {
             AI can deliver the greatest measurable return — replacing the synthetic assumptions in
             this model with Field’s own operational figures.
           </p>
-          <span className="mt-4 inline-block rounded-[3px] bg-action-600 px-5 py-2.5 text-sm font-medium text-white">
+          <span className="mt-4 inline-block rounded-[2px] bg-action-600 px-5 py-2.5 text-sm font-medium text-white">
             Build an AI Opportunity Map
           </span>
         </section>

@@ -1,15 +1,24 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Roboto } from 'next/font/google';
+import { Inter, IBM_Plex_Mono } from 'next/font/google';
 import { Header } from '@/components/layout/Header.tsx';
 import { Footer } from '@/components/layout/Footer.tsx';
 
-// Field International sets its site in Roboto; matching it keeps the prototype
-// visually continuous with their own pages.
-const roboto = Roboto({
+// Field's own site is set in Roboto. This evolves that a step: Inter is the
+// contemporary equivalent for dense interface text, and a mono companion is
+// genuinely load-bearing here because part numbers, references and figures are
+// read as data rather than prose.
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '700'],
-  variable: '--font-roboto',
+  weight: ['300', '400', '500', '600'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-plex-mono',
   display: 'swap',
 });
 
@@ -22,7 +31,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={roboto.variable}>
+    <html lang="en-GB" className={`${inter.variable} ${plexMono.variable}`}>
       <body className="min-h-screen antialiased">
         <Header />
         <main>{children}</main>

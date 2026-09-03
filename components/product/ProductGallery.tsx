@@ -12,7 +12,7 @@ export function ProductGallery({ product }: { product: Product }) {
   if (images.length === 0) {
     return (
       <div className="card p-4">
-        <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+        <h2 className="mb-3 label">
           Product imagery
         </h2>
         <div className="grid h-40 place-items-center rounded-lg border border-dashed border-ink-200 text-xs text-ink-400">
@@ -26,7 +26,7 @@ export function ProductGallery({ product }: { product: Product }) {
 
   return (
     <div className="card p-4">
-      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+      <h2 className="mb-3 label">
         Product imagery
       </h2>
       <ProductImage product={{ ...product, images: [current] }} className="h-52 w-full" />

@@ -1,93 +1,197 @@
 @import "tailwindcss";
 
 /*
- * Palette sampled from fieldinternational.com so the prototype reads as an
- * extension of Field's own site rather than a separate product:
- *   page #f3f4f8 · text #333333 · brand blue #034694 · navy #00316a
- *   action red #a21212 · Roboto
+ * FIELD AI OPPORTUNITY LAB — design system
+ *
+ * Anchored to Field's own brand blue (#034694) so the work is recognisably
+ * theirs, then evolved toward how a contemporary aerospace technology company
+ * presents itself: near-monochrome, one accent, hairline structure, mono for
+ * anything an engineer would read as data, and generous negative space.
+ *
+ * Restraint is the brief. No gradients beyond the hero, no shadows doing work a
+ * 1px rule can do, no decoration that isn't carrying information.
  */
 
-/* The design is deliberately light-only. Neutralising Tailwind's `dark:`
-   variant stops a viewer's OS dark-mode preference from partially inverting it. */
+/* Light-only by design. Neutralising Tailwind's `dark:` variant stops a
+   viewer's OS preference from partially inverting the palette. */
 @custom-variant dark (&:where(.__never-dark, .__never-dark *));
 
 @theme {
-  /* Neutral ramp built around Field's own page background and body text */
-  --color-ink-50:  #f3f4f8;
-  --color-ink-100: #e4e7ef;
-  --color-ink-200: #ced4e2;
-  --color-ink-300: #adb6c9;
-  --color-ink-400: #7f8a9e;
-  --color-ink-500: #5d6879;
-  --color-ink-600: #4a5364;
-  --color-ink-700: #333333;
-  --color-ink-800: #262b33;
-  --color-ink-850: #1d222a;
-  --color-ink-900: #171b22;
-  --color-ink-950: #0e1117;
+  /* ---- Neutrals: cool-tinted, so they sit under the blue rather than fight it */
+  --color-ink-25:  #fafbfd;
+  --color-ink-50:  #f5f7fa;
+  --color-ink-75:  #eef2f7;
+  --color-ink-100: #e4e9f1;
+  --color-ink-200: #cfd7e3;
+  --color-ink-300: #aab5c7;
+  --color-ink-400: #7c8899;
+  --color-ink-500: #5b6675;
+  --color-ink-600: #454e5c;
+  --color-ink-700: #2f3742;
+  --color-ink-800: #212832;
+  --color-ink-850: #1a2029;
+  --color-ink-900: #131820;
+  --color-ink-950: #0a0e14;
 
-  /* Field brand blue — navigation, links, headings */
-  --color-signal-100: #cbddeb;
+  /* ---- Field brand blue */
+  --color-signal-50:  #eef4fb;
+  --color-signal-100: #d3e2f3;
+  --color-signal-200: #a9c6e7;
   --color-signal-300: #7ea7d7;
-  --color-signal-400: #6892c4;
-  --color-signal-500: #0a5ab7;
+  --color-signal-400: #4f85c6;
+  --color-signal-500: #1160ad;
   --color-signal-600: #034694;
   --color-signal-700: #00316a;
+  --color-signal-800: #042348;
+  --color-signal-900: #04182f;
 
-  /* Field action red — search and quote calls to action */
+  /* ---- Field action red, reserved strictly for calls to action */
   --color-action-500: #b81717;
   --color-action-600: #a21212;
   --color-action-700: #820e0e;
 
-  /* Match classification */
-  --color-strong-600: #0f7a4f;
-  --color-strong-400: #17945f;
-  --color-caution-600: #9a5b00;
-  --color-caution-400: #b26a00;
+  /* ---- Semantic */
+  --color-strong-600: #0d7350;
+  --color-strong-500: #128a60;
+  --color-caution-600: #8a5300;
+  --color-caution-500: #a8660a;
 
-  --font-sans: var(--font-roboto), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
-html { -webkit-text-size-adjust: 100%; color-scheme: light; }
+/* ------------------------------------------------------------------- base */
+/* NOTE: these MUST stay inside @layer base. Unlayered CSS wins against every
+   layered rule, so a bare `h1 { color }` would override `text-white`. */
+@layer base {
+
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+  scroll-behavior: smooth;
+}
 
 body {
   background: var(--color-ink-50);
   color: var(--color-ink-700);
   font-family: var(--font-sans);
+  font-feature-settings: "cv05" 1, "cv11" 1, "ss03" 1;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Field sets its display headings in a light Roboto weight. */
-h1 { font-weight: 300; }
+/* Display sizes need negative tracking; body text does not. */
+h1, h2, h3 { color: var(--color-ink-900); letter-spacing: -0.018em; }
+h1 { font-weight: 300; letter-spacing: -0.028em; }
+h2 { font-weight: 400; }
+h3 { font-weight: 500; }
 
-.mono { font-family: var(--font-mono); font-variant-ligatures: none; }
+::selection { background: var(--color-signal-200); color: var(--color-signal-900); }
+
+:focus-visible {
+  outline: 2px solid var(--color-signal-500);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--color-ink-50); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-200);
+  border: 3px solid var(--color-ink-50);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-300); }
+
+}
+
+/* ------------------------------------------------------------- components */
+@layer components {
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-ligatures: none;
+  font-feature-settings: "zero" 1;
+  letter-spacing: -0.01em;
+}
+
+/* The small uppercase label used throughout for field names and section eyebrows. */
+.label {
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-ink-400);
+}
+
+/* Figures should align in columns wherever they are compared. */
+.figure { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
 
 .card {
   background: #ffffff;
   border: 1px solid var(--color-ink-100);
-  border-radius: 0.25rem;
+  border-radius: 3px;
+  transition: border-color .18s ease, background-color .18s ease;
 }
+.card-hover:hover { border-color: var(--color-signal-300); }
 
-/* Field's deep navy banner, used for the hero. */
+/* A hairline is the primary structural device — it reads as a drawing rule
+   rather than as a UI shadow. */
+.rule { border-top: 1px solid var(--color-ink-100); }
+
+/* ------------------------------------------------------------------- hero */
+
 .field-banner {
-  background: linear-gradient(105deg, #00316a 0%, #034694 55%, #14559f 100%);
+  position: relative;
+  background:
+    radial-gradient(120% 140% at 12% -10%, #0a4d9e 0%, transparent 55%),
+    linear-gradient(150deg, #04182f 0%, #00316a 48%, #034694 100%);
 }
 
+/* Fine technical grid — reads as a drawing sheet, not a SaaS mesh. */
 .grid-bg {
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, .07) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, .07) 1px, transparent 1px);
-  background-size: 44px 44px;
+    linear-gradient(to right, rgba(255, 255, 255, .055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, .055) 1px, transparent 1px);
+  background-size: 56px 56px;
 }
 
-/* Staged reveal, driven purely by CSS animation delays so the content is
-   readable in the server-rendered HTML before (or without) hydration. */
-@keyframes stepIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* Bright hairline where the hero meets the page: a single precise edge. */
+.hero-edge::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(126, 167, 215, .55), transparent);
 }
-.step-in { animation: stepIn .34s ease-out both; }
+
+/* Corner ticks — a restrained nod to technical drawing registration marks. */
+.ticked { position: relative; }
+.ticked::before,
+.ticked::after {
+  content: "";
+  position: absolute;
+  width: 7px; height: 7px;
+  border-color: var(--color-signal-300);
+  border-style: solid;
+  opacity: .7;
+}
+.ticked::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.ticked::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+}
+
+/* ------------------------------------------------------------- animation */
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
+}
+.step-in { animation: stepIn .38s cubic-bezier(.2, .7, .3, 1) both; }
 
 @keyframes sweep {
   0%   { transform: translateX(-100%); }
@@ -95,14 +199,13 @@ h1 { font-weight: 300; }
 }
 .sweep::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(3, 70, 148, .18), transparent);
-  animation: sweep 1.3s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(3, 70, 148, .14), transparent);
+  animation: sweep 1.4s ease-in-out infinite;
 }
 
-/* With motion reduced the animations are dropped, so elements fall back to
-   their natural (visible) state rather than being stuck at opacity 0. */
+/* Motion is decoration here; dropping it must leave content visible, which the
+   `both` fill mode would otherwise prevent. */
 @media (prefers-reduced-motion: reduce) {
   .step-in, .sweep::after { animation: none !important; }
+  html { scroll-behavior: auto; }
 }
-
-::selection { background: var(--color-signal-300); color: #ffffff; }

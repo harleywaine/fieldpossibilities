@@ -22,7 +22,7 @@ export function SearchBar({
 
   return (
     <form onSubmit={submit} className="w-full">
-      <div className={`group relative flex items-start gap-3 rounded-[3px] border border-ink-200 bg-white transition focus-within:border-signal-500 focus-within:ring-4 focus-within:ring-signal-600/10   ${big ? 'p-3' : 'p-2'}`}>
+      <div className={`group relative flex items-start gap-3 rounded-[2px] border border-ink-200 bg-white transition-colors focus-within:border-signal-500 focus-within:ring-4 focus-within:ring-signal-600/10   ${big ? 'p-3' : 'p-2'}`}>
         <svg viewBox="0 0 20 20" className={`mt-2 ml-2 shrink-0 text-ink-400 ${big ? 'h-5 w-5' : 'h-4 w-4'}`} aria-hidden="true">
           <circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" strokeWidth="1.7" />
           <path d="m13.5 13.5 3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
@@ -42,13 +42,13 @@ export function SearchBar({
         <button
           type="submit"
           disabled={busy || !value.trim()}
-          className={`shrink-0 rounded-[3px] bg-action-600 font-medium text-white transition hover:bg-action-500 disabled:opacity-40 ${big ? 'px-6 py-2.5 text-sm' : 'px-3.5 py-2 text-xs'}`}
+          className={`shrink-0 rounded-[2px] bg-action-600 font-medium tracking-[0.02em] text-white transition-colors hover:bg-action-500 disabled:opacity-35 ${big ? 'px-6 py-2.5 text-[13px]' : 'px-3.5 py-2 text-[11px]'}`}
         >
           {busy ? 'Searching…' : 'Search'}
         </button>
       </div>
       {big && (
-        <p className={`mt-2 px-1 text-xs ${onDark ? 'text-signal-300' : 'text-ink-400'}`}>
+        <p className={`mt-2.5 px-0.5 text-[11.5px] ${onDark ? 'text-signal-300/90' : 'text-ink-400'}`}>
           Describe the aircraft, the maintenance task, or the tooling you need — in plain English.
           Press Enter to search.
         </p>

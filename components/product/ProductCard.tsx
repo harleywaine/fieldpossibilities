@@ -18,8 +18,8 @@ export function ProductCard({
   const p = scored.product;
 
   return (
-    <article className="card group overflow-hidden transition hover:border-ink-200 hover:shadow-md">
-      <div className="flex gap-4 p-4">
+    <article className="card card-hover group overflow-hidden">
+      <div className="flex gap-4 p-5">
         <ProductImage product={p} className="h-24 w-24 shrink-0" />
 
         <div className="min-w-0 flex-1">
@@ -30,16 +30,16 @@ export function ProductCard({
             </div>
           )}
 
-          <div className="mt-2 mono text-sm font-semibold text-signal-600">
+          <div className="mono mt-2.5 text-[13px] font-medium tracking-[0.01em] text-signal-600">
             {p.partNumber ?? '—'}
           </div>
-          <h3 className="mt-0.5 text-sm font-medium leading-snug text-ink-900">
-            <Link href={`/product/${p.id}`} className="transition hover:text-signal-600">
+          <h3 className="mt-1 text-[13.5px] font-normal leading-snug text-ink-800">
+            <Link href={`/product/${p.id}`} className="transition-colors hover:text-signal-600">
               {p.name}
             </Link>
           </h3>
 
-          <dl className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+          <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[11.5px]">
             <Meta label="Manufacturer" value={p.manufacturer} />
             <Meta label="Aircraft" value={p.aircraftModel} />
             <Meta label="Category" value={p.maintenanceCategory} />
@@ -54,7 +54,7 @@ export function ProductCard({
           {showEvidence && scored.gaps.length > 0 && (
             <ul className="mt-2.5 space-y-1">
               {scored.gaps.slice(0, 2).map((g) => (
-                <li key={g} className="flex items-start gap-1.5 text-xs text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
+                <li key={g} className="flex items-start gap-1.5 text-xs text-[color:var(--color-caution-600)]">
                   <svg viewBox="0 0 12 12" className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true">
                     <path d="M6 1.5 11 10.5H1z" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" />
                     <path d="M6 5v2.2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
@@ -68,8 +68,8 @@ export function ProductCard({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-ink-100 bg-ink-50/60 px-4 py-2.5">
-        <Link href={`/product/${p.id}`} className="text-xs font-medium text-signal-600 hover:underline">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-ink-100 bg-ink-25 px-5 py-2.5">
+        <Link href={`/product/${p.id}`} className="text-[12px] font-medium text-signal-600 transition-colors hover:text-action-600">
           View details
         </Link>
         {onToggle && (
@@ -93,7 +93,7 @@ function Meta({ label, value, muted = false }: { label: string; value: string | 
   return (
     <div className="flex gap-1.5">
       <dt className="text-ink-400">{label}</dt>
-      <dd className={muted || !value ? 'text-ink-400 italic' : 'font-medium text-ink-700'}>
+      <dd className={muted || !value ? 'text-ink-300 italic' : 'font-medium text-ink-700'}>
         {value ?? 'not published'}
       </dd>
     </div>

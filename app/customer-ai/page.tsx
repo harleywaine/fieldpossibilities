@@ -21,7 +21,7 @@ export default function CustomerAiPage() {
       />
 
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-        <div className="rounded-[3px] border border-[color:var(--color-strong-600)]/25 bg-[color:var(--color-strong-600)]/8 px-4 py-3">
+        <div className="rounded-[2px] border border-[color:var(--color-strong-600)]/25 bg-[color:var(--color-strong-600)]/8 px-4 py-3">
           <p className="text-xs leading-relaxed text-ink-700">
             <strong className="text-[color:var(--color-strong-600)]">Real data.</strong>{' '}
             This demonstration runs against {stats ? stats.products.toLocaleString() : 'the'} products
@@ -43,7 +43,7 @@ export default function CustomerAiPage() {
               <SearchBar size="lg" autoFocus />
             </div>
             <div className="mt-6">
-              <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Try</p>
+              <p className="mb-2.5 label">Try</p>
               <SuggestedPrompts />
             </div>
 
@@ -58,7 +58,7 @@ export default function CustomerAiPage() {
 
             <div className="mt-8 grid gap-4 md:grid-cols-2">
               <div className="card p-5">
-                <h3 className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Traditional</h3>
+                <h3 className="label">Traditional</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-600">
                   Search → filters → pages → products. The customer needs to know the part number,
                   the catalogue taxonomy and Field’s product naming.
@@ -99,7 +99,7 @@ export default function CustomerAiPage() {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="card p-4">
-      <div className="text-xl font-semibold tabular-nums tracking-tight text-ink-900">{value}</div>
+      <div className="text-xl font-semibold figure tracking-tight text-ink-900">{value}</div>
       <div className="mt-0.5 text-xs text-ink-500">{label}</div>
     </div>
   );

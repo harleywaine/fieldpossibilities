@@ -16,8 +16,8 @@ export function SuggestedPrompts({ onDark = false }: { onDark?: boolean }) {
           href={`/search?q=${encodeURIComponent(p)}`}
           className={
             onDark
-              ? 'rounded-[3px] border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs text-white transition hover:border-white/50 hover:bg-white/20'
-              : 'rounded-[3px] border border-ink-200 bg-white px-3.5 py-1.5 text-xs text-signal-600 transition hover:border-signal-300 hover:bg-ink-50'
+              ? 'rounded-[2px] border border-white/20 bg-white/[0.07] px-3 py-1.5 text-[12px] text-signal-100 transition-colors hover:border-white/40 hover:bg-white/[0.14] hover:text-white'
+              : 'rounded-[2px] border border-ink-200 bg-white px-3 py-1.5 text-[12px] text-ink-600 transition-colors hover:border-signal-300 hover:text-signal-600'
           }
         >
           {p}

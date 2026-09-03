@@ -51,7 +51,7 @@ export function QuoteForm({ products, query }: { products: Product[]; query: str
   if (done) {
     return (
       <div className="card p-8 text-center">
-        <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-[color:var(--color-strong-600)]/12 text-[color:var(--color-strong-600)] [color:var(--color-strong-400)]">
+        <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-[color:var(--color-strong-600)]/12 text-[color:var(--color-strong-600)]">
           <svg viewBox="0 0 16 16" className="h-5 w-5" aria-hidden="true">
             <path d="m3.5 8.5 3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -98,7 +98,7 @@ export function QuoteForm({ products, query }: { products: Product[]; query: str
       <Textarea label="Maintenance requirement" rows={3} {...field('requirement')} />
 
       <div>
-        <span className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+        <span className="mb-2 block label">
           Selected tooling ({products.length})
         </span>
         {products.length === 0 ? (
@@ -138,7 +138,7 @@ export function QuoteForm({ products, query }: { products: Product[]; query: str
 function Input({ label, required, ...rest }: { label: string; required?: boolean } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+      <span className="mb-1 block label">
         {label}{required && <span className="text-signal-600"> *</span>}
       </span>
       <input
@@ -153,7 +153,7 @@ function Input({ label, required, ...rest }: { label: string; required?: boolean
 function Textarea({ label, ...rest }: { label: string } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-ink-400">{label}</span>
+      <span className="mb-1 block label">{label}</span>
       <textarea
         {...rest}
         className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-signal-400 focus:ring-4 focus:ring-signal-500/10"

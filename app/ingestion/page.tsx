@@ -125,7 +125,7 @@ export default function IngestionPage() {
 
           {validation.warnings.length > 0 && (
             <section className="mb-8 rounded-xl border border-[color:var(--color-caution-600)]/25 bg-[color:var(--color-caution-600)]/8 p-5">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-caution-600)]">
                 Data honesty notes
               </h2>
               <ul className="mt-2.5 space-y-1.5">
@@ -163,7 +163,7 @@ function safeEmbedding() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="card p-4">
-      <div className="text-xl font-semibold tabular-nums tracking-tight text-ink-900">{value}</div>
+      <div className="text-xl font-semibold figure tracking-tight text-ink-900">{value}</div>
       <div className="mt-0.5 text-xs text-ink-500">{label}</div>
     </div>
   );
@@ -172,7 +172,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card p-5">
-      <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">{title}</h2>
+      <h2 className="mb-3 label">{title}</h2>
       {children}
     </div>
   );

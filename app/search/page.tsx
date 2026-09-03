@@ -21,7 +21,7 @@ export default async function SearchPage({
 
       {!query ? (
         <div className="mt-8">
-          <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Try</p>
+          <p className="mb-2.5 label">Try</p>
           <SuggestedPrompts />
         </div>
       ) : !catalogueAvailable() ? (

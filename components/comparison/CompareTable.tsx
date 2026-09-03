@@ -54,7 +54,7 @@ export function CompareTable({ products, query }: { products: Product[]; query: 
         <table className="w-full min-w-[640px] border-collapse text-sm">
           <thead>
             <tr>
-              <th className="w-40 border-b border-ink-100 bg-ink-50 p-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-400" />
+              <th className="w-40 border-b border-ink-100 bg-ink-50 p-3 text-left label" />
               {products.map((p) => (
                 <th key={p.id} className="border-b border-l border-ink-100 bg-ink-50 p-3 text-left align-top">
                   <ProductImage product={p} className="mb-2 h-20 w-20" />
@@ -71,7 +71,7 @@ export function CompareTable({ products, query }: { products: Product[]; query: 
           <tbody>
             {visibleRows.map((r) => (
               <tr key={r.key} className="even:bg-ink-50/40">
-                <th scope="row" className="border-b border-ink-100 p-3 text-left text-[11px] font-medium uppercase tracking-wider text-ink-400">
+                <th scope="row" className="border-b border-ink-100 p-3 text-left label">
                   {r.label}
                 </th>
                 {products.map((p) => {
@@ -85,7 +85,7 @@ export function CompareTable({ products, query }: { products: Product[]; query: 
               </tr>
             ))}
             <tr>
-              <th scope="row" className="p-3 text-left text-[11px] font-medium uppercase tracking-wider text-ink-400">
+              <th scope="row" className="p-3 text-left label">
                 Source
               </th>
               {products.map((p) => (

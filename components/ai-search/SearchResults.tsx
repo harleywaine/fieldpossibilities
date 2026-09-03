@@ -28,7 +28,7 @@ export function SearchResults({
     <div className="space-y-6">
       {noConfirmedMatch && results.length > 0 && (
         <div className="rounded-xl border border-[color:var(--color-caution-600)]/30 bg-[color:var(--color-caution-600)]/8 p-4">
-          <h2 className="text-sm font-semibold text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
+          <h2 className="text-sm font-semibold text-[color:var(--color-caution-600)]">
             No confirmed catalogue match found
           </h2>
           <p className="mt-1.5 text-sm text-ink-700">

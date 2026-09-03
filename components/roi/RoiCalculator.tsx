@@ -53,13 +53,13 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
   return (
     <div className="space-y-6">
       {/* ------------------------------------------------------ headline */}
-      <section className="rounded-[3px] border border-signal-600/25 bg-signal-600/5 p-5">
+      <section className="rounded-[2px] border border-signal-600/25 bg-signal-600/5 p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+            <p className="label">
               {mode === 'productivity' ? 'Illustrative annual productivity opportunity' : 'Illustrative annual cash-equivalent'}
             </p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums tracking-tight text-signal-700">
+            <p className="figure mt-2 text-[2.75rem] font-light leading-none text-signal-700">
               {gbp(headline)}
             </p>
             <p className="mt-1 text-xs text-ink-500">
@@ -68,7 +68,7 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
             </p>
           </div>
 
-          <div className="flex rounded-[3px] border border-ink-200 bg-white p-0.5">
+          <div className="flex rounded-[2px] border border-ink-200 bg-white p-0.5">
             {(['productivity', 'cash'] as const).map((m) => (
               <button
                 key={m}
@@ -83,7 +83,7 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
           </div>
         </div>
 
-        <div className="mt-4 rounded-[3px] border border-ink-200 bg-white p-3">
+        <div className="mt-4 rounded-[2px] border border-ink-200 bg-white p-3">
           <p className="text-xs leading-relaxed text-ink-600">
             {mode === 'productivity' ? (
               <>
@@ -114,7 +114,7 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
 
       {/* -------------------------------------------------------- inputs */}
       <section className="card p-5">
-        <h2 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+        <h2 className="mb-4 label">
           Assumptions — change any of these
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -135,7 +135,7 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
 
       {/* ------------------------------------------------- opportunities */}
       <section className="space-y-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+        <h2 className="label">
           Opportunities by process
         </h2>
         {roi.opportunities.map((o) => (
@@ -146,7 +146,7 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
                 <p className="text-xs text-ink-400">{o.department} · {o.complexity} complexity</p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-semibold tabular-nums text-signal-700">
+                <p className="text-lg font-medium figure text-signal-700">
                   {gbp(mode === 'productivity' ? o.productivityValueGbp : o.cashEquivalentGbp)}
                 </p>
                 <p className="text-[11px] text-ink-400">
@@ -175,7 +175,7 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
         ))}
       </section>
 
-      <p className="rounded-[3px] border border-[color:var(--color-caution-600)]/30 bg-[color:var(--color-caution-600)]/8 p-3 text-xs leading-relaxed text-ink-700">
+      <p className="rounded-[2px] border border-[color:var(--color-caution-600)]/30 bg-[color:var(--color-caution-600)]/8 p-3 text-xs leading-relaxed text-ink-700">
         <strong className="text-[color:var(--color-caution-600)]">Illustrative synthetic scenario</strong>{' '}
         — not a Field financial estimate. {roi.assumptionsNote} Actual opportunity should be
         calculated from Field operational data.
@@ -186,9 +186,9 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
 
 function Kpi({ k, v }: { k: string; v: string }) {
   return (
-    <div className="rounded-[3px] border border-ink-200 bg-white p-3">
+    <div className="rounded-[2px] border border-ink-200 bg-white p-3">
       <dt className="text-[11px] text-ink-400">{k}</dt>
-      <dd className="mt-0.5 text-sm font-semibold tabular-nums text-ink-800">{v}</dd>
+      <dd className="figure mt-1 text-[15px] font-medium text-ink-800">{v}</dd>
     </div>
   );
 }
@@ -202,15 +202,15 @@ function Slider({
   return (
     <label className="block">
       <div className="flex items-baseline justify-between">
-        <span className="text-xs font-medium text-ink-600">{label}</span>
-        <span className="mono text-xs font-semibold tabular-nums text-signal-600">
+        <span className="text-[12px] text-ink-600">{label}</span>
+        <span className="mono figure text-[12px] font-medium text-signal-600">
           {format ? format(value) : value}
         </span>
       </div>
       <input
         type="range" min={min} max={max} step={step} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-1.5 w-full accent-action-600"
+        className="mt-1.5 w-full accent-signal-600"
       />
     </label>
   );
@@ -225,7 +225,7 @@ function MiniInput({
       <input
         type="number" value={value} step={step} min={0}
         onChange={(e) => onChange(Math.max(0, Number(e.target.value)))}
-        className="mt-0.5 w-full rounded-[3px] border border-ink-200 bg-white px-2 py-1 text-sm tabular-nums outline-none focus:border-signal-500"
+        className="mt-0.5 w-full rounded-[2px] border border-ink-200 bg-white px-2 py-1 text-sm tabular-nums outline-none focus:border-signal-500"
       />
     </label>
   );

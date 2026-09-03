@@ -58,7 +58,7 @@ export default async function ProductPage({
             </div>
             {product.partNumberInTitle && (
               <p className="mt-1.5 rounded-md border border-[color:var(--color-caution-600)]/25 bg-[color:var(--color-caution-600)]/8 px-2.5 py-1.5 text-xs text-ink-700">
-                <strong className="text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
+                <strong className="text-[color:var(--color-caution-600)]">
                   Source inconsistency:
                 </strong>{' '}
                 the catalogue records this part number as{' '}
@@ -81,7 +81,7 @@ export default async function ProductPage({
 
           {product.description && (
             <section>
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Overview</h2>
+              <h2 className="mb-2 label">Overview</h2>
               <p className="whitespace-pre-line text-sm leading-relaxed text-ink-700">
                 {product.description}
               </p>
@@ -92,7 +92,7 @@ export default async function ProductPage({
           {/* ------------------------------------ applicability + application */}
           <section className="grid gap-4 sm:grid-cols-2">
             <div className="card p-4">
-              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+              <h2 className="mb-3 label">
                 Aircraft applicability
               </h2>
               <dl className="space-y-3">
@@ -107,7 +107,7 @@ export default async function ProductPage({
             </div>
 
             <div className="card p-4">
-              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Application</h2>
+              <h2 className="mb-3 label">Application</h2>
               <dl className="space-y-3">
                 <Field label="Application" value={product.application} />
                 <Field label="Maintenance category" value={product.maintenanceCategory} />
@@ -120,7 +120,7 @@ export default async function ProductPage({
           {/* --------------------------------------- technical + availability */}
           <section className="grid gap-4 sm:grid-cols-2">
             <div className="card p-4">
-              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+              <h2 className="mb-3 label">
                 Technical information
               </h2>
               {hasTechnical ? (
@@ -137,7 +137,7 @@ export default async function ProductPage({
             </div>
 
             <div className="card p-4">
-              <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+              <h2 className="mb-3 label">
                 Availability &amp; lead time
               </h2>
               <dl className="space-y-3">
@@ -184,7 +184,7 @@ export default async function ProductPage({
           <ProductGallery product={product} />
 
           <div className="card p-4">
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Source</h2>
+            <h2 className="mb-2 label">Source</h2>
             <p className="text-sm font-medium text-ink-800">
               Field International catalogue
             </p>

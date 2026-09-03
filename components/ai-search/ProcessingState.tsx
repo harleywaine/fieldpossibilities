@@ -55,7 +55,7 @@ export function ProcessingState({
         className="step-in mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-xl border border-ink-100 bg-white px-4 py-3"
         style={delay(total)}
       >
-        <span className="text-lg font-semibold tabular-nums text-ink-900">
+        <span className="text-lg font-medium figure text-ink-900">
           {recordCount.toLocaleString()}
         </span>
         <span className="text-sm text-ink-600">
@@ -79,7 +79,7 @@ export function ProcessingState({
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="card p-4">
-      <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">{title}</h3>
+      <h3 className="mb-3 label">{title}</h3>
       <div className="space-y-2.5">{children}</div>
     </section>
   );
@@ -91,14 +91,14 @@ function Line({
   return (
     <div className="step-in" style={style}>
       <div className="flex items-start gap-2">
-        <svg viewBox="0 0 14 14" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[color:var(--color-strong-600)] [color:var(--color-strong-400)]" aria-hidden="true">
+        <svg viewBox="0 0 14 14" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[color:var(--color-strong-600)]" aria-hidden="true">
           <path d="m2.5 7.5 3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <div className="min-w-0">
           <span className="text-sm font-medium text-ink-800">{label}</span>
           <span className="text-sm text-ink-500"> — {value}</span>
           {note && (
-            <p className="mt-1 rounded-md bg-[color:var(--color-caution-600)]/8 px-2 py-1 text-xs text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
+            <p className="mt-1 rounded-md bg-[color:var(--color-caution-600)]/8 px-2 py-1 text-xs text-[color:var(--color-caution-600)]">
               {note}
             </p>
           )}
