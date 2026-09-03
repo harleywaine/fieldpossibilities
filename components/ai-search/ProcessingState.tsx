@@ -52,13 +52,13 @@ export function ProcessingState({
       </div>
 
       <div
-        className="step-in mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-xl border border-ink-100 bg-white px-4 py-3 dark:border-ink-800 dark:bg-ink-900"
+        className="step-in mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-xl border border-ink-100 bg-white px-4 py-3"
         style={delay(total)}
       >
-        <span className="text-lg font-semibold tabular-nums text-ink-900 dark:text-white">
+        <span className="text-lg font-semibold tabular-nums text-ink-900">
           {recordCount.toLocaleString()}
         </span>
-        <span className="text-sm text-ink-600 dark:text-ink-300">
+        <span className="text-sm text-ink-600">
           relevant catalogue {recordCount === 1 ? 'record' : 'records'} identified
         </span>
         {alternativeCount > 0 && (
@@ -91,14 +91,14 @@ function Line({
   return (
     <div className="step-in" style={style}>
       <div className="flex items-start gap-2">
-        <svg viewBox="0 0 14 14" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[color:var(--color-strong-600)] dark:text-[color:var(--color-strong-400)]" aria-hidden="true">
+        <svg viewBox="0 0 14 14" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[color:var(--color-strong-600)] [color:var(--color-strong-400)]" aria-hidden="true">
           <path d="m2.5 7.5 3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <div className="min-w-0">
-          <span className="text-sm font-medium text-ink-800 dark:text-ink-100">{label}</span>
-          <span className="text-sm text-ink-500 dark:text-ink-400"> — {value}</span>
+          <span className="text-sm font-medium text-ink-800">{label}</span>
+          <span className="text-sm text-ink-500"> — {value}</span>
           {note && (
-            <p className="mt-1 rounded-md bg-[color:var(--color-caution-600)]/8 px-2 py-1 text-xs text-[color:var(--color-caution-600)] dark:text-[color:var(--color-caution-400)]">
+            <p className="mt-1 rounded-md bg-[color:var(--color-caution-600)]/8 px-2 py-1 text-xs text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
               {note}
             </p>
           )}

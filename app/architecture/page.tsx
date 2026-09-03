@@ -14,16 +14,16 @@ export default function ArchitecturePage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-950 dark:text-white">Architecture</h1>
-        <p className="mt-1 max-w-2xl text-sm text-ink-600 dark:text-ink-300">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink-950">Architecture</h1>
+        <p className="mt-1 max-w-2xl text-sm text-ink-600">
           How a plain-English requirement becomes a grounded, evidenced recommendation.
         </p>
       </header>
 
       {/* ------------------------------------------------ headline principle */}
       <section className="mb-10 rounded-xl border border-signal-500/25 bg-signal-500/5 p-6">
-        <h2 className="text-lg font-semibold text-ink-950 dark:text-white">The LLM is not the database.</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-700 dark:text-ink-200">
+        <h2 className="text-lg font-semibold text-ink-950">The LLM is not the database.</h2>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-700">
           The catalogue remains structured source data and stays authoritative. The AI layer supplies
           natural-language understanding, retrieval, ranking, summarisation and explanation. Every
           factual claim in the interface traces back to a stored catalogue record, and every record
@@ -71,7 +71,7 @@ export default function ArchitecturePage() {
       {/* ------------------------------------------------------ ranking */}
       <section className="mt-6">
         <Panel title="Ranking weights">
-          <p className="mb-3 text-xs text-ink-500 dark:text-ink-400">
+          <p className="mb-3 text-xs text-ink-500">
             Configurable and re-normalised across the dimensions a given requirement actually
             constrains. Scores are translated into qualitative classes — never shown as a confidence
             percentage.
@@ -79,8 +79,8 @@ export default function ArchitecturePage() {
           <div className="space-y-2">
             {Object.entries(DEFAULT_WEIGHTS).map(([k, v]) => (
               <div key={k} className="flex items-center gap-3">
-                <span className="w-28 shrink-0 text-xs capitalize text-ink-600 dark:text-ink-300">{k}</span>
-                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-100 dark:bg-ink-800">
+                <span className="w-28 shrink-0 text-xs capitalize text-ink-600">{k}</span>
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-100">
                   <div className="h-full rounded-full bg-signal-500" style={{ width: `${v * 100 / 0.3 * 0.6}%` }} />
                 </div>
                 <span className="w-10 shrink-0 text-right text-xs tabular-nums text-ink-500">
@@ -120,20 +120,20 @@ function Diagram() {
             {n.branch ? (
               <div className="grid grid-cols-2 gap-3">
                 {n.branch.map((b) => (
-                  <div key={b} className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-center text-xs font-medium text-ink-700 dark:border-ink-700 dark:bg-ink-850 dark:text-ink-200">
+                  <div key={b} className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-center text-xs font-medium text-ink-700">
                     {b}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="rounded-lg border border-ink-200 bg-white px-4 py-2.5 dark:border-ink-700 dark:bg-ink-900">
-                <div className="text-sm font-medium text-ink-900 dark:text-ink-50">{n.label}</div>
-                {n.note && <div className="mt-0.5 text-xs text-ink-500 dark:text-ink-400">{n.note}</div>}
+              <div className="rounded-lg border border-ink-200 bg-white px-4 py-2.5">
+                <div className="text-sm font-medium text-ink-900">{n.label}</div>
+                {n.note && <div className="mt-0.5 text-xs text-ink-500">{n.note}</div>}
               </div>
             )}
             {i < NODES.length - 1 && (
               <div className="flex justify-center py-1.5" aria-hidden="true">
-                <svg viewBox="0 0 10 18" className="h-4 w-2.5 text-ink-300 dark:text-ink-600">
+                <svg viewBox="0 0 10 18" className="h-4 w-2.5 text-ink-300">
                   <path d="M5 0v13M1.5 9.5 5 13.5l3.5-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
@@ -148,8 +148,8 @@ function Diagram() {
 function Principle({ title, body }: { title: string; body: string }) {
   return (
     <div className="card p-4">
-      <h3 className="text-sm font-semibold text-ink-900 dark:text-ink-50">{title}</h3>
-      <p className="mt-1.5 text-xs leading-relaxed text-ink-600 dark:text-ink-300">{body}</p>
+      <h3 className="text-sm font-semibold text-ink-900">{title}</h3>
+      <p className="mt-1.5 text-xs leading-relaxed text-ink-600">{body}</p>
     </div>
   );
 }
@@ -165,9 +165,9 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 border-b border-ink-100 py-1.5 last:border-0 dark:border-ink-800">
-      <span className="text-xs text-ink-500 dark:text-ink-400">{k}</span>
-      <span className="text-xs font-medium text-ink-800 dark:text-ink-100">{v}</span>
+    <div className="flex items-baseline justify-between gap-3 border-b border-ink-100 py-1.5 last:border-0">
+      <span className="text-xs text-ink-500">{k}</span>
+      <span className="text-xs font-medium text-ink-800">{v}</span>
     </div>
   );
 }

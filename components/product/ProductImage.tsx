@@ -15,7 +15,7 @@ export function ProductImage({ product, className = '' }: { product: Product; cl
   const src = image ? (image.localPath ?? image.thumbnail ?? image.src) : '';
 
   return (
-    <div className={`relative overflow-hidden rounded-lg border border-ink-100 bg-ink-50 dark:border-ink-800 dark:bg-ink-850 ${className}`}>
+    <div className={`relative overflow-hidden rounded-lg border border-ink-100 bg-ink-50 ${className}`}>
       {usable ? (
         <img
           src={src}
@@ -25,7 +25,7 @@ export function ProductImage({ product, className = '' }: { product: Product; cl
           className="h-full w-full object-contain p-1.5"
         />
       ) : (
-        <div className="grid h-full w-full place-items-center text-ink-300 dark:text-ink-600">
+        <div className="grid h-full w-full place-items-center text-ink-300">
           <svg viewBox="0 0 32 32" className="h-7 w-7" aria-hidden="true">
             <rect x="4" y="7" width="24" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
             <path d="m7 21 5.5-6 4 4.5 3.5-3 5 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />

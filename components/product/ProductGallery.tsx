@@ -15,7 +15,7 @@ export function ProductGallery({ product }: { product: Product }) {
         <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">
           Product imagery
         </h2>
-        <div className="grid h-40 place-items-center rounded-lg border border-dashed border-ink-200 text-xs text-ink-400 dark:border-ink-700">
+        <div className="grid h-40 place-items-center rounded-lg border border-dashed border-ink-200 text-xs text-ink-400">
           No image published for this product
         </div>
       </div>
@@ -38,7 +38,7 @@ export function ProductGallery({ product }: { product: Product }) {
               onClick={() => setActive(i)}
               aria-label={`Image ${i + 1}`}
               className={`h-12 w-12 overflow-hidden rounded border transition ${
-                i === active ? 'border-signal-500 ring-2 ring-signal-500/25' : 'border-ink-200 dark:border-ink-700'
+                i === active ? 'border-signal-500 ring-2 ring-signal-500/25' : 'border-ink-200 '
               }`}
             >
               <img src={im.localPath ?? im.thumbnail ?? im.src} alt="" className="h-full w-full object-contain p-0.5" />

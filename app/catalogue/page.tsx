@@ -17,8 +17,8 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
         <div className="card p-6">
           <h1 className="text-lg font-semibold">Catalogue not yet ingested</h1>
-          <p className="mt-2 text-sm text-ink-600 dark:text-ink-300">
-            Run <code className="mono rounded bg-ink-100 px-1.5 py-0.5 text-xs dark:bg-ink-850">npm run scrape</code> first.
+          <p className="mt-2 text-sm text-ink-600">
+            Run <code className="mono rounded bg-ink-100 px-1.5 py-0.5 text-xs">npm run scrape</code> first.
           </p>
         </div>
       </div>
@@ -53,10 +53,10 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-950 dark:text-white">Browse catalogue</h1>
-        <p className="mt-1 text-sm text-ink-600 dark:text-ink-300">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink-950">Browse catalogue</h1>
+        <p className="mt-1 text-sm text-ink-600">
           The conventional route: filter by manufacturer, aircraft, category and lead time.{' '}
-          <Link href="/search" className="text-signal-600 underline underline-offset-2 dark:text-signal-400">
+          <Link href="/search" className="text-signal-600 underline underline-offset-2">
             Or describe what you need instead →
           </Link>
         </p>
@@ -67,7 +67,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
 
         <div className="min-w-0">
           <div className="mb-4 flex flex-wrap items-baseline gap-2">
-            <span className="text-sm font-medium text-ink-800 dark:text-ink-100">
+            <span className="text-sm font-medium text-ink-800">
               {result.total.toLocaleString()} {result.total === 1 ? 'product' : 'products'}
             </span>
             <span className="text-xs text-ink-400">
@@ -77,7 +77,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
 
           {result.products.length === 0 ? (
             <div className="card p-8 text-center">
-              <p className="text-sm text-ink-600 dark:text-ink-300">
+              <p className="text-sm text-ink-600">
                 No catalogue products match these filters.
               </p>
               <Link href="/catalogue" className="mt-3 inline-block text-sm text-signal-600 underline">
@@ -95,7 +95,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
           {result.pages > 1 && (
             <nav className="mt-6 flex items-center justify-center gap-2">
               {result.page > 1 && (
-                <Link href={qs({ page: String(result.page - 1) })} className="rounded-lg border border-ink-200 px-3 py-1.5 text-sm hover:bg-ink-50 dark:border-ink-700 dark:hover:bg-ink-850">
+                <Link href={qs({ page: String(result.page - 1) })} className="rounded-lg border border-ink-200 px-3 py-1.5 text-sm hover:bg-ink-50">
                   Previous
                 </Link>
               )}
@@ -103,7 +103,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Pr
                 {result.page} / {result.pages}
               </span>
               {result.page < result.pages && (
-                <Link href={qs({ page: String(result.page + 1) })} className="rounded-lg border border-ink-200 px-3 py-1.5 text-sm hover:bg-ink-50 dark:border-ink-700 dark:hover:bg-ink-850">
+                <Link href={qs({ page: String(result.page + 1) })} className="rounded-lg border border-ink-200 px-3 py-1.5 text-sm hover:bg-ink-50">
                   Next
                 </Link>
               )}

@@ -27,8 +27,8 @@ export default async function SearchPage({
       ) : !catalogueAvailable() ? (
         <div className="card mt-8 p-6">
           <h2 className="text-base font-semibold">Catalogue not yet ingested</h2>
-          <p className="mt-2 text-sm text-ink-600 dark:text-ink-300">
-            Run <code className="mono rounded bg-ink-100 px-1.5 py-0.5 text-xs dark:bg-ink-850">npm run scrape</code>{' '}
+          <p className="mt-2 text-sm text-ink-600">
+            Run <code className="mono rounded bg-ink-100 px-1.5 py-0.5 text-xs">npm run scrape</code>{' '}
             to ingest the Field International catalogue.
           </p>
         </div>
@@ -75,10 +75,10 @@ function Skeleton() {
         {[0, 1].map((i) => (
           <div key={i} className="card relative overflow-hidden p-4">
             <div className="sweep absolute inset-0" />
-            <div className="h-3 w-32 rounded bg-ink-100 dark:bg-ink-800" />
+            <div className="h-3 w-32 rounded bg-ink-100" />
             <div className="mt-3 space-y-2">
-              <div className="h-3 w-full rounded bg-ink-100 dark:bg-ink-800" />
-              <div className="h-3 w-4/5 rounded bg-ink-100 dark:bg-ink-800" />
+              <div className="h-3 w-full rounded bg-ink-100" />
+              <div className="h-3 w-4/5 rounded bg-ink-100" />
             </div>
           </div>
         ))}

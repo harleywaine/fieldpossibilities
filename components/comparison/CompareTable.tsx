@@ -50,18 +50,18 @@ export function CompareTable({ products, query }: { products: Product[]; query: 
 
   return (
     <div className="space-y-6">
-      <div className="overflow-x-auto rounded-xl border border-ink-100 dark:border-ink-800">
+      <div className="overflow-x-auto rounded-xl border border-ink-100">
         <table className="w-full min-w-[640px] border-collapse text-sm">
           <thead>
             <tr>
-              <th className="w-40 border-b border-ink-100 bg-ink-50 p-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-400 dark:border-ink-800 dark:bg-ink-850" />
+              <th className="w-40 border-b border-ink-100 bg-ink-50 p-3 text-left text-[11px] font-semibold uppercase tracking-wider text-ink-400" />
               {products.map((p) => (
-                <th key={p.id} className="border-b border-l border-ink-100 bg-ink-50 p-3 text-left align-top dark:border-ink-800 dark:bg-ink-850">
+                <th key={p.id} className="border-b border-l border-ink-100 bg-ink-50 p-3 text-left align-top">
                   <ProductImage product={p} className="mb-2 h-20 w-20" />
-                  <Link href={`/product/${p.id}`} className="mono block text-xs font-semibold text-signal-600 hover:underline dark:text-signal-400">
+                  <Link href={`/product/${p.id}`} className="mono block text-xs font-semibold text-signal-600 hover:underline">
                     {p.partNumber ?? p.id}
                   </Link>
-                  <span className="mt-0.5 block text-xs font-normal leading-snug text-ink-600 dark:text-ink-300">
+                  <span className="mt-0.5 block text-xs font-normal leading-snug text-ink-600">
                     {p.name.length > 70 ? `${p.name.slice(0, 70)}…` : p.name}
                   </span>
                 </th>
@@ -70,14 +70,14 @@ export function CompareTable({ products, query }: { products: Product[]; query: 
           </thead>
           <tbody>
             {visibleRows.map((r) => (
-              <tr key={r.key} className="even:bg-ink-50/40 dark:even:bg-ink-850/30">
-                <th scope="row" className="border-b border-ink-100 p-3 text-left text-[11px] font-medium uppercase tracking-wider text-ink-400 dark:border-ink-800">
+              <tr key={r.key} className="even:bg-ink-50/40">
+                <th scope="row" className="border-b border-ink-100 p-3 text-left text-[11px] font-medium uppercase tracking-wider text-ink-400">
                   {r.label}
                 </th>
                 {products.map((p) => {
                   const v = r.get(p);
                   return (
-                    <td key={p.id} className={`border-b border-l border-ink-100 p-3 align-top dark:border-ink-800 ${v ? 'text-ink-800 dark:text-ink-100' : 'text-ink-400 italic'}`}>
+                    <td key={p.id} className={`border-b border-l border-ink-100 p-3 align-top  ${v ? 'text-ink-800 ' : 'text-ink-400 italic'}`}>
                       {v ?? 'Not published'}
                     </td>
                   );
@@ -89,7 +89,7 @@ export function CompareTable({ products, query }: { products: Product[]; query: 
                 Source
               </th>
               {products.map((p) => (
-                <td key={p.id} className="border-l border-ink-100 p-3 align-top dark:border-ink-800">
+                <td key={p.id} className="border-l border-ink-100 p-3 align-top">
                   <SourceNote url={p.sourceUrl} />
                 </td>
               ))}
@@ -100,15 +100,15 @@ export function CompareTable({ products, query }: { products: Product[]; query: 
 
       <section className="rounded-xl border border-signal-500/25 bg-signal-500/5 p-5">
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <h2 className="text-sm font-semibold text-ink-900 dark:text-ink-50">AI comparison</h2>
+          <h2 className="text-sm font-semibold text-ink-900">AI comparison</h2>
           <AIBadge provider={assessment?.provider} />
         </div>
         {busy ? (
           <p className="text-sm text-ink-400">Comparing catalogue records…</p>
         ) : assessment ? (
           <>
-            <p className="text-sm leading-relaxed text-ink-800 dark:text-ink-100">{assessment.text}</p>
-            <p className="mt-3 border-t border-signal-500/15 pt-3 text-xs text-ink-500 dark:text-ink-400">
+            <p className="text-sm leading-relaxed text-ink-800">{assessment.text}</p>
+            <p className="mt-3 border-t border-signal-500/15 pt-3 text-xs text-ink-500">
               {assessment.disclaimer}
             </p>
           </>

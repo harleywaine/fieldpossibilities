@@ -18,24 +18,24 @@ export function Footer() {
     : null;
 
   return (
-    <footer className="mt-20 border-t border-ink-100 bg-white dark:border-ink-800 dark:bg-ink-900">
+    <footer className="mt-20 border-t border-ink-100 bg-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Catalogue source</div>
-          <p className="mt-1.5 text-sm text-ink-700 dark:text-ink-200">Field International public catalogue</p>
+          <p className="mt-1.5 text-sm text-ink-700">Field International public catalogue</p>
           <a
             href="https://www.fieldinternational.com/gse-and-tools/"
             target="_blank" rel="noopener noreferrer nofollow"
-            className="mt-1 inline-block text-xs text-ink-500 underline underline-offset-2 hover:text-signal-600 dark:text-ink-400"
+            className="mt-1 inline-block text-xs text-ink-500 underline underline-offset-2 hover:text-signal-600"
           >
             fieldinternational.com
           </a>
         </div>
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Last catalogue sync</div>
-          <p className="mt-1.5 text-sm text-ink-700 dark:text-ink-200">{synced}</p>
+          <p className="mt-1.5 text-sm text-ink-700">{synced}</p>
           {stats && (
-            <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
+            <p className="mt-1 text-xs text-ink-500">
               {stats.products.toLocaleString()} products
               {detailPct !== null && ` · ${detailPct}% detail coverage`}
             </p>
@@ -43,13 +43,13 @@ export function Footer() {
         </div>
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">AI search</div>
-          <p className="mt-1.5 text-sm text-ink-700 dark:text-ink-200">Catalogue data + semantic matching</p>
-          <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">{ai.describe}</p>
+          <p className="mt-1.5 text-sm text-ink-700">Catalogue data + semantic matching</p>
+          <p className="mt-1 text-xs text-ink-500">{ai.describe}</p>
         </div>
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Status</div>
-          <p className="mt-1.5 text-sm text-ink-700 dark:text-ink-200">Demonstration prototype</p>
-          <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">
+          <p className="mt-1.5 text-sm text-ink-700">Demonstration prototype</p>
+          <p className="mt-1 text-xs text-ink-500">
             Customer and quote data is synthetic. Catalogue data is read from a stored snapshot of
             publicly available listings.
           </p>

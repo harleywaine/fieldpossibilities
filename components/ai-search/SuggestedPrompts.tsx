@@ -7,14 +7,18 @@ const PROMPTS = [
   'I need tooling for a 777 heavy maintenance programme',
 ];
 
-export function SuggestedPrompts() {
+export function SuggestedPrompts({ onDark = false }: { onDark?: boolean }) {
   return (
     <div className="flex flex-wrap gap-2">
       {PROMPTS.map((p) => (
         <Link
           key={p}
           href={`/search?q=${encodeURIComponent(p)}`}
-          className="rounded-full border border-ink-200 bg-white px-3.5 py-1.5 text-xs text-ink-600 transition hover:border-signal-300 hover:text-signal-600 dark:border-ink-700 dark:bg-ink-900 dark:text-ink-300 dark:hover:border-signal-400"
+          className={
+            onDark
+              ? 'rounded-[3px] border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs text-white transition hover:border-white/50 hover:bg-white/20'
+              : 'rounded-[3px] border border-ink-200 bg-white px-3.5 py-1.5 text-xs text-signal-600 transition hover:border-signal-300 hover:bg-ink-50'
+          }
         >
           {p}
         </Link>

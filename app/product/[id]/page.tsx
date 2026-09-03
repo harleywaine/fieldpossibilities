@@ -53,12 +53,12 @@ export default async function ProductPage({
         <div className="min-w-0 space-y-8">
           {/* -------------------------------------------------- overview */}
           <header>
-            <div className="mono text-sm font-semibold text-signal-600 dark:text-signal-400">
+            <div className="mono text-sm font-semibold text-signal-600">
               {product.partNumber ?? '—'}
             </div>
             {product.partNumberInTitle && (
-              <p className="mt-1.5 rounded-md border border-[color:var(--color-caution-600)]/25 bg-[color:var(--color-caution-600)]/8 px-2.5 py-1.5 text-xs text-ink-700 dark:text-ink-200">
-                <strong className="text-[color:var(--color-caution-600)] dark:text-[color:var(--color-caution-400)]">
+              <p className="mt-1.5 rounded-md border border-[color:var(--color-caution-600)]/25 bg-[color:var(--color-caution-600)]/8 px-2.5 py-1.5 text-xs text-ink-700">
+                <strong className="text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
                   Source inconsistency:
                 </strong>{' '}
                 the catalogue records this part number as{' '}
@@ -67,7 +67,7 @@ export default async function ProductPage({
                 Field should confirm which applies.
               </p>
             )}
-            <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight text-ink-950 dark:text-white">
+            <h1 className="mt-1 text-2xl font-semibold leading-tight tracking-tight text-ink-950">
               {product.name}
             </h1>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -82,7 +82,7 @@ export default async function ProductPage({
           {product.description && (
             <section>
               <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Overview</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-ink-700 dark:text-ink-200">
+              <p className="whitespace-pre-line text-sm leading-relaxed text-ink-700">
                 {product.description}
               </p>
               <p className="mt-2 text-xs text-ink-400">Retrieved from source — Field International product description.</p>
@@ -160,13 +160,13 @@ export default async function ProductPage({
           {/* ------------------------------------------------ AI assessment */}
           <section className="rounded-xl border border-signal-500/25 bg-signal-500/5 p-5">
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <h2 className="text-sm font-semibold text-ink-900 dark:text-ink-50">AI assessment</h2>
+              <h2 className="text-sm font-semibold text-ink-900">AI assessment</h2>
               <AIBadge />
             </div>
-            <p className="text-sm leading-relaxed text-ink-800 dark:text-ink-100">
+            <p className="text-sm leading-relaxed text-ink-800">
               {composeSearchAssessment(requirement, [scored])}
             </p>
-            <p className="mt-3 border-t border-signal-500/15 pt-3 text-xs text-ink-500 dark:text-ink-400">
+            <p className="mt-3 border-t border-signal-500/15 pt-3 text-xs text-ink-500">
               AI-generated interpretation of the catalogue record above. Field should confirm current
               availability, suitability and delivery before purchase.
             </p>
@@ -185,21 +185,21 @@ export default async function ProductPage({
 
           <div className="card p-4">
             <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Source</h2>
-            <p className="text-sm font-medium text-ink-800 dark:text-ink-100">
+            <p className="text-sm font-medium text-ink-800">
               Field International catalogue
             </p>
             <a
               href={product.sourceUrl}
               target="_blank"
               rel="noopener noreferrer nofollow"
-              className="mt-2 inline-flex items-center gap-1.5 text-sm text-signal-600 underline underline-offset-2 dark:text-signal-400"
+              className="mt-2 inline-flex items-center gap-1.5 text-sm text-signal-600 underline underline-offset-2"
             >
               View original product
               <svg viewBox="0 0 12 12" className="h-3 w-3" aria-hidden="true">
                 <path d="M4.5 2.5h5v5M9.5 2.5 4 8M8 9.5H2.5V4" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
-            <dl className="mt-4 space-y-2 border-t border-ink-100 pt-3 dark:border-ink-800">
+            <dl className="mt-4 space-y-2 border-t border-ink-100 pt-3">
               <Field label="Source domain" value={product.sourceDomain} />
               <Field
                 label="Retrieved"

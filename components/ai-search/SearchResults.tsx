@@ -28,10 +28,10 @@ export function SearchResults({
     <div className="space-y-6">
       {noConfirmedMatch && results.length > 0 && (
         <div className="rounded-xl border border-[color:var(--color-caution-600)]/30 bg-[color:var(--color-caution-600)]/8 p-4">
-          <h2 className="text-sm font-semibold text-[color:var(--color-caution-600)] dark:text-[color:var(--color-caution-400)]">
+          <h2 className="text-sm font-semibold text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
             No confirmed catalogue match found
           </h2>
-          <p className="mt-1.5 text-sm text-ink-700 dark:text-ink-200">
+          <p className="mt-1.5 text-sm text-ink-700">
             No catalogue record satisfies every element of this requirement. The closest genuine
             catalogue entries are shown below so you can judge relevance yourself.
           </p>
@@ -43,7 +43,7 @@ export function SearchResults({
       {results.length === 0 ? (
         <div className="card p-8 text-center">
           <h2 className="text-base font-semibold">No catalogue records matched</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-ink-600 dark:text-ink-300">
+          <p className="mx-auto mt-2 max-w-md text-sm text-ink-600">
             The catalogue may not cover this aircraft, application or tooling type. Try different
             wording, or browse the catalogue directly.
           </p>
@@ -74,8 +74,8 @@ export function SearchResults({
       {results.length > 0 && <AskPanel ids={results.slice(0, 8).map((r) => r.product.id)} query={query} />}
 
       {selected.length > 0 && (
-        <div className="sticky bottom-4 z-30 mx-auto flex max-w-lg items-center gap-3 rounded-xl border border-ink-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur dark:border-ink-700 dark:bg-ink-900/95">
-          <span className="text-sm text-ink-700 dark:text-ink-200">
+        <div className="sticky bottom-4 z-30 mx-auto flex max-w-lg items-center gap-3 rounded-xl border border-ink-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur">
+          <span className="text-sm text-ink-700">
             {selected.length} selected {selected.length === 1 ? 'product' : 'products'}
           </span>
           <div className="ml-auto flex gap-2">
@@ -98,8 +98,8 @@ export function SearchResults({
 function Group({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-sm font-semibold text-ink-900 dark:text-ink-50">{title}</h2>
-      <p className="mb-3 mt-0.5 text-xs text-ink-500 dark:text-ink-400">{sub}</p>
+      <h2 className="text-sm font-semibold text-ink-900">{title}</h2>
+      <p className="mb-3 mt-0.5 text-xs text-ink-500">{sub}</p>
       <div className="space-y-3">{children}</div>
     </section>
   );

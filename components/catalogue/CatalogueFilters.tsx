@@ -36,11 +36,11 @@ export function CatalogueFilters({
             if (e.key === 'Enter') set('text', (e.target as HTMLInputElement).value || null);
           }}
           placeholder="e.g. K78002 or sling"
-          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-signal-400 focus:ring-4 focus:ring-signal-500/10 dark:border-ink-700 dark:bg-ink-850"
+          className="w-full rounded-lg border border-ink-200 bg-white px-3 py-1.5 text-sm outline-none focus:border-signal-400 focus:ring-4 focus:ring-signal-500/10"
         />
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-700 dark:text-ink-200">
+      <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-700">
         <input
           type="checkbox"
           checked={Boolean(current.hasLeadTime)}
@@ -53,7 +53,7 @@ export function CatalogueFilters({
       {active && (
         <button
           onClick={() => router.push('/catalogue')}
-          className="text-xs text-signal-600 underline underline-offset-2 dark:text-signal-400"
+          className="text-xs text-signal-600 underline underline-offset-2"
         >
           Clear all filters
         </button>
@@ -87,8 +87,8 @@ function FacetGroup({
                 onClick={() => onPick(f.value)}
                 className={`flex w-full items-baseline gap-2 rounded px-1.5 py-1 text-left text-xs transition ${
                   on
-                    ? 'bg-signal-600/10 font-medium text-signal-600 dark:text-signal-400'
-                    : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-850'
+                    ? 'bg-signal-600/10 font-medium text-signal-600'
+                    : 'text-ink-600 hover:bg-ink-100'
                 }`}
               >
                 <span className="min-w-0 flex-1 truncate">{f.value}</span>

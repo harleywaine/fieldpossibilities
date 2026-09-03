@@ -51,14 +51,14 @@ export function QuoteForm({ products, query }: { products: Product[]; query: str
   if (done) {
     return (
       <div className="card p-8 text-center">
-        <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-[color:var(--color-strong-600)]/12 text-[color:var(--color-strong-600)] dark:text-[color:var(--color-strong-400)]">
+        <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-[color:var(--color-strong-600)]/12 text-[color:var(--color-strong-600)] [color:var(--color-strong-400)]">
           <svg viewBox="0 0 16 16" className="h-5 w-5" aria-hidden="true">
             <path d="m3.5 8.5 3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <h2 className="text-lg font-semibold">Quote request recorded</h2>
-        <p className="mono mt-1 text-sm text-signal-600 dark:text-signal-400">Reference {done.reference}</p>
-        <p className="mx-auto mt-3 max-w-md text-sm text-ink-600 dark:text-ink-300">
+        <p className="mono mt-1 text-sm text-signal-600">Reference {done.reference}</p>
+        <p className="mx-auto mt-3 max-w-md text-sm text-ink-600">
           This request was saved locally in the prototype. <strong>It has not been transmitted to
           Field International</strong> — this demonstration has no commercial backend integration.
         </p>
@@ -73,13 +73,13 @@ export function QuoteForm({ products, query }: { products: Product[]; query: str
   return (
     <form onSubmit={submit} className="space-y-6">
       <div className="rounded-lg border border-[color:var(--color-caution-600)]/25 bg-[color:var(--color-caution-600)]/8 p-3">
-        <p className="text-xs text-ink-700 dark:text-ink-200">
+        <p className="text-xs text-ink-700">
           <strong>Demonstration only.</strong> Nothing entered here is sent to Field International.
           Use synthetic details.{' '}
           <button
             type="button"
             onClick={() => setForm((f) => ({ ...f, ...DEMO }))}
-            className="font-medium text-signal-600 underline underline-offset-2 dark:text-signal-400"
+            className="font-medium text-signal-600 underline underline-offset-2"
           >
             Fill with demo customer
           </button>
@@ -107,13 +107,13 @@ export function QuoteForm({ products, query }: { products: Product[]; query: str
             <Link href="/search" className="text-signal-600 underline">Search the catalogue</Link>.
           </p>
         ) : (
-          <ul className="divide-y divide-ink-100 rounded-lg border border-ink-100 dark:divide-ink-800 dark:border-ink-800">
+          <ul className="divide-y divide-ink-100 rounded-lg border border-ink-100">
             {products.map((p) => (
               <li key={p.id} className="flex items-baseline gap-3 p-2.5">
-                <span className="mono shrink-0 text-xs font-semibold text-signal-600 dark:text-signal-400">
+                <span className="mono shrink-0 text-xs font-semibold text-signal-600">
                   {p.partNumber ?? p.id}
                 </span>
-                <span className="min-w-0 flex-1 truncate text-xs text-ink-600 dark:text-ink-300">{p.name}</span>
+                <span className="min-w-0 flex-1 truncate text-xs text-ink-600">{p.name}</span>
                 <span className="shrink-0 text-[11px] text-ink-400">
                   {p.leadTimeDays !== null ? `${p.leadTimeDays} days` : 'lead time not published'}
                 </span>
@@ -144,7 +144,7 @@ function Input({ label, required, ...rest }: { label: string; required?: boolean
       <input
         required={required}
         {...rest}
-        className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-signal-400 focus:ring-4 focus:ring-signal-500/10 dark:border-ink-700 dark:bg-ink-850"
+        className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-signal-400 focus:ring-4 focus:ring-signal-500/10"
       />
     </label>
   );
@@ -156,7 +156,7 @@ function Textarea({ label, ...rest }: { label: string } & React.TextareaHTMLAttr
       <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-ink-400">{label}</span>
       <textarea
         {...rest}
-        className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-signal-400 focus:ring-4 focus:ring-signal-500/10 dark:border-ink-700 dark:bg-ink-850"
+        className="w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-signal-400 focus:ring-4 focus:ring-signal-500/10"
       />
     </label>
   );

@@ -1,72 +1,88 @@
 @import "tailwindcss";
 
-/* ------------------------------------------------------------------ theme */
-@theme {
-  --color-ink-950: #070b12;
-  --color-ink-900: #0c1220;
-  --color-ink-850: #111a2c;
-  --color-ink-800: #16203a;
-  --color-ink-700: #1f2c4a;
-  --color-ink-600: #2c3c60;
-  --color-ink-500: #45577d;
-  --color-ink-400: #6b7d9f;
-  --color-ink-300: #9aa9c4;
-  --color-ink-200: #c3cddd;
-  --color-ink-100: #e2e8f1;
-  --color-ink-50:  #f4f7fb;
+/*
+ * Palette sampled from fieldinternational.com so the prototype reads as an
+ * extension of Field's own site rather than a separate product:
+ *   page #f3f4f8 · text #333333 · brand blue #034694 · navy #00316a
+ *   action red #a21212 · Roboto
+ */
 
-  /* Precision blue — primary accent */
-  --color-signal-600: #0b6bcb;
-  --color-signal-500: #1c82e8;
-  --color-signal-400: #46a0f5;
-  --color-signal-300: #86c2fb;
+/* The design is deliberately light-only. Neutralising Tailwind's `dark:`
+   variant stops a viewer's OS dark-mode preference from partially inverting it. */
+@custom-variant dark (&:where(.__never-dark, .__never-dark *));
+
+@theme {
+  /* Neutral ramp built around Field's own page background and body text */
+  --color-ink-50:  #f3f4f8;
+  --color-ink-100: #e4e7ef;
+  --color-ink-200: #ced4e2;
+  --color-ink-300: #adb6c9;
+  --color-ink-400: #7f8a9e;
+  --color-ink-500: #5d6879;
+  --color-ink-600: #4a5364;
+  --color-ink-700: #333333;
+  --color-ink-800: #262b33;
+  --color-ink-850: #1d222a;
+  --color-ink-900: #171b22;
+  --color-ink-950: #0e1117;
+
+  /* Field brand blue — navigation, links, headings */
+  --color-signal-100: #cbddeb;
+  --color-signal-300: #7ea7d7;
+  --color-signal-400: #6892c4;
+  --color-signal-500: #0a5ab7;
+  --color-signal-600: #034694;
+  --color-signal-700: #00316a;
+
+  /* Field action red — search and quote calls to action */
+  --color-action-500: #b81717;
+  --color-action-600: #a21212;
+  --color-action-700: #820e0e;
 
   /* Match classification */
-  --color-strong-600: #0f8a5f;
-  --color-strong-400: #34c993;
-  --color-caution-600: #b26a00;
-  --color-caution-400: #f0a836;
-  --color-neutral-500: #6b7d9f;
+  --color-strong-600: #0f7a4f;
+  --color-strong-400: #17945f;
+  --color-caution-600: #9a5b00;
+  --color-caution-400: #b26a00;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-roboto), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
-/* ------------------------------------------------------------------ base */
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; color-scheme: light; }
 
 body {
   background: var(--color-ink-50);
-  color: var(--color-ink-900);
+  color: var(--color-ink-700);
   font-family: var(--font-sans);
-  font-feature-settings: "cv02", "cv03", "cv04";
   -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  body { background: var(--color-ink-950); color: var(--color-ink-100); }
-}
+/* Field sets its display headings in a light Roboto weight. */
+h1 { font-weight: 300; }
 
-/* --------------------------------------------------------------- helpers */
 .mono { font-family: var(--font-mono); font-variant-ligatures: none; }
 
 .card {
-  background: white;
+  background: #ffffff;
   border: 1px solid var(--color-ink-100);
-  border-radius: 0.75rem;
+  border-radius: 0.25rem;
 }
-@media (prefers-color-scheme: dark) {
-  .card { background: var(--color-ink-900); border-color: var(--color-ink-800); }
+
+/* Field's deep navy banner, used for the hero. */
+.field-banner {
+  background: linear-gradient(105deg, #00316a 0%, #034694 55%, #14559f 100%);
 }
 
 .grid-bg {
   background-image:
-    linear-gradient(to right, rgba(120,140,180,.09) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(120,140,180,.09) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, .07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, .07) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 
-/* Animated processing steps */
+/* Staged reveal, driven purely by CSS animation delays so the content is
+   readable in the server-rendered HTML before (or without) hydration. */
 @keyframes stepIn {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -79,14 +95,14 @@ body {
 }
 .sweep::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(70,160,245,.35), transparent);
+  background: linear-gradient(90deg, transparent, rgba(3, 70, 148, .18), transparent);
   animation: sweep 1.3s ease-in-out infinite;
 }
 
-/* With motion reduced the animation is dropped entirely, so elements fall back
-   to their natural (visible) state rather than being stuck at opacity 0. */
+/* With motion reduced the animations are dropped, so elements fall back to
+   their natural (visible) state rather than being stuck at opacity 0. */
 @media (prefers-reduced-motion: reduce) {
   .step-in, .sweep::after { animation: none !important; }
 }
 
-::selection { background: var(--color-signal-300); color: var(--color-ink-950); }
+::selection { background: var(--color-signal-300); color: #ffffff; }

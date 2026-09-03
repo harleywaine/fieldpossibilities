@@ -19,14 +19,14 @@ export function EvidencePanel({
 
       <dl className={`grid gap-3 ${compact ? '' : 'sm:grid-cols-2'}`}>
         {evidence.map((e) => (
-          <div key={`${e.label}-${e.value}`} className="rounded-lg border border-ink-100 bg-white p-3 dark:border-ink-800 dark:bg-ink-900">
+          <div key={`${e.label}-${e.value}`} className="rounded-lg border border-ink-100 bg-white p-3">
             <dt className="text-[11px] font-medium uppercase tracking-wider text-ink-400">{e.label}</dt>
-            <dd className="mt-0.5 text-sm font-medium text-ink-900 dark:text-ink-50">{e.value}</dd>
-            <p className="mt-1.5 text-[11px] text-ink-500 dark:text-ink-400">
+            <dd className="mt-0.5 text-sm font-medium text-ink-900">{e.value}</dd>
+            <p className="mt-1.5 text-[11px] text-ink-500">
               Source: {SOURCE_LABEL[e.source]}
             </p>
             {e.quote && (
-              <p className="mono mt-1.5 truncate rounded bg-ink-50 px-1.5 py-1 text-[10px] text-ink-500 dark:bg-ink-850 dark:text-ink-400" title={e.quote}>
+              <p className="mono mt-1.5 truncate rounded bg-ink-50 px-1.5 py-1 text-[10px] text-ink-500" title={e.quote}>
                 {e.quote}
               </p>
             )}
@@ -36,12 +36,12 @@ export function EvidencePanel({
 
       {gaps.length > 0 && (
         <div className="mt-4 rounded-lg border border-[color:var(--color-caution-600)]/25 bg-[color:var(--color-caution-600)]/6 p-3">
-          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-caution-600)] dark:text-[color:var(--color-caution-400)]">
+          <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[color:var(--color-caution-600)] [color:var(--color-caution-400)]">
             What the catalogue does not establish
           </h4>
           <ul className="mt-2 space-y-1.5">
             {gaps.map((g) => (
-              <li key={g} className="text-xs leading-relaxed text-ink-700 dark:text-ink-200">
+              <li key={g} className="text-xs leading-relaxed text-ink-700">
                 {g}
               </li>
             ))}
