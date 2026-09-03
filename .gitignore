@@ -14,3 +14,6 @@ data/requests/
 public/catalogue-images/
 data/catalogue/*.db-wal
 data/catalogue/*.db-shm
+data/demo/audit-log.json
+data/demo/demo.db-wal
+data/demo/demo.db-shm
