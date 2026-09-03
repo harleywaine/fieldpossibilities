@@ -12,3 +12,5 @@ data/catalogue/products.json
 data/catalogue/products.csv
 data/requests/
 public/catalogue-images/
+data/catalogue/*.db-wal
+data/catalogue/*.db-shm
