@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env*.local
+*.log
+
+# Source evidence and derived bulk artefacts — regenerate with `npm run scrape`
+# and `npm run cache-images`. The SQLite catalogue itself IS committed so the
+# demo runs straight from a clone.
+data/raw/
+data/snapshots/
+data/catalogue/products.json
+data/catalogue/products.csv
+data/requests/
+public/catalogue-images/

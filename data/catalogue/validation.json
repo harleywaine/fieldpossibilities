@@ -1,0 +1,424 @@
+{
+  "generatedAt": "2026-09-03T08:42:53.207Z",
+  "pagesDiscovered": 8317,
+  "pagesCrawled": 0,
+  "pagesFromCache": 0,
+  "pagesFailed": 0,
+  "productsDiscovered": 8317,
+  "productsParsed": 8317,
+  "duplicatesRemoved": 1,
+  "coveragePct": 100,
+  "detailCoveragePct": 100,
+  "missing": {
+    "part_number": 2,
+    "description": 0,
+    "manufacturer": 0,
+    "aircraft_model": 290,
+    "application": 2679,
+    "maintenance_category": 3194,
+    "engine": 7773,
+    "lead_time_days": 6412,
+    "weight": 6844,
+    "dimensions": 6843,
+    "images": 5312
+  },
+  "populated": {
+    "part_number": 8314,
+    "description": 8316,
+    "manufacturer": 8316,
+    "aircraft_model": 8026,
+    "application": 5637,
+    "maintenance_category": 5122,
+    "engine": 543,
+    "lead_time_days": 1904,
+    "weight": 1472,
+    "dimensions": 1473,
+    "images": 3004
+  },
+  "distributions": {
+    "manufacturers": [
+      {
+        "name": "BOEING",
+        "count": 7264
+      },
+      {
+        "name": "MCDONNELL DOUGLAS",
+        "count": 946
+      },
+      {
+        "name": "DILLON",
+        "count": 92
+      },
+      {
+        "name": "AIRBUS",
+        "count": 13
+      },
+      {
+        "name": "EMBRAER",
+        "count": 1
+      }
+    ],
+    "aircraftModels": [
+      {
+        "name": "BOEING 747",
+        "count": 2689
+      },
+      {
+        "name": "BOEING 737",
+        "count": 2333
+      },
+      {
+        "name": "BOEING 777",
+        "count": 1793
+      },
+      {
+        "name": "BOEING 787",
+        "count": 1271
+      },
+      {
+        "name": "BOEING 707",
+        "count": 821
+      },
+      {
+        "name": "BOEING 727",
+        "count": 821
+      },
+      {
+        "name": "BOEING 767",
+        "count": 790
+      },
+      {
+        "name": "DC-10",
+        "count": 452
+      },
+      {
+        "name": "MD-11",
+        "count": 386
+      },
+      {
+        "name": "BOEING 757",
+        "count": 349
+      },
+      {
+        "name": "MD-90",
+        "count": 317
+      },
+      {
+        "name": "MD-80",
+        "count": 307
+      },
+      {
+        "name": "DC-9",
+        "count": 291
+      },
+      {
+        "name": "BOEING 717",
+        "count": 288
+      },
+      {
+        "name": "MD-10",
+        "count": 277
+      },
+      {
+        "name": "DILLON MODEL \"X\" FORCE GAUGE",
+        "count": 51
+      },
+      {
+        "name": "Dillon AP Dynamometer",
+        "count": 27
+      },
+      {
+        "name": "DILLON MODEL “U” FORCE GAUGE",
+        "count": 14
+      },
+      {
+        "name": "AIRBUS A330",
+        "count": 5
+      },
+      {
+        "name": "AIRBUS A380",
+        "count": 4
+      },
+      {
+        "name": "AIRBUS A340",
+        "count": 4
+      },
+      {
+        "name": "MD-87",
+        "count": 1
+      },
+      {
+        "name": "AIRBUS A319",
+        "count": 1
+      },
+      {
+        "name": "AIRBUS A320",
+        "count": 1
+      },
+      {
+        "name": "AIRBUS A321",
+        "count": 1
+      },
+      {
+        "name": "AIRBUS A343",
+        "count": 1
+      },
+      {
+        "name": "AIRBUS A350",
+        "count": 1
+      }
+    ],
+    "maintenanceCategories": [
+      {
+        "name": "FLIGHT CONTROLS",
+        "count": 909
+      },
+      {
+        "name": "LANDING GEAR",
+        "count": 794
+      },
+      {
+        "name": "STANDARD PRACTICES – AIRFRAME",
+        "count": 509
+      },
+      {
+        "name": "POWER PLANT",
+        "count": 406
+      },
+      {
+        "name": "DOORS",
+        "count": 270
+      },
+      {
+        "name": "FUEL",
+        "count": 241
+      },
+      {
+        "name": "NAVIGATION",
+        "count": 229
+      },
+      {
+        "name": "EXHAUST",
+        "count": 188
+      },
+      {
+        "name": "ELECTRICAL POWER",
+        "count": 146
+      },
+      {
+        "name": "PNEUMATIC",
+        "count": 143
+      },
+      {
+        "name": "FIRE PROTECTION",
+        "count": 110
+      },
+      {
+        "name": "LIFTING AND SHORING",
+        "count": 109
+      },
+      {
+        "name": "AUTO FLIGHT",
+        "count": 98
+      },
+      {
+        "name": "AIR CONDITIONING",
+        "count": 97
+      },
+      {
+        "name": "EQUIPMENT/FURNISHINGS",
+        "count": 97
+      },
+      {
+        "name": "PARKING AND MOORING",
+        "count": 79
+      },
+      {
+        "name": "NACELLES/PYLONS",
+        "count": 67
+      },
+      {
+        "name": "WATER/WASTE",
+        "count": 59
+      },
+      {
+        "name": "HYDRAULIC POWER",
+        "count": 49
+      },
+      {
+        "name": "SERVICING",
+        "count": 45
+      },
+      {
+        "name": "AUXILIARY POWER",
+        "count": 44
+      },
+      {
+        "name": "NACELLES",
+        "count": 39
+      },
+      {
+        "name": "STRUCTURES",
+        "count": 34
+      },
+      {
+        "name": "AIRBORNE AUXILIARY POWER",
+        "count": 33
+      },
+      {
+        "name": "WINGS",
+        "count": 32
+      },
+      {
+        "name": "INFORMATION SYSTEMS",
+        "count": 30
+      },
+      {
+        "name": "ENGINE CONTROLS",
+        "count": 29
+      },
+      {
+        "name": "OXYGEN",
+        "count": 25
+      },
+      {
+        "name": "STABILIZERS",
+        "count": 23
+      },
+      {
+        "name": "TOWING AND TAXIING",
+        "count": 23
+      },
+      {
+        "name": "EQUIPMENT AND FURNISHINGS",
+        "count": 19
+      },
+      {
+        "name": "CENTRAL MAINTENANCE SYSTEM",
+        "count": 18
+      },
+      {
+        "name": "FUSELAGE",
+        "count": 17
+      },
+      {
+        "name": "COMMUNICATIONS",
+        "count": 14
+      },
+      {
+        "name": "STABILIZER",
+        "count": 12
+      },
+      {
+        "name": "PNEUMATIC POWER",
+        "count": 10
+      },
+      {
+        "name": "ENGINE INDICATING",
+        "count": 8
+      },
+      {
+        "name": "NITROGEN GENERATION SYSTEM",
+        "count": 7
+      },
+      {
+        "name": "ENGINE",
+        "count": 7
+      },
+      {
+        "name": "INDICATING/RECORDING SYSTEM",
+        "count": 7
+      }
+    ],
+    "engines": [
+      {
+        "name": "CFM56",
+        "count": 105
+      },
+      {
+        "name": "JT9D",
+        "count": 103
+      },
+      {
+        "name": "CF6",
+        "count": 99
+      },
+      {
+        "name": "GE90",
+        "count": 54
+      },
+      {
+        "name": "RB211",
+        "count": 42
+      },
+      {
+        "name": "Trent 800",
+        "count": 37
+      },
+      {
+        "name": "GEnx",
+        "count": 37
+      },
+      {
+        "name": "PW4000",
+        "count": 23
+      },
+      {
+        "name": "PW2000",
+        "count": 19
+      },
+      {
+        "name": "Trent 1000",
+        "count": 12
+      },
+      {
+        "name": "Trent",
+        "count": 5
+      },
+      {
+        "name": "JT8D",
+        "count": 5
+      },
+      {
+        "name": "V2500",
+        "count": 2
+      }
+    ],
+    "leadTimeBuckets": [
+      {
+        "name": "> 90 days",
+        "count": 34
+      },
+      {
+        "name": "not published",
+        "count": 6412
+      },
+      {
+        "name": "≤ 30 days",
+        "count": 717
+      },
+      {
+        "name": "31–60 days",
+        "count": 967
+      },
+      {
+        "name": "71–90 days",
+        "count": 179
+      },
+      {
+        "name": "61–70 days",
+        "count": 7
+      }
+    ]
+  },
+  "brokenProductLinks": 0,
+  "partNumberConflicts": 7,
+  "missingImages": 5312,
+  "placeholderImages": 89,
+  "failedUrls": [],
+  "warnings": [
+    "Lead time is published for only 1904 of 8316 products (22.9%). Delivery-constrained queries must state this openly.",
+    "Engine is named in source text for only 543 of 8316 products. Engine must never be inferred from aircraft model.",
+    "7 listings record one part number in the SKU and a different one in the title. Both are retained and shown; the source does not resolve which is correct."
+  ]
+}

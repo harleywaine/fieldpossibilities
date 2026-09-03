@@ -1,0 +1,24 @@
+{
+  "runId": "2026-09-03T08-42-39-885Z",
+  "completedAt": "2026-09-03T08:42:52.228Z",
+  "stats": {
+    "runId": "2026-09-03T08-42-39-885Z",
+    "mode": "full",
+    "startedAt": "2026-09-03T08:42:39.885Z",
+    "completedAt": "2026-09-03T08:42:52.228Z",
+    "sitemapUrls": 8397,
+    "productUrlsDiscovered": 8317,
+    "taxonomyUrls": 36,
+    "cataloguePages": 2,
+    "apiRecords": 8317,
+    "pagesCrawled": 0,
+    "pagesFromCache": 0,
+    "pagesFailed": 0,
+    "productsParsed": 8317,
+    "duplicatesRemoved": 1,
+    "changed": 0,
+    "unchanged": 0,
+    "new": 0,
+    "failedUrls": []
+  }
+}

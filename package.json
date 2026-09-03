@@ -1,0 +1,37 @@
+{
+  "name": "field-tooling-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI-native interface to the Field International public tooling catalogue",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "scrape": "node scripts/scrape.ts",
+    "scrape:incremental": "node scripts/scrape.ts --incremental",
+    "scrape:api": "node scripts/scrape.ts --phase=api",
+    "scrape:html": "node scripts/scrape.ts --phase=html",
+    "validate": "node scripts/validate.ts",
+    "rebuild-index": "node scripts/rebuild-index.ts",
+    "snapshot": "node scripts/snapshot.ts",
+    "report": "node scripts/report.ts",
+    "cache-images": "node scripts/cache-images.ts",
+    "try": "node scripts/try-query.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
+    "next": "^16.3.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
+  }
+}

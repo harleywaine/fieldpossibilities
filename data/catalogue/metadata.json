@@ -1,0 +1,21 @@
+{
+  "source": "Field International public catalogue",
+  "source_domain": "www.fieldinternational.com",
+  "crawl_started": "2026-09-03T08:42:39.885Z",
+  "crawl_completed": "2026-09-03T08:42:52.228Z",
+  "crawl_mode": "full",
+  "product_count": 8316,
+  "source_pages": 8317,
+  "failed_pages": 0,
+  "duplicates_removed": 1,
+  "detail_coverage_pct": 100,
+  "taxonomy_terms": 41,
+  "snapshot_date": "2026-09-03",
+  "notes": [
+    "Catalogue data is a snapshot of publicly available Field International listings.",
+    "Fields absent from the source are stored as null and are never inferred.",
+    "Lead time is published for only 1904 of 8316 products (22.9%). Delivery-constrained queries must state this openly.",
+    "Engine is named in source text for only 543 of 8316 products. Engine must never be inferred from aircraft model.",
+    "7 listings record one part number in the SKU and a different one in the title. Both are retained and shown; the source does not resolve which is correct."
+  ]
+}

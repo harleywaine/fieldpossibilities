@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ theme */
+@theme {
+  --color-ink-950: #070b12;
+  --color-ink-900: #0c1220;
+  --color-ink-850: #111a2c;
+  --color-ink-800: #16203a;
+  --color-ink-700: #1f2c4a;
+  --color-ink-600: #2c3c60;
+  --color-ink-500: #45577d;
+  --color-ink-400: #6b7d9f;
+  --color-ink-300: #9aa9c4;
+  --color-ink-200: #c3cddd;
+  --color-ink-100: #e2e8f1;
+  --color-ink-50:  #f4f7fb;
+
+  /* Precision blue — primary accent */
+  --color-signal-600: #0b6bcb;
+  --color-signal-500: #1c82e8;
+  --color-signal-400: #46a0f5;
+  --color-signal-300: #86c2fb;
+
+  /* Match classification */
+  --color-strong-600: #0f8a5f;
+  --color-strong-400: #34c993;
+  --color-caution-600: #b26a00;
+  --color-caution-400: #f0a836;
+  --color-neutral-500: #6b7d9f;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ------------------------------------------------------------------ base */
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--color-ink-50);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04";
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  body { background: var(--color-ink-950); color: var(--color-ink-100); }
+}
+
+/* --------------------------------------------------------------- helpers */
+.mono { font-family: var(--font-mono); font-variant-ligatures: none; }
+
+.card {
+  background: white;
+  border: 1px solid var(--color-ink-100);
+  border-radius: 0.75rem;
+}
+@media (prefers-color-scheme: dark) {
+  .card { background: var(--color-ink-900); border-color: var(--color-ink-800); }
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(120,140,180,.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(120,140,180,.09) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* Animated processing steps */
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.step-in { animation: stepIn .34s ease-out both; }
+
+@keyframes sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.sweep::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(70,160,245,.35), transparent);
+  animation: sweep 1.3s ease-in-out infinite;
+}
+
+/* With motion reduced the animation is dropped entirely, so elements fall back
+   to their natural (visible) state rather than being stuck at opacity 0. */
+@media (prefers-reduced-motion: reduce) {
+  .step-in, .sweep::after { animation: none !important; }
+}
+
+::selection { background: var(--color-signal-300); color: var(--color-ink-950); }
