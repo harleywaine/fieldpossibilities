@@ -14,8 +14,10 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: 'Field Tooling Intelligence',
-  description: 'Find the right tooling, faster. An intelligent interface to the Field International tooling catalogue.',
+  title: 'Field AI Opportunity Lab',
+  description:
+    'Explore what AI could do for Field. A working exploration of how AI could improve the way ' +
+    'Field sells, operates and uses its collective knowledge.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

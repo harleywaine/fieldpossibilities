@@ -17,7 +17,11 @@
     "snapshot": "node scripts/snapshot.ts",
     "report": "node scripts/report.ts",
     "cache-images": "node scripts/cache-images.ts",
-    "try": "node scripts/try-query.ts"
+    "try": "node scripts/try-query.ts",
+    "generate-demo-data": "node scripts/generate-demo-data.ts",
+    "try:knowledge": "node scripts/try-knowledge.ts",
+    "try:workflow": "node scripts/try-workflow.ts",
+    "try:roi": "node scripts/try-roi.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",

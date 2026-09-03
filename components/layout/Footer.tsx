@@ -1,57 +1,51 @@
-import { catalogueMeta, catalogueStats } from '@/lib/db/client.ts';
+import { catalogueStats } from '@/lib/db/client.ts';
+import { demoStats } from '@/lib/db/demo.ts';
 import { providerInfo } from '@/lib/ai/provider.ts';
 
-/** Trust indicators (brief §37) — deliberately quiet, for technical readers. */
+/** Trust indicators, kept quiet but precise (brief §37, §54). */
 export function Footer() {
-  let meta = null;
-  let stats = null;
-  try { meta = catalogueMeta(); } catch { /* catalogue not yet ingested */ }
-  try { stats = catalogueStats(); } catch { /* catalogue not yet ingested */ }
+  let cat = null;
+  let demo = null;
+  try { cat = catalogueStats(); } catch { /* catalogue not ingested */ }
+  try { demo = demoStats(); } catch { /* demo data not generated */ }
   const ai = providerInfo();
 
-  const syncedAt = stats?.lastCrawl ?? meta?.crawl_completed ?? null;
-  const synced = syncedAt
-    ? new Date(syncedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const synced = cat?.lastCrawl
+    ? new Date(cat.lastCrawl).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—';
-  const detailPct = stats && stats.products > 0
-    ? Math.round((stats.detailCrawled / stats.products) * 1000) / 10
-    : null;
 
   return (
-    <footer className="mt-20 border-t border-ink-100 bg-white">
+    <footer className="mt-20 border-t border-ink-200 bg-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-4">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Catalogue source</div>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Real data</div>
           <p className="mt-1.5 text-sm text-ink-700">Field International public catalogue</p>
-          <a
-            href="https://www.fieldinternational.com/gse-and-tools/"
-            target="_blank" rel="noopener noreferrer nofollow"
-            className="mt-1 inline-block text-xs text-ink-500 underline underline-offset-2 hover:text-signal-600"
-          >
-            fieldinternational.com
-          </a>
-        </div>
-        <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Last catalogue sync</div>
-          <p className="mt-1.5 text-sm text-ink-700">{synced}</p>
-          {stats && (
+          {cat && (
             <p className="mt-1 text-xs text-ink-500">
-              {stats.products.toLocaleString()} products
-              {detailPct !== null && ` · ${detailPct}% detail coverage`}
+              {cat.products.toLocaleString()} products · synced {synced}
             </p>
           )}
         </div>
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">AI search</div>
-          <p className="mt-1.5 text-sm text-ink-700">Catalogue data + semantic matching</p>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Synthetic data</div>
+          <p className="mt-1.5 text-sm text-ink-700">Internal business demonstration set</p>
+          {demo && (
+            <p className="mt-1 text-xs text-ink-500">
+              {demo.documents} documents · {demo.rfqs} enquiries · {demo.quotes} quotes
+            </p>
+          )}
+        </div>
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">AI layer</div>
+          <p className="mt-1.5 text-sm text-ink-700">Hybrid retrieval + grounded generation</p>
           <p className="mt-1 text-xs text-ink-500">{ai.describe}</p>
         </div>
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">Status</div>
-          <p className="mt-1.5 text-sm text-ink-700">Demonstration prototype</p>
+          <p className="mt-1.5 text-sm text-ink-700">Prototype demonstrator</p>
           <p className="mt-1 text-xs text-ink-500">
-            Customer and quote data is synthetic. Catalogue data is read from a stored snapshot of
-            publicly available listings.
+            Not a deployed Field system. Internal records, customers and figures are fabricated
+            for demonstration.
           </p>
         </div>
       </div>

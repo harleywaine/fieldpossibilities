@@ -1,16 +1,44 @@
-# Field Tooling Intelligence
+# Field AI Opportunity Lab
 
-**Find the right tooling, faster.**
+**Explore what AI could do for Field.**
+*From intelligent search to intelligent operations.*
 
-An AI-native interface to the Field International ground-support tooling catalogue.
-The application runs against a **locally persisted snapshot of the real, publicly
-accessible Field catalogue** — not fabricated demo data.
+An interactive demonstration of how AI could be implemented progressively across Field
+International — four levels, each a working demo, each building on the last.
 
----
+```
+FIND  →  UNDERSTAND  →  DO  →  OPTIMISE
+```
+
+| Level | Capability | Data | Status |
+|---|---|---|---|
+| 1 · Customer Intelligence | AI **finds** — natural-language catalogue search | **Real** public Field catalogue (8,316 products) | Working |
+| 2 · Knowledge Intelligence | AI **understands** — cross-document enquiry briefs | Synthetic internal corpus (173 documents) | Working |
+| 3 · Workflow Automation | AI **does** — reads an RFQ, matches it, flags exceptions | Synthetic RFQ × real catalogue | Working |
+| 4 · AI Operating Layer | AI **optimises** — opportunity analysis and ROI | Synthetic operational dataset | Working |
+
+## Real vs synthetic — the line that matters
+
+Only **Level 1 uses real data**: the public Field International catalogue, ingested and linked
+back to every source page. Everything internal — customers, employees, RFQs, quotes, emails,
+supplier correspondence, operational volumes — is **fabricated for demonstration** and labelled
+as such wherever it appears. That distinction is enforced in the UI by a provenance badge on
+every level and a notice on every synthetic page, not left to the reader to infer.
+
+## Quick start
+
+```bash
+npm install
+npm run scrape                # ingest the real catalogue (~35 min, resumable)
+npm run generate-demo-data    # build the synthetic corpus (deterministic, instant)
+npm run dev                   # http://localhost:3000
+```
+
+`catalogue.db` is committed, so a clone runs immediately without the crawl.
 
 ## The architectural point
 
-> **The LLM is not the database.**
+> **The LLM is not the database.** AI is not the system of record.
 
 The catalogue stays structured and authoritative. The AI layer supplies natural-language
 understanding, retrieval, ranking, summarisation and explanation. Every factual claim in
@@ -198,3 +226,76 @@ data/
   **never transmitted to Field International** — there is no commercial backend integration.
 - This prototype makes no certification, approval or airworthiness claims, and is not a
   substitute for the applicable maintenance manual.
+
+
+---
+
+## Levels 2–4: how they work
+
+### Level 2 — Knowledge Intelligence
+
+A hybrid RAG pipeline over 173 synthetic internal documents (~176 chunks):
+
+```
+question → intent → query rewriting → metadata filters
+        → keyword (BM25) + vector (cosine) + aspect sub-queries
+        → fusion → rerank → context selection → cited brief
+```
+
+Aspect sub-queries matter: a single query vector pulls towards whichever aspect of a question
+dominates the wording, so supplier and technical context — which carry no customer link to boost
+them — would otherwise never surface. The brief that results is assembled across a dozen
+documents, and every field carries its sources.
+
+The corpus is deliberately awkward. It contains a **lead-time conflict** (an internal note saying
+12 weeks, superseded by a supplier email saying 8–10), a **stale document** flagged by age, an
+**engineering caveat** that blocks any variant-level approval claim, and a **part number with no
+catalogue equivalent**. The system surfaces all four rather than resolving them silently — and if
+one half of a conflicting pair is retrieved, the counterpart is pulled in deliberately, because
+showing one side of a disagreement reads as settled fact.
+
+### Level 3 — Workflow Automation
+
+A 17-line RFQ is read, extracted, and matched **against the real catalogue**. The outcome is
+computed, not scripted: **14 matched, 2 requiring review, 1 with no confirmed match.**
+
+The exception path is the point. A requested part number that does not resolve is reported as
+*no confirmed match* — a loose description match is not evidence that a different item is
+equivalent. An engine mismatch is always a human call. Four approval gates are explicit: no
+pricing, no delivery date, no statement of technical suitability, and nothing sent externally.
+
+### Level 4 — AI Operating Layer and ROI
+
+Every figure is computed from stated assumptions; changing an input moves the whole model. The
+ROI calculator exposes the distinction a board will ask about:
+
+> Recovering 3,159 employee hours does not mean payroll falls by £199,002. Productivity value is
+> recovered **capacity**. The cash-equivalent view applies an explicit conversion assumption.
+
+Hours are the primary unit; money is derived from hours, never the reverse. Payback is calculated
+against the cash figure, not the headline.
+
+## Commands
+
+| Command | Purpose |
+|---|---|
+| `npm run scrape` | Ingest the real catalogue. Resumable. |
+| `npm run generate-demo-data` | Rebuild the synthetic corpus from a fixed seed. |
+| `npm run try "<query>"` | Level 1 retrieval from the terminal. |
+| `npm run try:knowledge` | Level 2 enquiry brief from the terminal. |
+| `npm run try:workflow` | Level 3 RFQ processing from the terminal. |
+| `npm run try:roi` | Level 4 opportunity model from the terminal. |
+| `npm run validate` / `npm run report` | Ingestion coverage and status. |
+
+## Deployment note
+
+Everything persists in SQLite with FTS5 and a locally-built vector index, so the demo runs with
+no external services and no network dependency. The schema and retrieval design map onto
+PostgreSQL with pgvector, which is the expected production target; retrieval interfaces are
+storage-agnostic and the embedding provider is pluggable.
+
+## Non-goals
+
+No production ERP or CRM integration, no real employee accounts, no real customer communication,
+no purchasing, no technical approvals, no autonomous commercial or engineering decisions. This
+demonstrates the architecture and the opportunity, not a deployed system.
