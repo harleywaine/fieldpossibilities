@@ -21,7 +21,7 @@ interface Roi {
 
 const gbp = (n: number) => `£${Math.round(n).toLocaleString()}`;
 
-export function RoiCalculator({ initial }: { initial: Roi }) {
+export function RoiCalculator({ initial, compact = false }: { initial: Roi; compact?: boolean }) {
   const [inputs, setInputs] = useState(initial.inputs);
   const [overrides, setOverrides] = useState<Record<string, { currentMinutes: number; aiAssistedMinutes: number; annualVolume: number }>>(
     Object.fromEntries(initial.opportunities.map((o) => [o.process, {
@@ -135,10 +135,22 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
 
       {/* ------------------------------------------------- opportunities */}
       <section className="space-y-3">
-        <h2 className="label">
-          Opportunities by process
-        </h2>
-        {roi.opportunities.map((o) => (
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="label">
+            Opportunities by process{compact ? ' — top three' : ''}
+          </h2>
+          {compact && (
+            <a
+              href="/roi"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11.5px] font-medium text-signal-600 transition-colors hover:text-action-600"
+            >
+              Open the full model ↗
+            </a>
+          )}
+        </div>
+        {(compact ? roi.opportunities.slice(0, 3) : roi.opportunities).map((o) => (
           <article key={o.process} className="card p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <div>
@@ -159,7 +171,7 @@ export function RoiCalculator({ initial }: { initial: Roi }) {
               <div className="h-full rounded-full bg-signal-500" style={{ width: `${o.sharePct}%` }} />
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className={`mt-3 grid gap-3 sm:grid-cols-3 ${compact ? 'hidden' : ''}`}>
               <MiniInput label="Current minutes" value={overrides[o.process].currentMinutes}
                 onChange={(v) => setOverrides({ ...overrides, [o.process]: { ...overrides[o.process], currentMinutes: v } })} />
               <MiniInput label="AI-assisted minutes" value={overrides[o.process].aiAssistedMinutes}

@@ -1,12 +1,8 @@
 import Link from 'next/link';
-import { LEVELS } from '@/lib/levels.ts';
 
 const NAV = [
-  { href: '/', label: 'Explore' },
-  ...LEVELS.map((l) => ({
-    href: l.href,
-    label: l.title.replace(' Intelligence', ' AI').replace('Workflow Automation', 'Workflow AI'),
-  })),
+  { href: '/', label: 'Tour' },
+  { href: '/explore', label: 'Explore' },
   { href: '/roi', label: 'ROI' },
   { href: '/architecture', label: 'Architecture' },
 ];

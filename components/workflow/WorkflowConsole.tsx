@@ -5,7 +5,14 @@ import { AIBadge } from '@/components/ui/primitives.tsx';
 
 const STAGE_ORDER = ['read', 'extract', 'classify', 'match', 'history', 'exceptions', 'package'];
 
-export function WorkflowConsole({ reference = 'RFQ-10482' }: { reference?: string }) {
+export function WorkflowConsole({
+  reference = 'RFQ-10482',
+  beat,
+}: {
+  reference?: string;
+  /** Closing commentary, revealed only once processing completes. */
+  beat?: React.ReactNode;
+}) {
   const [pkg, setPkg] = useState<any>(null);
   const [stageIndex, setStageIndex] = useState(0);
   const [running, setRunning] = useState(false);
@@ -150,6 +157,7 @@ export function WorkflowConsole({ reference = 'RFQ-10482' }: { reference?: strin
           {tab === 'exceptions' && <Exceptions pkg={pkg} />}
           {tab === 'matched' && <Matched pkg={pkg} />}
           {tab === 'package' && <Package pkg={pkg} />}
+          {beat}
         </>
       )}
     </div>

@@ -1,10 +1,13 @@
 # Field AI Opportunity Lab
 
-**Explore what AI could do for Field.**
-*From intelligent search to intelligent operations.*
+**We didn’t write a proposal. We built one.**
 
 An interactive demonstration of how AI could be implemented progressively across Field
-International — four levels, each a working demo, each building on the last.
+International. The front door (`/`) is a **self-guided six-chapter tour** designed to be
+sent as a bare link to an executive: it opens on a bespoke claim, runs the first
+demonstration by itself against Field’s real catalogue, then walks watch → try →
+understand → do → value → next with one obvious action per screen. The full platform
+sits underneath at `/explore` for the people the link gets forwarded to.
 
 ```
 FIND  →  UNDERSTAND  →  DO  →  OPTIMISE

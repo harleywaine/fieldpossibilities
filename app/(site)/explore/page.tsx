@@ -41,16 +41,16 @@ export default function ExplorePage() {
 
           <div className="mt-9 flex flex-wrap gap-2.5">
             <Link
-              href="/customer-ai"
+              href="/"
               className="rounded-[2px] bg-action-600 px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-action-500"
             >
-              Start with the first demo
+              Take the six-minute tour
             </Link>
             <Link
-              href="/roi"
+              href="/customer-ai"
               className="rounded-[2px] border border-white/25 px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:border-white/50 hover:bg-white/[0.07]"
             >
-              See the opportunity model
+              Go straight to the first demo
             </Link>
           </div>
         </div>

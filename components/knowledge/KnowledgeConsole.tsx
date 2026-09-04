@@ -25,7 +25,17 @@ interface Brief {
   retrieval: { trace: { steps: Array<{ label: string; detail: string }>; durationMs: number }; documents: any[] };
 }
 
-export function KnowledgeConsole() {
+export function KnowledgeConsole({
+  preset,
+  tourIntro = false,
+  beat,
+}: {
+  /** Pre-loaded question, shown as an incoming enquiry with one Run action. */
+  preset?: string;
+  tourIntro?: boolean;
+  /** Closing commentary, revealed only once the brief exists. */
+  beat?: React.ReactNode;
+} = {}) {
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
   const [brief, setBrief] = useState<Brief | null>(null);
@@ -55,7 +65,27 @@ export function KnowledgeConsole() {
 
   return (
     <div className="relative">
-      {/* ------------------------------------------------------------ input */}
+      {/* ---------------------------------------------------- tour opening */}
+      {tourIntro && !brief ? (
+        <section className="card overflow-hidden">
+          <div className="border-b border-ink-100 bg-ink-25 px-4 py-2">
+            <span className="label">Incoming enquiry</span>
+          </div>
+          <div className="p-5">
+            <p className="border-l-2 border-signal-200 pl-3 text-[14px] font-light leading-relaxed text-ink-700">
+              “{preset}”
+            </p>
+            <button
+              onClick={() => ask(preset ?? '')}
+              disabled={busy}
+              className="mt-4 rounded-[2px] bg-action-600 px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-action-500 disabled:opacity-40"
+            >
+              {busy ? 'Reading the company’s records…' : 'Run the analysis'}
+            </button>
+            {error && <p className="mt-2 text-xs text-action-600">{error}</p>}
+          </div>
+        </section>
+      ) : (
       <div className="card p-5">
         <label className="mb-2 block label">
           What do you need to know?
@@ -91,6 +121,7 @@ export function KnowledgeConsole() {
         </div>
         {error && <p className="mt-2 text-xs text-action-600">{error}</p>}
       </div>
+      )}
 
       {brief && (
         <div className="mt-6 space-y-6">
@@ -216,6 +247,7 @@ export function KnowledgeConsole() {
           </div>
 
           {generated && <GeneratedOutput generated={generated} />}
+          {beat}
         </div>
       )}
 
