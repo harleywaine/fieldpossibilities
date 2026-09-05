@@ -3,11 +3,12 @@
 **We didn’t write a proposal. We built one.**
 
 An interactive demonstration of how AI could be implemented progressively across Field
-International. The front door (`/`) is a **self-guided six-chapter tour** designed to be
-sent as a bare link to an executive: it opens on a bespoke claim, runs the first
-demonstration by itself against Field’s real catalogue, then walks watch → try →
-understand → do → value → next with one obvious action per screen. The full platform
-sits underneath at `/explore` for the people the link gets forwarded to.
+International, built as a **cutaway**: the front door (`/`) is the surface — a search box
+on Field's real catalogue that demonstrates itself, then hands over the controls — and
+beneath it a section view of the whole machine, darkening with depth: −01 the interior
+(knowledge), −02 the workings (workflow), −03 the core (everything connected). Simple at
+the surface, complex at the core; a map to wander, not a track to follow. The full
+platform sits underneath at `/explore`.
 
 ```
 FIND  →  UNDERSTAND  →  DO  →  OPTIMISE
