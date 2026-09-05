@@ -152,6 +152,35 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
 }
 
 /* Fine technical grid — reads as a drawing sheet, not a SaaS mesh. */
+.grid-bg-light {
+  background-image:
+    linear-gradient(to right, rgba(3, 70, 148, .055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(3, 70, 148, .055) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Ruler ticks along a section boundary, like the reference edge of a drawing. */
+.ruler {
+  height: 10px;
+  background-image:
+    repeating-linear-gradient(to right,
+      rgba(3, 70, 148, .28) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(to right,
+      rgba(3, 70, 148, .45) 0 1px, transparent 1px 70px);
+  background-size: auto 5px, auto 10px;
+  background-repeat: repeat-x;
+  background-position: bottom;
+}
+
+/* Tiny self-annotation, in the manner of a drawing calling out its own values. */
+.annot {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  color: var(--color-ink-300);
+  user-select: none;
+}
+
 .grid-bg {
   background-image:
     linear-gradient(to right, rgba(255, 255, 255, .055) 1px, transparent 1px),
@@ -203,9 +232,32 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
   animation: sweep 1.4s ease-in-out infinite;
 }
 
+/* The boot: a dark frame that lifts once, like power coming on. */
+@keyframes bootLift {
+  0%   { opacity: 1; }
+  55%  { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: #0b0e13;
+  animation: bootLift 1.05s ease-out .15s both;
+  pointer-events: none;
+}
+@keyframes bootMark {
+  from { opacity: 0; transform: scale(.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.boot > * { animation: bootMark .4s ease-out both; }
+
 /* Motion is decoration here; dropping it must leave content visible, which the
    `both` fill mode would otherwise prevent. */
 @media (prefers-reduced-motion: reduce) {
   .step-in, .sweep::after { animation: none !important; }
+  .boot { display: none !important; }
   html { scroll-behavior: auto; }
 }
