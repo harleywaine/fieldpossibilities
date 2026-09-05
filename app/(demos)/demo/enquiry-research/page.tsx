@@ -1,21 +1,20 @@
 import type { Metadata } from 'next';
-import { DepthShell, WatchFor, Beat } from '@/components/depth/DepthShell.tsx';
+import { DemoShell, WatchFor, Beat } from '@/components/demos/DemoShell.tsx';
 import { KnowledgeConsole } from '@/components/knowledge/KnowledgeConsole.tsx';
 import { SyntheticNotice } from '@/components/layout/DataBadge.tsx';
-import { GOLDEN_ENQUIRY } from '@/lib/depth.ts';
+import { GOLDEN_ENQUIRY } from '@/lib/demos.ts';
 import { demoAvailable } from '@/lib/db/demo.ts';
 
-export const metadata: Metadata = { title: '−01 The interior — Field AI Opportunity Lab' };
+export const metadata: Metadata = { title: 'AI enquiry research — Field AI Opportunity Lab' };
 export const dynamic = 'force-dynamic';
 
-export default function InteriorStratum() {
+export default function EnquiryResearchDemo() {
   return (
-    <DepthShell stratum="interior" width="narrow">
+    <DemoShell demo="enquiry-research">
       <SyntheticNotice>
-        The surface could be built without asking, because your catalogue is public. Your internal
-        knowledge isn’t — so this layer runs on a fabricated business: 173 synthetic documents,
-        clearly labelled, modelling how Field’s records might look. The intelligence reading them
-        is the real one.
+        Internal records aren’t public, so this demonstration runs on a fabricated business: 173
+        synthetic documents, clearly labelled, modelling how Field’s records might look. The
+        intelligence reading them is the real one.
       </SyntheticNotice>
 
       <WatchFor
@@ -41,6 +40,6 @@ export default function InteriorStratum() {
       ) : (
         <p className="text-sm text-ink-500">Synthetic dataset not generated — run npm run generate-demo-data.</p>
       )}
-    </DepthShell>
+    </DemoShell>
   );
 }

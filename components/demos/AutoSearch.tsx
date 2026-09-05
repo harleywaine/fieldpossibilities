@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { GOLDEN_QUERY } from '@/lib/depth.ts';
+import { GOLDEN_QUERY } from '@/lib/demos.ts';
 import { ProcessingState } from '@/components/ai-search/ProcessingState.tsx';
 import { AssessmentPanel } from '@/components/ai-search/AssessmentPanel.tsx';
-import { ResultCard, toTourResult } from '@/components/depth/ResultCard.tsx';
+import { ResultCard, toTourResult } from '@/components/demos/ResultCard.tsx';
 
 type Phase = 'idle' | 'typing' | 'running' | 'done' | 'error';
 
@@ -19,7 +19,7 @@ const CHIPS = [
  * in against the wall clock while the real request runs in parallel — and then
  * hands over: the same box becomes a live input, no mode switch, no second UI.
  */
-export function SurfaceSearch() {
+export function AutoSearch() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [typed, setTyped] = useState('');
   const [data, setData] = useState<any>(null);

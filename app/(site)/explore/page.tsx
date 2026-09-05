@@ -44,7 +44,7 @@ export default function ExplorePage() {
               href="/"
               className="rounded-[2px] bg-action-600 px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-action-500"
             >
-              Enter at the surface
+              See the four demos
             </Link>
             <Link
               href="/customer-ai"

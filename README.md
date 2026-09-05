@@ -2,13 +2,13 @@
 
 **We didn’t write a proposal. We built one.**
 
-An interactive demonstration of how AI could be implemented progressively across Field
-International, built as a **cutaway**: the front door (`/`) is the surface — a search box
-on Field's real catalogue that demonstrates itself, then hands over the controls — and
-beneath it a section view of the whole machine, darkening with depth: −01 the interior
-(knowledge), −02 the workings (workflow), −03 the core (everything connected). Simple at
-the surface, complex at the core; a map to wander, not a track to follow. The full
-platform sits underneath at `/explore`.
+Four working demonstrations, described literally — **AI applied to product search,
+enquiry research, RFQ processing, and operations analysis**. The front door (`/`) is a
+single panel cut into four quadrants: each states what it does in one sentence and
+carries two instruments — complexity to build, and what it does to the time per task.
+Product search runs on Field's real published catalogue and demonstrates itself on
+arrival; the rest run on clearly-labelled synthetic records. The full platform sits
+underneath at `/explore`.
 
 ```
 FIND  →  UNDERSTAND  →  DO  →  OPTIMISE
