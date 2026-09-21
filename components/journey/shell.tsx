@@ -315,7 +315,7 @@ export function Cover({ onBegin }: { onBegin: () => void }) {
             </button>
             <span className="flex items-center gap-4 text-[12.5px] text-signal-100/60">
               <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> About five minutes</span>
-              <span className="flex items-center gap-1.5"><UserRound className="h-3.5 w-3.5" /> Four points where you decide</span>
+              <span className="flex items-center gap-1.5"><UserRound className="h-3.5 w-3.5" /> Five points where you decide</span>
             </span>
           </div>
         </div>
@@ -332,7 +332,7 @@ export function Cover({ onBegin }: { onBegin: () => void }) {
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {[
           { dot: 'bg-strong-500', t: 'Real', d: 'Field’s published catalogue: every part, photo, fact and lead time shown.' },
-          { dot: 'bg-caution-500', t: 'Synthetic', d: 'Customers and their history, complaints, Field’s staff and suppliers.' },
+          { dot: 'bg-caution-500', t: 'Synthetic', d: 'Customers and their history, complaints, Field’s staff, suppliers and every price.' },
           { dot: 'bg-[#8b5cf6]', t: 'Simulated', d: 'Supplier replies and the order in production.' },
         ].map((x, i) => (
           <div key={x.t} className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100" style={{ animationDelay: `${300 + i * 90}ms` }}>
@@ -585,6 +585,7 @@ export function AiUses({ catalogue }: { catalogue: { products: number; withImage
           <ul className="mt-3 space-y-2 text-[12.5px] leading-relaxed text-ink-600">
             <li>How an enquiry moves inside Field: who handles it, in what order, in which systems. We haven’t seen Field’s internal systems.</li>
             <li>The customers, their history, the staff and the suppliers. All synthetic, made up for this demo.</li>
+            <li>Every price, cost and margin. Field publishes no prices, so the pricing step uses invented ones, marked on every screen.</li>
             <li>How long each step takes today. The end of the journey explains how those estimates were made.</li>
           </ul>
         </div>

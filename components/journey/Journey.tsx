@@ -3,16 +3,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  STEPS, PERSONAS, stepIndex, simulatedLeadDays, matchAccount,
+  STEPS, PERSONAS, stepIndex, simulatedLeadDays, matchAccount, supplierFor,
   type StepId, type StepMetric,
 } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
+import { priceLines, marginOf, MIN_MARGIN } from '@/lib/simulation/pricing.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
 import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
-  InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplierScreen, ApprovalScreen, OrderScreen,
+  InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplierScreen, PricingScreen, ApprovalScreen, OrderScreen,
   type Decision, type Contact,
 } from '@/components/journey/crm-stages.tsx';
 
@@ -26,6 +27,8 @@ interface SimState {
   brief: any | null;
   review: Record<number, Decision>;
   supplierSent: boolean;
+  prices: Record<number, number>;
+  pricesConfirmed: boolean;
   approval: 'approved' | 'returned' | null;
   risk: string | null;
 }
@@ -33,10 +36,10 @@ interface SimState {
 const STORE = 'field-simulation-v3';
 const EMPTY: SimState = {
   request: '', found: null, excluded: [], form: { email: '', company: '' }, contact: null,
-  rfq: null, brief: null, review: {}, supplierSent: false, approval: null, risk: null,
+  rfq: null, brief: null, review: {}, supplierSent: false, prices: {}, pricesConfirmed: false, approval: null, risk: null,
 };
 const DOWNSTREAM: Partial<SimState> = {
-  contact: null, rfq: null, brief: null, review: {}, supplierSent: false, approval: null, risk: null,
+  contact: null, rfq: null, brief: null, review: {}, supplierSent: false, prices: {}, pricesConfirmed: false, approval: null, risk: null,
 };
 
 /** Who takes an enquiry from a company Field has no account for. Synthetic. */
@@ -104,10 +107,11 @@ export function Journey({
     if (!contact || !rfq) return stepIndex('parts');
     if (!reviewDone) return stepIndex('review');
     if (!supplierDone) return stepIndex('supplier');
+    if (!sim.pricesConfirmed) return stepIndex('pricing');
     if (sim.approval !== 'approved') return stepIndex('approval');
     if (!riskDone) return stepIndex('manufacture');
     return STEPS.length - 1;
-  }, [found, contact, rfq, reviewDone, supplierDone, sim.approval, riskDone]);
+  }, [found, contact, rfq, reviewDone, supplierDone, sim.pricesConfirmed, sim.approval, riskDone]);
 
   const raw = Number(params.get('s') ?? 0);
   const requested = Number.isFinite(raw) ? Math.max(0, Math.min(STEPS.length - 1, Math.floor(raw))) : 0;
@@ -193,11 +197,21 @@ export function Journey({
   }, [metrics, index]);
 
   // -------------------------------------------------------------- screens
-  const decisions = Object.keys(sim.review).length + (sim.supplierSent ? 1 : 0)
+  const decisions = Object.keys(sim.review).length + (sim.supplierSent ? 1 : 0) + (sim.pricesConfirmed ? 1 : 0)
     + (sim.approval === 'approved' ? 1 : 0) + (sim.risk ? 1 : 0);
   const pendingReview = reviewLines.filter((l) => !sim.review[l.line]).length;
   const you = (id: StepId) => ({ ...PERSONAS[id]!, you: true });
   const basket = found ? found.lines.length - sim.excluded.length : 0;
+  // SYNTHETIC prices, seeded per part; the viewer's own figures override the suggestion.
+  const linePrices = useMemo(
+    () => priceLines(included, account?.id ?? null, (name) => suppliers.find((x) => x.name === supplierFor(name))?.country),
+    [included.map((l) => l.partNumber).join('|'), account?.id, suppliers],
+  );
+  const finalPrices = Object.fromEntries(linePrices.map((p) => [p.line, sim.prices[p.line] ?? p.suggested]));
+  const quoteMargin = marginOf(
+    linePrices.reduce((a, p) => a + finalPrices[p.line]!, 0),
+    linePrices.reduce((a, p) => a + p.landed, 0),
+  );
   const crm = (module: CrmModule, user: { name: string; role: string; you?: boolean }, body: React.ReactNode) => (
     <CrmFrame
       module={module}
@@ -229,7 +243,7 @@ export function Journey({
   const screens: Record<Exclude<StepId, 'start' | 'summary'>, Screen> = {
     uses: {
       eyebrow: 'Before you start',
-      title: 'Eight ways AI could work at Field.',
+      title: 'Nine ways AI could work at Field.',
       sub: 'Each is one step in the enquiry you’re about to follow. They’re based on what we know about Field from the outside, and they show where people still decide.',
       body: <AiUses catalogue={catalogue} />,
       cta: 'Start the enquiry',
@@ -318,9 +332,27 @@ export function Journey({
         <SupplierScreen rfq={rfq} lines={supplierLines} sent={sim.supplierSent} onSend={() => patch({ supplierSent: true })} replies={replies} suppliers={suppliers} />),
       blocked: supplierDone ? undefined : 'Approve the requests to continue',
     },
+    pricing: {
+      title: 'The quote needs pricing.',
+      sub: 'The system builds each price and flags anything odd. The prices are synthetic — Field publishes none — and the final figure is a person’s.',
+      persona: PERSONAS.pricing,
+      halt: {
+        done: sim.pricesConfirmed,
+        text: sim.pricesConfirmed
+          ? 'Prices set. Change any of them before sign-off if you need to.'
+          : 'A price is suggested for every line. Adjust any you disagree with, then confirm.',
+      },
+      frame: rfq && crm('Quotes', you('pricing'),
+        <PricingScreen
+          rfq={rfq} customer={customerName} account={account} lines={included} prices={linePrices}
+          chosen={sim.prices} onPrice={(line, price) => setSim((s) => ({ ...s, prices: { ...s.prices, [line]: price } }))}
+          confirmed={sim.pricesConfirmed} onConfirm={() => patch({ pricesConfirmed: true })}
+        />),
+      blocked: sim.pricesConfirmed ? undefined : 'Confirm the prices to continue',
+    },
     approval: {
       title: 'The quote needs signing off.',
-      sub: 'Assembled from the approved lines and confirmed lead times. Prices are set by Commercial, never generated.',
+      sub: 'Assembled from the approved lines, confirmed lead times and the prices just set — all synthetic prices, clearly marked.',
       persona: PERSONAS.approval,
       halt: {
         done: sim.approval === 'approved',
@@ -333,6 +365,8 @@ export function Journey({
           rfq={rfq} customer={customerName} contact={contact} included={included} held={held}
           leadDays={leadDays} deliveryDays={deliveryDays} decision={sim.approval}
           reviewed={reviewLines.length} supplierAsked={supplierLines.length} approver={PERSONAS.approval!.name}
+          prices={finalPrices} margin={quoteMargin} pricedBy={PERSONAS.pricing!.name}
+          belowMin={linePrices.filter((p) => marginOf(finalPrices[p.line]!, p.landed) < MIN_MARGIN).length}
           onDecide={(d) => {
             patch({ approval: d });
             if (d === 'returned') go(stepIndex('review'));

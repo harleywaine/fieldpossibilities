@@ -3,12 +3,13 @@
 import {
   AlertTriangle, BookOpen, Building2, Calendar, CheckCircle2, CircleDashed, Clock, CreditCard,
   Factory, FileText, History, Inbox, Mail, MapPin, MessageSquare, Phone, Plane, Plus, Send,
-  ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle, ExternalLink,
+  ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle, ExternalLink, PoundSterling,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { aircraftLabel, duration, gbp, shortDate, supplierFor } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
+import { MIN_MARGIN, gbpExact, marginOf, type LinePrice } from '@/lib/simulation/pricing.ts';
 import { PageHeader } from '@/components/journey/frames.tsx';
 import {
   Avatar, Badge, Button, Card, Fields, Stat, StagePath, Tabs, Td, Th, Thumb, type Tone,
@@ -744,16 +745,188 @@ export function SupplierScreen({
   );
 }
 
-/* ------------------------------------------------------------- 6 approval */
+/* -------------------------------------------------------------- 6 pricing */
+
+/** Unmissable: these numbers are invented. Shown wherever a price appears. */
+export function SyntheticPrices({ compact }: { compact?: boolean }) {
+  return (
+    <div
+      className="flex items-start gap-3 rounded-lg px-4 py-3 ring-1 ring-inset ring-[#6d4fe0]/30"
+      style={{ background: 'repeating-linear-gradient(135deg, #f5f2ff 0 10px, #efe9ff 10px 20px)' }}
+    >
+      <span className="mt-0.5 rounded bg-[#5b3fc4] px-1.5 py-0.5 text-[10px] font-bold tracking-[0.1em] text-white">SYNTHETIC</span>
+      <p className="text-[12px] leading-snug text-[#3b2a85]">
+        <span className="font-semibold">These are not Field’s prices.</span>{' '}
+        {compact
+          ? 'Every price, cost and margin here is invented for the demo.'
+          : 'Field publishes no prices, so every cost, freight rate, margin rule, customer discount and past price on this screen is invented for the demo. It shows how pricing would work, not what Field charges.'}
+      </p>
+    </div>
+  );
+}
+
+function Synth() {
+  return <span className="ml-1 rounded bg-[#efe9ff] px-1 text-[9px] font-bold tracking-[0.08em] text-[#5b3fc4]">SYNTHETIC</span>;
+}
+
+export function PricingScreen({
+  rfq, customer, account, lines, prices, chosen, onPrice, confirmed, onConfirm,
+}: {
+  rfq: SimRfq; customer: string; account: CrmAccount | null; lines: SimLine[];
+  prices: LinePrice[]; chosen: Record<number, number>; onPrice: (line: number, price: number) => void;
+  confirmed: boolean; onConfirm: () => void;
+}) {
+  const priceOf = (p: LinePrice) => chosen[p.line] ?? p.suggested;
+  const total = prices.reduce((a, p) => a + priceOf(p), 0);
+  const landed = prices.reduce((a, p) => a + p.landed, 0);
+  const blended = marginOf(total, landed);
+  const discount = prices[0]?.discountPct ?? 0;
+  const priceCase = account?.cases.find((c) => c.status === 'Open' && /price/i.test(c.subject));
+  const sensitive = /price/i.test(account?.notes ?? '');
+  const lineOf = (n: number) => lines.find((l) => l.line === n)!;
+
+  return (
+    <div>
+      <PageHeader
+        crumbs={['Quotes', rfq.reference.replace('RFQ', 'QT'), 'Pricing']}
+        icon={PoundSterling}
+        title="Price the quote"
+        badges={<><span className="rounded-md bg-[#5b3fc4] px-1.5 py-0.5 text-[10.5px] font-bold tracking-[0.08em] text-white">SYNTHETIC PRICES</span>{confirmed ? <Badge tone="green" dot>Prices set</Badge> : <Badge tone="amber" dot>Awaiting you</Badge>}</>}
+        meta={[
+          <><Building2 className="h-3.5 w-3.5" />{customer}</>,
+          <><CreditCard className="h-3.5 w-3.5" />{discount ? `${discount}% account discount` : 'No account discount'}</>,
+          <>{plural(prices.length, 'line')}</>,
+        ]}
+        actions={<Button icon={CheckCircle2} variant={confirmed ? 'success' : 'primary'} size="md" onClick={onConfirm}>{confirmed ? 'Prices confirmed' : 'Confirm prices'}</Button>}
+      />
+
+      <div className="mb-4"><SyntheticPrices /></div>
+
+      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Quote total" value={gbpExact(total)} sub="synthetic" />
+        <Stat label="Landed cost" value={gbpExact(landed)} sub="supplier cost + freight" />
+        <Stat label="Margin" value={`${(blended * 100).toFixed(1)}%`} sub={blended < MIN_MARGIN ? 'below the 20% minimum' : 'above the 20% minimum'} tone={blended < MIN_MARGIN ? 'bad' : 'good'} />
+        <Stat label="Sold before" value={`${prices.filter((p) => p.last).length} of ${prices.length}`} sub="lines with a past price" />
+      </div>
+
+      {(priceCase || sensitive) && (
+        <div className="mb-4 flex items-start gap-3 rounded-lg border border-action-600/20 bg-[#fdf3f3] px-4 py-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-action-600" />
+          <p className="text-[12.5px] leading-snug text-ink-700">
+            <span className="font-semibold text-ink-900">Price-sensitive account. </span>
+            {priceCase ? `Open complaint ${priceCase.id}: “${priceCase.subject}”. ` : ''}
+            {sensitive ? `The account notes say: “${account!.notes}” ` : ''}
+            Check any line priced above what they paid before.
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {prices.map((p) => {
+          const l = lineOf(p.line);
+          const price = priceOf(p);
+          const m = marginOf(price, p.landed);
+          const vsLast = p.last ? (price - p.last.price) / p.last.price : null;
+          const warnings = [
+            ...(m < MIN_MARGIN ? [{ tone: 'red', text: `Margin ${(m * 100).toFixed(1)}% is below the 20% minimum.` }] : []),
+            ...(vsLast !== null && vsLast > 0.05 ? [{ tone: 'amber', text: `${(vsLast * 100).toFixed(0)}% above the ${gbpExact(p.last!.price)} this customer paid in ${shortDate(p.last!.date).replace(/^1 /, '')}. Be ready to explain the difference.` }] : []),
+          ];
+          return (
+            <section key={p.line} className="overflow-hidden rounded-lg border border-ink-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+              <div className="flex items-center gap-3 px-4 py-3">
+                <Thumb src={l.image} size={40} />
+                <div className="min-w-0 flex-1">
+                  <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber}</p>
+                  <p className="truncate text-[12.5px] font-medium text-ink-900">{l.name}</p>
+                </div>
+                <span className="text-right">
+                  <span className="block text-[10.5px] text-ink-400">Supplier</span>
+                  <span className="block text-[11.5px] text-ink-700">{supplierFor(l.name)}</span>
+                </span>
+              </div>
+              <div className="grid gap-px border-t border-ink-100 bg-ink-100 md:grid-cols-[1fr_1.15fr_1fr]">
+                <div className="bg-white p-4">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">How the price is built<Synth /></p>
+                  <dl className="space-y-1 text-[12px]">
+                    <Row k="Supplier cost" v={gbpExact(p.cost)} />
+                    <Row k={`Freight and duty`} v={`+${p.freightPct}%`} />
+                    <Row k={`Margin · ${p.rule.label}`} v={`${p.rule.marginPct}%`} />
+                    <Row k="Account discount" v={p.discountPct ? `−${p.discountPct}%` : 'none'} />
+                    <div className="flex justify-between border-t border-ink-100 pt-1.5 font-semibold text-ink-900">
+                      <dt>Suggested</dt><dd className="mono">{gbpExact(p.suggested)}</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div className="bg-white p-4">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">Price history<Synth /></p>
+                  <dl className="space-y-1 text-[12px]">
+                    <Row k={p.last ? `They paid · ${shortDate(p.last.date).replace(/^1 /, '')}` : 'They paid'} v={p.last ? gbpExact(p.last.price) : 'never bought'} />
+                    <Row k="Others pay" v={gbpExact(p.typical)} />
+                    <Row k="Range" v={`${gbpExact(p.low)}–${gbpExact(p.high)}`} />
+                  </dl>
+                </div>
+                <div className="bg-ink-25/60 p-4">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-caution-600">Your price</p>
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-9 flex-1 items-center rounded-lg bg-white px-2.5 ring-1 ring-inset ring-ink-200 focus-within:ring-2 focus-within:ring-signal-500">
+                      <span className="text-[13px] text-ink-400">£</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step={5}
+                        value={price}
+                        onChange={(e) => onPrice(p.line, Math.max(0, Number(e.target.value) || 0))}
+                        aria-label={`Price for ${l.partNumber}`}
+                        className="mono w-full bg-transparent px-1 text-[13px] font-medium text-ink-950 outline-none"
+                      />
+                    </span>
+                    <Badge tone={m < MIN_MARGIN ? 'red' : 'green'}>{(m * 100).toFixed(1)}%</Badge>
+                  </div>
+                  {price !== p.suggested && (
+                    <button onClick={() => onPrice(p.line, p.suggested)} className="mt-1.5 text-[11px] font-medium text-signal-600 hover:text-signal-800">
+                      Reset to suggested {gbpExact(p.suggested)}
+                    </button>
+                  )}
+                  <ul className="mt-2 space-y-1.5">
+                    {warnings.map((w) => (
+                      <li key={w.text} className={`flex items-start gap-1.5 text-[11.5px] leading-snug ${w.tone === 'red' ? 'text-action-600' : 'text-caution-600'}`}>
+                        <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />{w.text}
+                      </li>
+                    ))}
+                    {!warnings.length && <li className="flex items-center gap-1.5 text-[11.5px] text-strong-600"><CheckCircle2 className="h-3 w-3" />Nothing unusual</li>}
+                  </ul>
+                </div>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex justify-between gap-3">
+      <dt className="min-w-0 truncate text-ink-500">{k}</dt>
+      <dd className="mono shrink-0 whitespace-nowrap text-right text-ink-800">{v}</dd>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- 7 approval */
 
 export function ApprovalScreen({
   rfq, customer, contact, included, held, leadDays, deliveryDays, decision, onDecide, reviewed, supplierAsked, approver,
+  prices, margin, pricedBy, belowMin,
 }: {
   rfq: SimRfq; customer: string; contact: Contact; included: SimLine[]; held: SimLine[];
   leadDays: (l: SimLine) => number; deliveryDays: number | null;
   decision: 'approved' | 'returned' | null; onDecide: (d: 'approved' | 'returned') => void;
   reviewed: number; supplierAsked: number; approver: string;
+  prices: Record<number, number>; margin: number; pricedBy: string; belowMin: number;
 }) {
+  const total = included.reduce((a, l) => a + (prices[l.line] ?? 0), 0);
   const lateCount = rfq.deadlineDays === null ? 0 : included.filter((l) => leadDays(l) > rfq.deadlineDays!).length;
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const qt = rfq.reference.replace('RFQ', 'QT');
@@ -761,7 +934,7 @@ export function ApprovalScreen({
     { ok: true, label: 'Engineering review', detail: reviewed ? `${plural(reviewed, 'line')} decided${held.length ? `, ${held.length} held back` : ''}` : 'not needed' },
     { ok: true, label: 'Supplier lead times', detail: supplierAsked ? `${supplierAsked} confirmed` : 'all published' },
     { ok: !lateCount, label: 'Delivery against deadline', detail: lateCount ? `${plural(lateCount, 'item')} late` : 'all in time' },
-    { ok: false, label: 'Pricing', detail: 'set by Commercial' },
+    { ok: margin >= MIN_MARGIN && !belowMin, label: 'Pricing', detail: `${gbpExact(total)} at ${(margin * 100).toFixed(1)}% margin${belowMin ? ` · ${plural(belowMin, 'line')} below the 20% minimum` : ''} · set by ${pricedBy} · synthetic` },
   ];
   return (
     <div>
@@ -774,7 +947,12 @@ export function ApprovalScreen({
       />
       <div className="mb-4"><StagePath stages={ENQUIRY_STAGES} current={4} /></div>
       <Grid>
-        <div className="min-w-0 rounded-md bg-white p-6 shadow-[0_1px_3px_rgba(16,24,40,0.1),0_12px_32px_-16px_rgba(16,24,40,0.25)] ring-1 ring-ink-100 sm:p-8">
+        <div className="min-w-0 space-y-3">
+        <SyntheticPrices compact />
+        <div className="relative min-w-0 overflow-hidden rounded-md bg-white p-6 shadow-[0_1px_3px_rgba(16,24,40,0.1),0_12px_32px_-16px_rgba(16,24,40,0.25)] ring-1 ring-ink-100 sm:p-8">
+          <span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[24deg] whitespace-nowrap text-[54px] font-black tracking-[0.12em] text-[#5b3fc4]/[0.07]">
+            SYNTHETIC PRICES
+          </span>
           <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-signal-700 pb-4">
             <span className="flex items-center gap-2">
               <span className="grid h-8 w-8 place-items-center rounded bg-signal-700"><span className="h-2.5 w-2.5 rotate-45 bg-white" /></span>
@@ -810,7 +988,7 @@ export function ApprovalScreen({
                       <td className="truncate pr-2 text-ink-800">{l.name}</td>
                       <td className="text-right text-ink-700">1</td>
                       <td className={`text-right ${over ? 'font-medium text-action-600' : 'text-ink-700'}`}>{duration(leadDays(l), true)}</td>
-                      <td className="whitespace-nowrap text-right text-[11px] text-ink-400">Commercial</td>
+                      <td className="mono whitespace-nowrap text-right text-ink-900">{gbpExact(prices[l.line] ?? 0)}</td>
                     </tr>
                   );
                 })}
@@ -819,12 +997,13 @@ export function ApprovalScreen({
           </div>
           <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-ink-200 pt-3 text-[11.5px]">
             <span className="text-ink-500">Delivery: {deliveryDays !== null ? `all items within ${duration(deliveryDays)}` : '—'}{rfq.deadlineDays ? ` (requested ${duration(rfq.deadlineDays)})` : ''}</span>
-            <span className="font-medium text-ink-900">Total: set by Commercial</span>
+            <span className="font-semibold text-ink-950">Total {gbpExact(total)} <span className="text-[10px] font-bold tracking-[0.08em] text-[#5b3fc4]">SYNTHETIC</span></span>
           </div>
           <p className="mt-4 text-[10.5px] leading-relaxed text-ink-400">
             {held.length > 0 && `${plural(held.length, 'line')} not included pending confirmation. `}
-            Prices are never generated: the catalogue publishes none, so Commercial sets them.
+            Prices are synthetic: Field publishes none, so these were invented for the demo and set in the pricing step.
           </p>
+        </div>
         </div>
 
         <Rail>
@@ -870,7 +1049,7 @@ export function ApprovalScreen({
   );
 }
 
-/* ---------------------------------------------------------------- 7 order */
+/* ---------------------------------------------------------------- 8 order */
 
 export const LATE_OPTIONS = ['Offer a phased delivery', 'Ask the supplier to expedite', 'Agree a new date with the customer'];
 const LATE_DETAIL: Record<string, string> = {

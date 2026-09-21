@@ -11,7 +11,7 @@
 
 export type StepId =
   | 'start' | 'uses' | 'request' | 'parts' | 'inbox' | 'account' | 'check'
-  | 'review' | 'supplier' | 'approval' | 'manufacture' | 'summary';
+  | 'review' | 'supplier' | 'pricing' | 'approval' | 'manufacture' | 'summary';
 
 export type Side = 'customer' | 'field';
 
@@ -34,6 +34,7 @@ export const STEPS: JourneyStep[] = [
   { id: 'check', rail: 'Line check', side: 'field', metric: 'RFQ preparation', ledgerLabel: 'Checking every line' },
   { id: 'review', rail: 'Engineering', side: 'field', human: true, metric: 'Technical applicability check', ledgerLabel: 'Technical review' },
   { id: 'supplier', rail: 'Procurement', side: 'field', human: true, metric: 'Supplier follow-up', ledgerLabel: 'Confirming lead times' },
+  { id: 'pricing', rail: 'Pricing', side: 'field', human: true, metric: 'Quote pricing', ledgerLabel: 'Pricing the quote' },
   { id: 'approval', rail: 'Quote sign-off', side: 'field', human: true },
   { id: 'manufacture', rail: 'Order', side: 'field', human: true },
   { id: 'summary', rail: 'Summary' },
@@ -45,6 +46,7 @@ export const stepIndex = (id: StepId) => STEPS.findIndex((s) => s.id === id);
 export const PERSONAS: Partial<Record<StepId, { name: string; role: string }>> = {
   review: { name: 'Hannah Lund', role: 'Tooling Engineer' },
   supplier: { name: 'Robert Ellis', role: 'Supplier Manager' },
+  pricing: { name: 'Chris Bailey', role: 'Quotations Specialist' },
   approval: { name: 'Alison Reid', role: 'Commercial Director' },
   manufacture: { name: 'Michael Byrne', role: 'Operations Manager' },
 };
@@ -64,6 +66,7 @@ export const AI_USES: Array<{ step: StepId; title: string; does: string; data: '
   { step: 'check', title: 'Check every line', does: 'Tests each part against the request and the catalogue, and routes anything uncertain to a person.', data: 'public' },
   { step: 'review', title: 'Prepare engineering questions', does: 'Puts the request and the catalogue record side by side, so the engineer only has to judge.', data: 'public' },
   { step: 'supplier', title: 'Draft supplier requests', does: 'Writes the lead-time requests for Procurement to approve and send.', data: 'internal' },
+  { step: 'pricing', title: 'Assemble the price', does: 'Builds each price from cost, freight, margin rules, the customer’s terms and what they paid before, and flags anything odd.', data: 'internal' },
   { step: 'manufacture', title: 'Watch every order', does: 'Tracks each line against the customer’s deadline and flags any that will be late.', data: 'internal' },
 ];
 
@@ -88,6 +91,10 @@ export const ESTIMATE_NOTES: Record<string, { today: string; withAi: string }> =
     today: 'An engineer researches each uncertain part from scratch.',
     withAi: 'The engineer gets the question and the record side by side. The judgement still takes time, so the saving is smaller.',
   },
+  'Quote pricing': {
+    today: 'Finding the supplier cost, adding freight, applying the margin and the customer’s terms, and checking what they paid last time.',
+    withAi: 'The price is built and checked for you; a person reviews it and sets the final figure.',
+  },
   'Supplier follow-up': {
     today: 'Writing lead-time requests and chasing replies.',
     withAi: 'The requests are drafted; a person approves them and reads the replies.',
@@ -101,6 +108,8 @@ export const FALLBACK_METRICS: Record<string, StepMetric> = {
   'RFQ preparation': { before: 55, after: 12, volume: 1900 },
   'Technical applicability check': { before: 35, after: 20, volume: 900 },
   'Supplier follow-up': { before: 25, after: 9, volume: 1800 },
+  // Not in the value model's table: an assumption made for the pricing step alone.
+  'Quote pricing': { before: 30, after: 10, volume: 1900 },
 };
 
 export const EXAMPLE_REQUESTS = [

@@ -15,15 +15,16 @@ export const metadata: Metadata = {
 
 /** The front door: one enquiry, told a screen at a time. */
 export default function JourneyPage() {
-  // Times come from the same metrics table the value model uses.
+  // Times come from the same metrics table the value model uses; anything that
+  // table lacks (the pricing step) keeps its fallback assumption.
   let metrics: Record<string, StepMetric> = FALLBACK_METRICS;
   try {
     const rows = loadMetrics() as any[];
     if (rows.length) {
-      metrics = Object.fromEntries(rows.map((m) => [
+      metrics = Object.fromEntries([...Object.entries(FALLBACK_METRICS), ...rows.map((m) => [
         String(m.process),
         { before: Number(m.current_minutes), after: Number(m.ai_assisted_minutes), volume: Number(m.annual_volume) },
-      ]));
+      ] as const)]);
     }
   } catch { /* synthetic dataset not generated — fall back */ }
 

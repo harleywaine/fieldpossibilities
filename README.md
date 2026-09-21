@@ -26,6 +26,11 @@ The time figures are assumptions written into the synthetic dataset, not measure
 "How is this estimated?" button on the time bar, and the end of the journey, say so and explain
 what each covers, why they'd change with Field's current process, and how to measure the real ones.
 
+The pricing step uses **synthetic prices** — invented costs, freight, margin rules, account
+discounts and price history, seeded per part number (`lib/simulation/pricing.ts`) — because Field
+publishes none. Every screen that shows a price carries a striped SYNTHETIC banner or tag, and the
+quote carries a watermark.
+
 Labelling: catalogue parts and lead times are real. Accounts, jobs, complaints, employees and
 suppliers are synthetic. Supplier replies and the order are simulated. Prices are never generated.
 
