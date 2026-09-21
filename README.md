@@ -2,13 +2,16 @@
 
 **We didn’t write a proposal. We built one.**
 
-Four working demonstrations, described literally — **AI applied to product search,
-enquiry research, RFQ processing, and operations analysis**. The front door (`/`) is a
-single panel cut into four quadrants: each states what it does in one sentence and
-carries two instruments — complexity to build, and what it does to the time per task.
-Product search runs on Field's real published catalogue and demonstrates itself on
-arrival; the rest run on clearly-labelled synthetic records. The full platform sits
-underneath at `/explore`.
+The front door (`/`) is **one enquiry, told a screen at a time** — an engineer's question
+followed through customer search, the RFQ, account research, quotation, human review,
+supplier confirmation and manufacture. Each screen is a line or two of prose, one visual
+and one Continue; a ledger at the bottom accumulates people's time, today versus with AI,
+computed from the metrics table. Every step has its own URL (`?s=0`–`?s=8`), so back,
+forward and deep links work, and the rail allows jumping anywhere. The search runs live on
+Field's real catalogue; everything behind Field's doors is labelled synthetic.
+
+The four demonstrations remain individually at `/demos`, and the full platform at
+`/explore`.
 
 ```
 FIND  →  UNDERSTAND  →  DO  →  OPTIMISE

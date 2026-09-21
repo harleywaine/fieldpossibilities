@@ -84,7 +84,7 @@ export function DemoShell({
       {/* ------------------------------------------------------------ foot */}
       <div className="border-t border-ink-100 bg-white">
         <div className="mx-auto flex w-full max-w-5xl items-center gap-4 px-5 py-4 sm:px-8">
-          <Link href="/" className="text-[12px] text-ink-400 transition-colors hover:text-signal-600">
+          <Link href="/demos" className="text-[12px] text-ink-400 transition-colors hover:text-signal-600">
             ← All four demos
           </Link>
           {next ? (

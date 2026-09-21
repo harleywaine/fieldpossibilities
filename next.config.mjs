@@ -16,7 +16,7 @@ const nextConfig = {
       { source: '/depth/interior', destination: '/demo/enquiry-research', permanent: false },
       { source: '/depth/workings', destination: '/demo/rfq-processing', permanent: false },
       { source: '/depth/core', destination: '/demo/operations-analysis', permanent: false },
-      { source: '/demo', destination: '/', permanent: false },
+      { source: '/demo', destination: '/demos', permanent: false },
     ];
   },
   // The catalogue is read through node:sqlite in server components.
