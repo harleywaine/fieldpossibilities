@@ -74,7 +74,7 @@ export function Button({
   const cls = `inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${v} ${s}`;
   const content = <>{Icon && <Icon className={size === 'md' ? 'h-4 w-4' : 'h-3.5 w-3.5'} strokeWidth={2} />}{children}</>;
   // No handler: a control the mock-up shows but the demo doesn't use.
-  if (!onClick) return <span className={`${cls} cursor-default`}>{content}</span>;
+  if (!onClick) return <span className={`${cls} cursor-default max-sm:hidden`}>{content}</span>;
   return <button onClick={onClick} disabled={disabled} className={cls}>{content}</button>;
 }
 
@@ -113,9 +113,9 @@ export function Fields({ rows }: { rows: Array<[string, React.ReactNode]> }) {
 export function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'good' | 'bad' }) {
   return (
     <div className="min-w-0 rounded-lg border border-ink-100 bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      <p className="truncate text-[11px] font-medium text-ink-500">{label}</p>
-      <p className="mt-1 text-[20px] font-semibold tracking-tight text-ink-950">{value}</p>
-      {sub && <p className={`mt-0.5 truncate text-[11px] ${tone === 'good' ? 'text-strong-600' : tone === 'bad' ? 'text-action-600' : 'text-ink-400'}`}>{sub}</p>}
+      <p className="text-[11px] font-medium leading-tight text-ink-500 sm:truncate">{label}</p>
+      <p className="mt-1 text-[18px] font-semibold tracking-tight text-ink-950 sm:text-[20px]">{value}</p>
+      {sub && <p className={`mt-0.5 text-[11px] leading-tight sm:truncate ${tone === 'good' ? 'text-strong-600' : tone === 'bad' ? 'text-action-600' : 'text-ink-400'}`}>{sub}</p>}
     </div>
   );
 }
@@ -132,7 +132,7 @@ export function StagePath({ stages, current }: { stages: string[]; current: numb
         return (
           <li
             key={s}
-            className={`relative flex h-8 min-w-0 flex-1 items-center justify-center gap-1.5 px-3 ${
+            className={`relative flex h-8 min-w-0 items-center justify-center gap-1.5 px-3 ${now ? 'flex-[3] sm:flex-1' : 'flex-1'} ${
               done ? 'bg-signal-600/90 text-white' : now ? 'bg-signal-800 text-white' : 'bg-ink-75 text-ink-500'
             }`}
             style={{
@@ -141,7 +141,7 @@ export function StagePath({ stages, current }: { stages: string[]; current: numb
             }}
           >
             {done && <Check className="h-3 w-3 shrink-0" strokeWidth={3} />}
-            <span className="truncate">{s}</span>
+            <span className={now ? 'truncate' : 'hidden truncate sm:inline'}>{s}</span>
           </li>
         );
       })}
@@ -151,7 +151,7 @@ export function StagePath({ stages, current }: { stages: string[]; current: numb
 
 export function Tabs({ tabs, active }: { tabs: Array<{ label: string; count?: number }>; active: string }) {
   return (
-    <div className="flex gap-5 overflow-x-auto border-b border-ink-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex gap-4 overflow-x-auto border-b sm:gap-5 border-ink-100 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {tabs.map((t) => (
         <span
           key={t.label}

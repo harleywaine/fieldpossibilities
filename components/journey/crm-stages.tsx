@@ -117,12 +117,12 @@ export function InboxScreen({
           </Card>
           <Card title="Requested parts" icon={Wrench} action={plural(rfq.lines.length, 'line')} pad={false}>
             <table className="w-full table-fixed">
-              <thead><tr><Th>Part</Th><Th right className="w-14">Qty</Th><Th right className="w-32">Lead time</Th></tr></thead>
+              <thead><tr><Th>Part</Th><Th right className="w-14 max-sm:hidden">Qty</Th><Th right className="w-28 sm:w-32">Lead time</Th></tr></thead>
               <tbody className="divide-y divide-ink-100">
                 {rfq.lines.map((l) => (
                   <tr key={l.line}>
                     <Td><PartCell l={l} /></Td>
-                    <Td right className="text-ink-700">1</Td>
+                    <Td right className="text-ink-700 max-sm:hidden">1</Td>
                     <Td right className="text-ink-700">{l.leadTimeDays !== null ? duration(l.leadTimeDays) : <span className="text-ink-400">Not published</span>}</Td>
                   </tr>
                 ))}
@@ -248,11 +248,11 @@ export function AccountScreen({
           <Card title="Recent enquiries" icon={Inbox} pad={false}>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead><tr><Th>Reference</Th><Th>Date</Th><Th>Aircraft · work</Th><Th>Status</Th><Th right>Value</Th></tr></thead>
+                <thead><tr><Th>Reference</Th><Th className="max-sm:hidden">Date</Th><Th>Aircraft · work</Th><Th>Status</Th><Th right>Value</Th></tr></thead>
                 <tbody className="divide-y divide-ink-100">
                   <tr className="bg-signal-50/50">
                     <Td className="mono whitespace-nowrap font-medium text-signal-700">{rfq.reference}</Td>
-                    <Td className="whitespace-nowrap text-ink-500">Today</Td>
+                    <Td className="whitespace-nowrap text-ink-500 max-sm:hidden">Today</Td>
                     <Td className="text-ink-800">{[aircraftLabel(rfq.aircraft), plural(rfq.lines.length, 'part')].filter(Boolean).join(' · ')}</Td>
                     <Td><Badge tone="red" dot>New</Badge></Td>
                     <Td right className="text-ink-400">—</Td>
@@ -260,7 +260,7 @@ export function AccountScreen({
                   {account.jobs.map((j) => (
                     <tr key={j.reference} className="hover:bg-ink-25">
                       <Td className="mono whitespace-nowrap text-ink-600">{j.reference}</Td>
-                      <Td className="whitespace-nowrap text-ink-500">{shortDate(j.date)}</Td>
+                      <Td className="whitespace-nowrap text-ink-500 max-sm:hidden">{shortDate(j.date)}</Td>
                       <Td className="text-ink-800">{[j.aircraft, j.application?.toLowerCase()].filter(Boolean).join(' · ')}</Td>
                       <Td><Badge tone={JOB[j.status].tone} dot>{JOB[j.status].text}</Badge></Td>
                       <Td right className="mono whitespace-nowrap text-ink-800">{j.valueGbp ? gbp(j.valueGbp) : '—'}</Td>
@@ -430,7 +430,30 @@ export function CheckScreen({ rfq, customer, owner }: { rfq: SimRfq; customer: s
         <Stat label="To Procurement" value={String(toProc)} sub="lead time to confirm" />
       </div>
       <Card title="Line check" icon={CheckCircle2} action="against each catalogue record" pad={false}>
-        <div className="overflow-x-auto">
+        <ul className="divide-y divide-ink-100 sm:hidden">
+          {rfq.lines.map((l) => {
+            const over = rfq.deadlineDays !== null && l.leadTimeDays !== null && l.leadTimeDays > rfq.deadlineDays;
+            return (
+              <li key={l.line} className="px-3 py-3">
+                <PartCell l={l} />
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 pl-[42px] text-[11.5px]">
+                  {has(l, 'review')
+                    ? <span className="flex items-center gap-1 text-caution-600"><AlertTriangle className="h-3 w-3" />Fit not established</span>
+                    : <span className="flex items-center gap-1 text-strong-600"><CheckCircle2 className="h-3 w-3" />Fit confirmed</span>}
+                  {l.leadTimeDays === null
+                    ? <span className="flex items-center gap-1 text-caution-600"><AlertTriangle className="h-3 w-3" />Lead time not published</span>
+                    : <span className={`flex items-center gap-1 ${over ? 'text-action-600' : 'text-strong-600'}`}>{over ? <XCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}{duration(l.leadTimeDays)}</span>}
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-1 pl-[42px]">
+                  {!l.flags.length && <Badge tone="green">Ready</Badge>}
+                  {has(l, 'review') && <Badge tone="amber">Engineering</Badge>}
+                  {has(l, 'supplier') && <Badge tone="blue">Procurement</Badge>}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[640px] table-fixed">
             <thead>
               <tr><Th className="w-10">#</Th><Th>Part</Th><Th className="w-36">Applicability</Th><Th className="w-32">Lead time</Th><Th className="w-52">Routed to</Th></tr>
@@ -696,7 +719,7 @@ export function SupplierScreen({
                   {s && <p className="text-[11px] text-ink-400">{s.category} · {s.country}</p>}
                 </div>
                 {s && (
-                  <div className="flex gap-5 text-right">
+                  <div className="flex gap-5 text-right max-sm:order-last max-sm:w-full max-sm:justify-start max-sm:pl-[46px] max-sm:text-left">
                     <span><span className="block text-[10.5px] text-ink-400">On time</span><span className="block text-[12.5px] font-semibold text-ink-900">{s.reliabilityPct}%</span></span>
                     <span><span className="block text-[10.5px] text-ink-400">Usual lead time</span><span className="block text-[12.5px] font-semibold text-ink-900">{s.standardLeadTimeWeeks} wks</span></span>
                   </div>
@@ -713,7 +736,24 @@ export function SupplierScreen({
                   <p className="mt-2 flex items-center gap-1.5 text-[10.5px] text-ink-400"><Sparkles className="h-3 w-3 text-[#6d4fe0]" />Drafted by the system · not sent</p>
                 </div>
               )}
-              <table className="w-full table-fixed">
+              <ul className="divide-y divide-ink-100 sm:hidden">
+                {ls.map((l) => {
+                  const days = replies[l.line];
+                  const late = deadline !== null && days > deadline;
+                  return (
+                    <li key={l.line} className="px-3 py-2.5">
+                      <PartCell l={l} />
+                      <p className="mt-1.5 flex flex-wrap items-center gap-2 pl-[42px] text-[11.5px] text-ink-500">
+                        Catalogue: {l.leadTimeDays !== null ? duration(l.leadTimeDays) : 'not published'}
+                        {sent
+                          ? <><span className="mono font-medium text-ink-900">→ {duration(days)}</span><Badge tone={late ? 'red' : 'green'}>{late ? 'After deadline' : 'In time'}</Badge></>
+                          : <span className="text-ink-300">· not asked</span>}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+              <table className="hidden w-full table-fixed sm:table">
                 <thead><tr><Th>Item</Th><Th right className="w-32">Catalogue</Th><Th right className="w-52">Supplier reply</Th></tr></thead>
                 <tbody className="divide-y divide-ink-100">
                   {ls.map((l, i) => {
@@ -839,7 +879,7 @@ export function PricingScreen({
                   <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber}</p>
                   <p className="truncate text-[12.5px] font-medium text-ink-900">{l.name}</p>
                 </div>
-                <span className="text-right">
+                <span className="hidden text-right sm:block">
                   <span className="block text-[10.5px] text-ink-400">Supplier</span>
                   <span className="block text-[11.5px] text-ink-700">{supplierFor(l.name)}</span>
                 </span>
@@ -949,7 +989,7 @@ export function ApprovalScreen({
       <Grid>
         <div className="min-w-0 space-y-3">
         <SyntheticPrices compact />
-        <div className="relative min-w-0 overflow-hidden rounded-md bg-white p-6 shadow-[0_1px_3px_rgba(16,24,40,0.1),0_12px_32px_-16px_rgba(16,24,40,0.25)] ring-1 ring-ink-100 sm:p-8">
+        <div className="relative min-w-0 overflow-hidden rounded-md bg-white p-4 shadow-[0_1px_3px_rgba(16,24,40,0.1),0_12px_32px_-16px_rgba(16,24,40,0.25)] ring-1 ring-ink-100 sm:p-8">
           <span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[24deg] whitespace-nowrap text-[54px] font-black tracking-[0.12em] text-[#5b3fc4]/[0.07]">
             SYNTHETIC PRICES
           </span>
@@ -971,11 +1011,11 @@ export function ApprovalScreen({
             <div><p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">Your reference</p><p className="mono mt-1 text-ink-900">{rfq.reference}</p><p className="text-ink-500">{aircraftLabel(rfq.aircraft) ?? ''}{rfq.engine ? ` · ${rfq.engine}` : ''}</p></div>
           </div>
           <div className="overflow-x-auto">
-            <table className="mt-5 w-full min-w-[400px] table-fixed text-[11.5px]">
+            <table className="mt-5 w-full table-fixed text-[11.5px] sm:min-w-[400px]">
               <thead>
                 <tr className="border-y border-ink-200 text-left text-[10px] uppercase tracking-[0.06em] text-ink-500">
-                  <th className="w-6 py-2 font-semibold">#</th><th className="w-24 font-semibold">Part</th><th className="font-semibold">Description</th>
-                  <th className="w-9 text-right font-semibold">Qty</th><th className="w-[4.5rem] text-right font-semibold">Lead time</th><th className="w-24 text-right font-semibold">Unit price</th>
+                  <th className="w-6 py-2 font-semibold">#</th><th className="w-24 font-semibold">Part</th><th className="font-semibold max-sm:hidden">Description</th>
+                  <th className="w-9 text-right font-semibold max-sm:hidden">Qty</th><th className="w-[4.5rem] text-right font-semibold">Lead time</th><th className="w-24 text-right font-semibold">Unit price</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-100">
@@ -985,8 +1025,8 @@ export function ApprovalScreen({
                     <tr key={l.line}>
                       <td className="py-2 text-ink-400">{i + 1}</td>
                       <td className="mono text-signal-700">{l.partNumber}</td>
-                      <td className="truncate pr-2 text-ink-800">{l.name}</td>
-                      <td className="text-right text-ink-700">1</td>
+                      <td className="truncate pr-2 text-ink-800 max-sm:hidden">{l.name}</td>
+                      <td className="text-right text-ink-700 max-sm:hidden">1</td>
                       <td className={`text-right ${over ? 'font-medium text-action-600' : 'text-ink-700'}`}>{duration(leadDays(l), true)}</td>
                       <td className="mono whitespace-nowrap text-right text-ink-900">{gbpExact(prices[l.line] ?? 0)}</td>
                     </tr>
@@ -1088,7 +1128,7 @@ export function OrderScreen({
           <div className="px-4 pb-3 pt-3">
             <div>
               <div className="flex">
-                <span className="w-[128px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.05em] text-ink-400">Line · supplier</span>
+                <span className="w-[92px] shrink-0 text-[10px] font-semibold uppercase sm:w-[128px] tracking-[0.05em] text-ink-400">Line · supplier</span>
                 <div className="relative h-5 flex-1">
                   {ticks.map((w) => (
                     <span key={w} className="absolute -translate-x-1/2 text-[10px] text-ink-400" style={{ left: pct(w * 7) }}>{w}</span>
@@ -1096,7 +1136,7 @@ export function OrderScreen({
                 </div>
               </div>
               <div className="relative border-t border-ink-100">
-                <div className="pointer-events-none absolute inset-y-0 left-[128px] right-0">
+                <div className="pointer-events-none absolute inset-y-0 left-[92px] right-0 sm:left-[128px]">
                   {ticks.map((w) => <span key={w} className="absolute inset-y-0 w-px bg-ink-50" style={{ left: pct(w * 7) }} />)}
                   {deadline !== null && (
                     <span className="absolute inset-y-0 z-10 border-l-2 border-dashed border-action-500" style={{ left: pct(deadline) }}>
@@ -1111,7 +1151,7 @@ export function OrderScreen({
                     const inside = d / span > 0.22;
                     return (
                       <li key={l.line} className="flex h-11 items-center border-b border-ink-50 last:border-0">
-                        <span className="w-[128px] shrink-0 pr-3">
+                        <span className="w-[92px] shrink-0 pr-2 sm:w-[128px] sm:pr-3">
                           <span className="mono block text-[11.5px] font-medium text-signal-700">{l.partNumber}</span>
                           <span className="block truncate text-[10.5px] text-ink-400">{supplierFor(l.name)}</span>
                         </span>

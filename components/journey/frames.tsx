@@ -13,7 +13,8 @@ import { Avatar } from '@/components/journey/ui.tsx';
  * a mock-up of a system, not the system itself. The narration stays outside.
  */
 
-const WINDOW = 'overflow-hidden rounded-xl border border-ink-200/80 bg-white shadow-[0_40px_80px_-40px_rgba(4,24,47,0.45),0_2px_6px_rgba(4,24,47,0.06)]';
+// On a phone the window runs edge to edge: every pixel of width goes to the app.
+const WINDOW = '-mx-4 overflow-hidden border-y border-ink-200/80 bg-white shadow-[0_40px_80px_-40px_rgba(4,24,47,0.45),0_2px_6px_rgba(4,24,47,0.06)] sm:mx-0 sm:rounded-xl sm:border-x';
 
 function Chrome({ children, tag }: { children: React.ReactNode; tag: string }) {
   return (
@@ -24,7 +25,10 @@ function Chrome({ children, tag }: { children: React.ReactNode; tag: string }) {
         <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]/80" />
       </span>
       <div className="flex min-w-0 flex-1 justify-center">{children}</div>
-      <span className="mono hidden shrink-0 rounded bg-white px-1.5 py-0.5 text-[9px] tracking-[0.12em] text-ink-400 ring-1 ring-ink-100 sm:inline">{tag}</span>
+      <span className="mono shrink-0 rounded bg-white px-1.5 py-0.5 text-[9px] tracking-[0.12em] text-ink-400 ring-1 ring-ink-100">
+        <span className="sm:hidden">MOCK-UP</span>
+        <span className="hidden sm:inline">{tag}</span>
+      </span>
     </div>
   );
 }
@@ -40,10 +44,10 @@ export function BrowserFrame({ path, basket, children }: { path: string; basket:
           <span className="truncate">field-international · {path}</span>
         </span>
       </Chrome>
-      <div className="bg-signal-900 px-5 py-1.5 text-[10.5px] text-signal-200/80 sm:px-8">
+      <div className="hidden bg-signal-900 px-5 py-1.5 text-[10.5px] text-signal-200/80 sm:block sm:px-8">
         Aerospace tooling and ground support equipment · worldwide supply
       </div>
-      <header className="flex items-center gap-8 border-b border-ink-100 bg-white px-5 py-3.5 sm:px-8">
+      <header className="flex items-center gap-8 border-b border-ink-100 bg-white px-4 py-3 sm:px-8 sm:py-3.5">
         <span className="flex items-center gap-2">
           <span className="grid h-7 w-7 place-items-center rounded-md bg-signal-700">
             <span className="h-2.5 w-2.5 rotate-45 bg-white" />
@@ -153,7 +157,7 @@ export function CrmFrame({
 
         {/* --------------------------------------------------------- main */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex h-12 items-center gap-3 border-b border-ink-100 bg-white px-4">
+          <div className="flex h-12 items-center gap-3 border-b border-ink-100 bg-white px-3 sm:px-4">
             <Menu className="h-4 w-4 shrink-0 text-ink-400 lg:hidden" />
             <span className="flex h-8 min-w-0 max-w-sm flex-1 items-center gap-2 rounded-md bg-ink-50 px-2.5 text-[12px] text-ink-400 ring-1 ring-inset ring-ink-100">
               <Search className="h-3.5 w-3.5 shrink-0" />
@@ -179,7 +183,7 @@ export function CrmFrame({
               </span>
             </span>
           </div>
-          <div className="flex-1 bg-[#f6f8fb] p-4 sm:p-5">{children}</div>
+          <div className="flex-1 bg-[#f6f8fb] p-3 sm:p-5">{children}</div>
         </div>
       </div>
     </div>
@@ -210,13 +214,13 @@ export function PageHeader({
       </p>
       <div className="flex flex-wrap items-start gap-3.5">
         {logo ?? (Icon && (
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white text-signal-600 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-ink-100">
-            <Icon className="h-5 w-5" strokeWidth={1.8} />
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-signal-600 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-ink-100 sm:h-10 sm:w-10">
+            <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" strokeWidth={1.8} />
           </span>
         ))}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-[18px] font-semibold tracking-tight text-ink-950">{title}</h2>
+            <h2 className="text-[16px] font-semibold tracking-tight text-ink-950 sm:text-[18px]">{title}</h2>
             {badges}
           </div>
           {meta && (
@@ -227,7 +231,7 @@ export function PageHeader({
             </p>
           )}
         </div>
-        {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+        {actions && <div className="flex w-full flex-wrap gap-2 empty:hidden sm:w-auto [&>button]:max-sm:flex-1">{actions}</div>}
       </div>
     </div>
   );

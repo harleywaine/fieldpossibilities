@@ -45,8 +45,8 @@ export function TopBar({
             </span>
           )}
           {canRestart && (
-            <button onClick={onRestart} className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-ink-900">
-              <RotateCcw className="h-3.5 w-3.5" /> New request
+            <button onClick={onRestart} aria-label="New request" className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-ink-900">
+              <RotateCcw className="h-3.5 w-3.5" /> <span className="hidden sm:inline">New request</span>
             </button>
           )}
           <Link href="/demos" className="flex h-8 items-center rounded-lg px-2.5 text-[12px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-ink-900">
@@ -57,18 +57,18 @@ export function TopBar({
 
       {/* ---------------------------------------------------------- track */}
       <nav aria-label="Journey" className="mx-auto w-full max-w-6xl px-4 pb-3 sm:px-8">
-        <div className="mb-1.5 grid gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em]" style={{ gridTemplateColumns: `${customerCount}fr ${TRACK.length - customerCount}fr` }}>
+        <div className="mb-1.5 hidden gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] sm:grid" style={{ gridTemplateColumns: `${customerCount}fr ${TRACK.length - customerCount}fr` }}>
           <span className={current >= 0 && current < customerCount ? 'text-signal-600' : 'text-ink-300'}>The customer</span>
           <span className={current >= customerCount ? 'text-signal-600' : 'text-ink-300'}>Field</span>
         </div>
-        <ol className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${TRACK.length}, minmax(0, 1fr))` }}>
+        <ol className="grid gap-1 sm:gap-1.5" style={{ gridTemplateColumns: `repeat(${TRACK.length}, minmax(0, 1fr))` }}>
           {TRACK.map((s, t) => {
             const i = STEPS.indexOf(s);
             const locked = i > reachable;
             const done = i < index;
             const now = i === index;
             return (
-              <li key={s.id} className={t === customerCount ? 'ml-2' : ''}>
+              <li key={s.id} className={t === customerCount ? 'ml-1.5 sm:ml-2' : ''}>
                 <button
                   onClick={() => !locked && go(i)}
                   disabled={locked}
@@ -79,7 +79,7 @@ export function TopBar({
                   <span className={`block h-[3px] rounded-full transition-colors duration-500 ${
                     now ? 'bg-signal-700' : done ? 'bg-signal-400' : 'bg-ink-100'
                   } ${!locked && !now ? 'group-hover:bg-signal-300' : ''}`} />
-                  <span className={`mt-1.5 flex items-center gap-1 text-[11px] leading-none ${now ? 'flex' : 'hidden md:flex'}`}>
+                  <span className="mt-1.5 hidden items-center gap-1 text-[11px] leading-none md:flex">
                     <span className={`truncate ${now ? 'font-semibold text-ink-950' : done ? 'text-ink-600' : 'text-ink-300'}`}>{s.rail}</span>
                     {s.human && <UserRound className={`h-3 w-3 shrink-0 ${now || done ? 'text-caution-500' : 'text-caution-500/40'}`} strokeWidth={2.4} />}
                   </span>
@@ -88,6 +88,14 @@ export function TopBar({
             );
           })}
         </ol>
+        {current >= 0 && (
+          <p className="mt-2 flex items-center gap-1.5 text-[12px] md:hidden">
+            <span className="font-semibold text-ink-950">{TRACK[current]!.rail}</span>
+            {TRACK[current]!.human && <UserRound className="h-3 w-3 text-caution-500" strokeWidth={2.4} />}
+            <span className="text-ink-400">· {TRACK[current]!.side === 'customer' ? 'the customer' : 'Field'}</span>
+            <span className="ml-auto text-[11px] text-ink-400">{current + 1} of {TRACK.length}</span>
+          </p>
+        )}
       </nav>
     </header>
   );
@@ -119,11 +127,11 @@ export function Narration({
             <Sparkles className="h-3 w-3 text-signal-500" /> {eyebrow}
           </p>
         )}
-        <h1 className="enter mt-4 max-w-3xl font-display text-[32px] font-medium leading-[1.06] tracking-[-0.035em] text-ink-950 sm:text-[44px]" style={{ animationDelay: '80ms' }}>
+        <h1 className="enter mt-3 max-w-3xl font-display text-[29px] font-medium sm:mt-4 leading-[1.06] tracking-[-0.035em] text-ink-950 sm:text-[44px]" style={{ animationDelay: '80ms' }}>
           {title}
         </h1>
         {sub && (
-          <p className="enter mt-3 max-w-2xl text-[16px] leading-relaxed text-ink-500 sm:text-[18px]" style={{ animationDelay: '180ms' }}>
+          <p className="enter mt-2.5 max-w-2xl text-[15px] leading-relaxed text-ink-500 sm:mt-3 sm:text-[18px]" style={{ animationDelay: '180ms' }}>
             {sub}
           </p>
         )}
@@ -152,17 +160,17 @@ function PersonaCard({ persona, halt }: { persona: { name: string; role: string 
           ) : halt ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
           {waiting ? 'Your decision' : halt ? 'Decided' : 'Nothing to decide'}
         </span>
-        <span className="font-medium normal-case tracking-normal opacity-80">{waiting ? 'The process has stopped' : 'The process can continue'}</span>
+        <span className="hidden font-medium normal-case tracking-normal opacity-80 sm:inline">{waiting ? 'The process has stopped' : 'The process can continue'}</span>
       </div>
-      <div className="flex items-center gap-3 px-4 pt-3.5">
-        <Avatar name={persona.name} size={38} you />
+      <div className="flex items-center gap-3 px-4 pt-3">
+        <Avatar name={persona.name} size={34} you />
         <span className="leading-tight">
           <span className="block text-[11px] text-ink-400">You are signed in as</span>
           <span className="block text-[14px] font-semibold text-ink-950">{persona.name}</span>
           <span className="block text-[12px] text-ink-500">{persona.role}</span>
         </span>
       </div>
-      <p className="px-4 pb-4 pt-3 text-[12.5px] leading-relaxed text-ink-600">
+      <p className="px-4 pb-3.5 pt-2.5 text-[12.5px] leading-relaxed text-ink-600">
         {halt ? halt.text : 'The system found nothing that needs this person at this step.'}
       </p>
     </div>
@@ -174,15 +182,12 @@ function PersonaCard({ persona, halt }: { persona: { name: string; role: string 
 export function Stage({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="enter relative mt-8 rounded-[28px] p-2 ring-1 ring-ink-100 sm:p-5 lg:p-7"
-      style={{
-        animationDelay: '220ms',
-        background: 'radial-gradient(120% 80% at 50% 0%, #ffffff 0%, #eef2f8 55%, #e6ecf5 100%)',
-      }}
+      className="enter relative mt-6 sm:mt-8 sm:rounded-[28px] sm:bg-[radial-gradient(120%_80%_at_50%_0%,#ffffff_0%,#eef2f8_55%,#e6ecf5_100%)] sm:p-5 sm:ring-1 sm:ring-ink-100 lg:p-7"
+      style={{ animationDelay: '220ms' }}
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[28px] opacity-60"
+        className="pointer-events-none absolute inset-0 hidden rounded-[28px] opacity-60 sm:block"
         style={{
           backgroundImage: 'radial-gradient(rgba(4,35,72,0.10) 1px, transparent 1px)',
           backgroundSize: '18px 18px',
@@ -213,7 +218,7 @@ export function Dock({
   return (
     <>
     {explain && <EstimatesDialog rows={estimates} onClose={() => setExplain(false)} />}
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto max-w-6xl px-3 pb-3 sm:px-8 sm:pb-5">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto max-w-6xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8 sm:pb-5">
       <div className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-[#0a1a2f]/[0.97] p-2 text-white shadow-[0_28px_60px_-24px_rgba(4,24,47,0.75)] ring-1 ring-white/10 backdrop-blur-xl sm:gap-5 sm:p-2.5">
         <button
           onClick={onBack}
@@ -223,6 +228,20 @@ export function Dock({
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
+
+        {/* phones: the one thing worth knowing — why it's locked, or the time so far */}
+        <div className="min-w-0 flex-1 sm:hidden">
+          {blocked || hint ? (
+            <p className="flex items-start gap-1.5 text-[11.5px] leading-snug text-[#fcd38d]">
+              <Lock className="mt-0.5 h-3 w-3 shrink-0" /><span className="line-clamp-2">{blocked ?? hint}</span>
+            </p>
+          ) : showLedger ? (
+            <button onClick={() => setExplain(true)} className="text-left leading-tight">
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-white/40">People’s time <Info className="inline h-3 w-3" /></span>
+              <span className="mono block text-[12px] text-white/60">{formatMinutes(ledger.before)} → <span className="font-medium text-white">{formatMinutes(ledger.after)}</span></span>
+            </button>
+          ) : null}
+        </div>
 
         <div className="hidden min-w-0 flex-1 sm:block">
           {showLedger ? (
@@ -269,7 +288,7 @@ export function Dock({
             <button
               onClick={onNext}
               disabled={Boolean(blocked)}
-              className="group inline-flex h-10 items-center gap-2 rounded-xl bg-white pl-4 pr-3.5 text-[13px] font-semibold text-[#0a1a2f] shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:bg-signal-50 disabled:bg-white/10 disabled:text-white/35"
+              className="group inline-flex h-11 items-center gap-2 rounded-xl bg-white pl-4 pr-3.5 text-[13px] font-semibold sm:h-10 text-[#0a1a2f] shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:bg-signal-50 disabled:bg-white/10 disabled:text-white/35"
             >
               {cta}
               <ArrowRight className="h-4 w-4 transition-transform group-enabled:group-hover:translate-x-0.5" />
@@ -288,7 +307,7 @@ export function Cover({ onBegin }: { onBegin: () => void }) {
   return (
     <div>
       <section
-        className="enter relative overflow-hidden rounded-[32px] bg-[#07162a] px-6 py-12 text-white sm:px-12 sm:py-16"
+        className="enter relative overflow-hidden rounded-[24px] bg-[#07162a] px-6 py-10 text-white sm:rounded-[32px] sm:px-12 sm:py-16"
         style={{
           backgroundImage:
             'radial-gradient(60% 70% at 85% 10%, rgba(17,96,173,0.55), transparent 70%), radial-gradient(40% 50% at 10% 100%, rgba(56,189,248,0.12), transparent 70%), linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)',
@@ -313,7 +332,7 @@ export function Cover({ onBegin }: { onBegin: () => void }) {
             >
               Begin <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <span className="flex items-center gap-4 text-[12.5px] text-signal-100/60">
+            <span className="flex flex-col gap-1.5 text-[12.5px] text-signal-100/60 sm:flex-row sm:gap-4">
               <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> About five minutes</span>
               <span className="flex items-center gap-1.5"><UserRound className="h-3.5 w-3.5" /> Five points where you decide</span>
             </span>
@@ -412,7 +431,7 @@ export function Results({
   return (
     <div className="space-y-5">
       <section
-        className="enter relative overflow-hidden rounded-[32px] bg-[#07162a] px-6 py-10 text-white sm:px-12 sm:py-14"
+        className="enter relative overflow-hidden rounded-[24px] bg-[#07162a] px-6 py-9 text-white sm:rounded-[32px] sm:px-12 sm:py-14"
         style={{ backgroundImage: 'radial-gradient(60% 80% at 90% 0%, rgba(17,96,173,0.5), transparent 70%)' }}
       >
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-300">One enquiry, start to finish</p>
@@ -449,16 +468,17 @@ export function Results({
           <table className="mt-3 w-full text-[12.5px]">
             <thead>
               <tr className="text-left text-[10.5px] uppercase tracking-[0.06em] text-ink-400">
-                <th className="py-2 font-semibold">Step</th><th className="text-right font-semibold">Today</th><th className="text-right font-semibold">With AI</th><th className="text-right font-semibold">Saved</th>
+                <th className="py-2 font-semibold">Step</th><th className="text-right font-semibold sm:hidden">Time</th><th className="hidden text-right font-semibold sm:table-cell">Today</th><th className="hidden text-right font-semibold sm:table-cell">With AI</th><th className="text-right font-semibold">Saved</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-100">
               {rows.map((r) => (
                 <tr key={r.label}>
                   <td className="py-2.5 text-ink-800">{r.label}</td>
-                  <td className="mono text-right text-ink-400">{r.before} min</td>
-                  <td className="mono text-right text-ink-900">{r.after} min</td>
-                  <td className="mono text-right text-strong-600">−{r.before - r.after} min</td>
+                  <td className="mono whitespace-nowrap text-right text-ink-500 sm:hidden">{r.before} → <span className="text-ink-900">{r.after}</span></td>
+                  <td className="mono hidden text-right text-ink-400 sm:table-cell">{r.before} min</td>
+                  <td className="mono hidden text-right text-ink-900 sm:table-cell">{r.after} min</td>
+                  <td className="mono whitespace-nowrap text-right text-strong-600">−{r.before - r.after} min</td>
                 </tr>
               ))}
             </tbody>
@@ -536,16 +556,16 @@ export function AiUses({ catalogue }: { catalogue: { products: number; withImage
           const Icon = USE_ICON[u.step] ?? Sparkles;
           const step = STEPS.find((s) => s.id === u.step);
           return (
-            <li key={u.title} className="enter flex flex-col rounded-2xl bg-white p-5 ring-1 ring-ink-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)]" style={{ animationDelay: `${260 + i * 60}ms` }}>
+            <li key={u.title} className="enter flex flex-col rounded-2xl bg-white p-4 ring-1 sm:p-5 ring-ink-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)]" style={{ animationDelay: `${260 + i * 60}ms` }}>
               <div className="flex items-center justify-between">
                 <span className="grid h-9 w-9 place-items-center rounded-xl bg-signal-50 text-signal-600">
                   <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
                 </span>
                 <span className="mono text-[11px] text-ink-300">{String(i + 1).padStart(2, '0')}</span>
               </div>
-              <p className="mt-4 text-[14px] font-semibold leading-snug tracking-tight text-ink-950">{u.title}</p>
+              <p className="mt-3 text-[14px] font-semibold leading-snug tracking-tight text-ink-950 sm:mt-4">{u.title}</p>
               <p className="mt-1.5 flex-1 text-[12.5px] leading-relaxed text-ink-500">{u.does}</p>
-              <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-ink-100 pt-3 text-[10.5px]">
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-ink-100 pt-3 text-[10.5px] sm:mt-4">
                 <span className="rounded-md bg-ink-50 px-1.5 py-0.5 font-medium text-ink-600">{step?.rail}</span>
                 <span className={`rounded-md px-1.5 py-0.5 font-medium ${u.data === 'public' ? 'bg-strong-600/[0.08] text-strong-600' : 'bg-caution-500/[0.1] text-caution-600'}`}>
                   {u.data === 'public' ? 'Works on the public catalogue' : 'Needs Field’s own records'}
@@ -621,7 +641,21 @@ export function Estimates({ rows }: { rows: EstimateRow[] }) {
         yearly volumes are assumptions too.
       </p>
 
-      <div className="overflow-x-auto rounded-xl ring-1 ring-ink-100">
+      <ul className="space-y-2 sm:hidden">
+        {rows.map((r) => (
+          <li key={r.process} className="rounded-xl p-3.5 ring-1 ring-ink-100">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[13px] font-semibold text-ink-900">{r.label}</p>
+              <p className="mono shrink-0 text-[12px] text-ink-500">{r.before} → <span className="font-medium text-ink-900">{r.after} min</span></p>
+            </div>
+            <p className="mt-1.5 text-[12px] leading-snug text-ink-600"><span className="text-ink-400">Today: </span>{ESTIMATE_NOTES[r.process]?.today}</p>
+            <p className="mt-1 text-[12px] leading-snug text-ink-600"><span className="text-ink-400">With AI: </span>{ESTIMATE_NOTES[r.process]?.withAi}</p>
+            <p className="mt-1.5 text-[11px] text-ink-400">Assumed {r.volume.toLocaleString()} times a year</p>
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-xl ring-1 ring-ink-100 sm:block">
         <table className="w-full min-w-[640px] text-[12px]">
           <thead>
             <tr className="bg-ink-25 text-left text-[10.5px] uppercase tracking-[0.05em] text-ink-500">
@@ -669,13 +703,13 @@ export function EstimatesDialog({ rows, onClose }: { rows: EstimateRow[]; onClos
     return () => { delete document.body.dataset.dialog; window.removeEventListener('keydown', onKey); };
   }, [onClose]);
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[#07162a]/50 p-4 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#07162a]/50 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Where the time estimates come from"
         onClick={(e) => e.stopPropagation()}
-        className="step-in max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_40px_80px_-30px_rgba(4,24,47,0.6)] sm:p-8"
+        className="step-in max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_40px_80px_-30px_rgba(4,24,47,0.6)] sm:rounded-2xl sm:p-8"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2 className="font-display text-[24px] font-medium tracking-[-0.03em] text-ink-950">Where the time estimates come from</h2>

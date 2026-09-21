@@ -27,7 +27,7 @@ export function RequestScreen({
   return (
     <div>
       <section
-        className="relative overflow-hidden bg-signal-900 px-5 pb-12 pt-10 sm:px-10"
+        className="relative overflow-hidden bg-signal-900 px-4 pb-10 pt-8 sm:px-10 sm:pb-12 sm:pt-10"
         style={{
           backgroundImage:
             'radial-gradient(ellipse at 80% 0%, rgba(79,133,198,0.35), transparent 60%), linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
@@ -87,7 +87,7 @@ export function RequestScreen({
           { icon: ListChecks, t: 'Shows why each part fits', d: 'The catalogue facts behind every result.' },
           { icon: Send, t: 'One request, one quote', d: 'Pick the parts and send them in a single request.' },
         ].map(({ icon: Icon, t, d }) => (
-          <div key={t} className="flex gap-3 bg-white px-6 py-5">
+          <div key={t} className="flex gap-3 bg-white px-4 py-4 sm:px-6 sm:py-5">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-signal-50 text-signal-600">
               <Icon className="h-4 w-4" />
             </span>
@@ -136,7 +136,7 @@ export function PartsScreen({
   return (
     <div>
       {/* ------------------------------------------------------ search bar */}
-      <div className="border-b border-ink-100 bg-ink-25 px-5 py-3.5 sm:px-8">
+      <div className="border-b border-ink-100 bg-ink-25 px-4 py-3 sm:px-8 sm:py-3.5">
         <div className="flex flex-wrap items-center gap-3">
           <span className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-white px-3 py-2 text-[12.5px] text-ink-700 ring-1 ring-ink-200">
             <Search className="h-3.5 w-3.5 shrink-0 text-ink-400" />
@@ -156,7 +156,7 @@ export function PartsScreen({
         )}
       </div>
 
-      <div className="grid gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[1fr_270px]">
+      <div className="grid gap-6 px-4 py-5 sm:px-8 sm:py-6 lg:grid-cols-[1fr_270px]">
         {/* ------------------------------------------------------- results */}
         <div className="min-w-0">
           <div className="mb-3 flex items-baseline justify-between gap-3">
@@ -172,8 +172,8 @@ export function PartsScreen({
               const isOpen = open === l.line;
               return (
                 <li key={l.line} className={`overflow-hidden rounded-xl border bg-white transition-colors ${on ? 'border-ink-200' : 'border-ink-100 opacity-55'}`}>
-                  <div className="flex items-start gap-3.5 p-3.5">
-                    <Thumb src={l.image} size={60} alt={l.name} />
+                  <div className="flex items-start gap-3 p-3 sm:gap-3.5 sm:p-3.5">
+                    <Thumb src={l.image} size={52} alt={l.name} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <Badge tone={MATCH[l.matchClass].tone} dot>{MATCH[l.matchClass].text}</Badge>
@@ -188,11 +188,12 @@ export function PartsScreen({
                     <button
                       onClick={() => onToggle(l.line)}
                       disabled={asking}
-                      className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-3 text-[12px] font-medium transition-colors disabled:cursor-not-allowed ${
+                      aria-label={on ? 'Remove from basket' : 'Add to basket'}
+                      className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[12px] sm:px-3 font-medium transition-colors disabled:cursor-not-allowed ${
                         on ? 'bg-signal-50 text-signal-700 ring-1 ring-inset ring-signal-600/20' : 'bg-white text-ink-600 ring-1 ring-inset ring-ink-200 hover:bg-ink-25'
                       }`}
                     >
-                      {on ? <><Check className="h-3.5 w-3.5" /> In basket</> : <><Plus className="h-3.5 w-3.5" /> Add</>}
+                      {on ? <><Check className="h-3.5 w-3.5" /><span className="hidden sm:inline">In basket</span></> : <><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Add</span></>}
                     </button>
                   </div>
                   <button
