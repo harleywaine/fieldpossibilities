@@ -230,6 +230,13 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
 }
 .enter { animation: enter .7s cubic-bezier(.2, .7, .2, 1) both; }
 
+/* The cover's mock-ups hang in the air: a slow rise and fall. */
+@keyframes drift {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -10px; }
+}
+.drift { animation: drift 9s ease-in-out infinite; }
+
 @keyframes sweep {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(300%); }
@@ -265,7 +272,7 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
 /* Motion is decoration here; dropping it must leave content visible, which the
    `both` fill mode would otherwise prevent. */
 @media (prefers-reduced-motion: reduce) {
-  .step-in, .enter, .sweep::after { animation: none !important; }
+  .step-in, .enter, .drift, .sweep::after { animation: none !important; }
   .boot { display: none !important; }
   html { scroll-behavior: auto; }
 }

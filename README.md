@@ -48,6 +48,14 @@ FIND  →  UNDERSTAND  →  DO  →  OPTIMISE
 | 3 · Workflow Automation | AI **does** — reads an RFQ, matches it, flags exceptions | Synthetic RFQ × real catalogue | Working |
 | 4 · AI Operating Layer | AI **optimises** — opportunity analysis and ROI | Synthetic operational dataset | Working |
 
+## Access
+
+The whole site sits behind one shared password (`proxy.ts`, `lib/access.ts`): an unlock screen
+sets a signed cookie that lasts 30 days, and API routes answer 401 without it. The repository is
+public, so only a hash of the default password is in the source. Set `DEMO_PASSWORD` to change it
+and `DEMO_SECRET` to sign sessions with a key that isn't in the repo. It keeps the link private;
+it isn't user authentication.
+
 ## Real vs synthetic — the line that matters
 
 Only **Level 1 uses real data**: the public Field International catalogue, ingested and linked

@@ -303,64 +303,78 @@ export function Dock({
 
 /* ------------------------------------------------------------------- cover */
 
+/** The landing: one full-screen scene, nothing else on it until the viewer begins. */
 export function Cover({ onBegin }: { onBegin: () => void }) {
   return (
-    <div>
-      <section
-        className="enter relative overflow-hidden rounded-[24px] bg-[#07162a] px-6 py-10 text-white sm:rounded-[32px] sm:px-12 sm:py-16"
-        style={{
-          backgroundImage:
-            'radial-gradient(60% 70% at 85% 10%, rgba(17,96,173,0.55), transparent 70%), radial-gradient(40% 50% at 10% 100%, rgba(56,189,248,0.12), transparent 70%), linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)',
-          backgroundSize: 'auto, auto, 32px 32px, 32px 32px',
-        }}
-      >
-        <div className="relative z-10 max-w-[34rem]">
-          <p className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1 text-[11.5px] text-signal-100/80 ring-1 ring-inset ring-white/10">
+    <section
+      className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#07162a] text-white"
+      style={{
+        backgroundImage:
+          'radial-gradient(55% 65% at 82% 18%, rgba(17,96,173,0.55), transparent 70%), radial-gradient(40% 50% at 5% 100%, rgba(56,189,248,0.12), transparent 70%), linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)',
+        backgroundSize: 'auto, auto, 32px 32px, 32px 32px',
+      }}
+    >
+      <header className="enter relative z-10 mx-auto flex w-full max-w-6xl items-center px-5 pt-6 sm:px-8 sm:pt-8">
+        <span className="flex items-center gap-2.5">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/10 ring-1 ring-inset ring-white/15">
+            <span className="h-2 w-2 rotate-45 bg-white" />
+          </span>
+          <span className="text-[13px] font-semibold tracking-tight">Field</span>
+        </span>
+        <Link href="/demos" className="ml-auto text-[12px] text-white/45 transition-colors hover:text-white">All demos</Link>
+      </header>
+
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center px-5 sm:px-8">
+        <div className="max-w-[36rem] py-14">
+          <p className="enter inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1 text-[11.5px] text-signal-100/80 ring-1 ring-inset ring-white/10" style={{ animationDelay: '100ms' }}>
             <span className="h-1.5 w-1.5 rounded-full bg-[#7dd3fc]" /> Field International · AI Opportunity Lab
           </p>
-          <h1 className="mt-6 font-display text-[38px] font-medium leading-[1.02] tracking-[-0.04em] text-white sm:text-[58px]">
+          <h1 className="enter mt-6 font-display text-[42px] font-medium leading-[1.0] tracking-[-0.045em] text-white sm:text-[68px]" style={{ animationDelay: '200ms' }}>
             Follow one enquiry from the customer to the factory.
           </h1>
-          <p className="mt-5 max-w-[30rem] text-[16px] leading-relaxed text-signal-100/70 sm:text-[17px]">
+          <p className="enter mt-6 max-w-[30rem] text-[16px] leading-relaxed text-signal-100/70 sm:text-[18px]" style={{ animationDelay: '320ms' }}>
             Play Field’s customer, then the people at Field who handle the enquiry. The system does the
             preparation. You make the decisions.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-5">
+          <div className="enter mt-9 flex flex-wrap items-center gap-5" style={{ animationDelay: '440ms' }}>
             <button
               onClick={onBegin}
-              className="group inline-flex h-12 items-center gap-2.5 rounded-xl bg-white pl-5 pr-4 text-[14px] font-semibold text-[#07162a] shadow-[0_12px_30px_-10px_rgba(125,211,252,0.5)] transition-colors hover:bg-signal-50"
+              autoFocus
+              className="group inline-flex h-13 items-center gap-2.5 rounded-xl bg-white px-6 text-[15px] font-semibold text-[#07162a] shadow-[0_16px_40px_-12px_rgba(125,211,252,0.55)] transition-colors hover:bg-signal-50"
             >
               Begin <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <span className="flex flex-col gap-1.5 text-[12.5px] text-signal-100/60 sm:flex-row sm:gap-4">
+            <span className="flex flex-col gap-1.5 text-[12.5px] text-signal-100/55 sm:flex-row sm:gap-4">
               <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> About five minutes</span>
               <span className="flex items-center gap-1.5"><UserRound className="h-3.5 w-3.5" /> Five points where you decide</span>
             </span>
           </div>
         </div>
-
-        {/* two mock-ups, composed: the website in front of the CRM */}
-        <div aria-hidden className="pointer-events-none absolute -right-20 top-12 hidden w-[540px] xl:block" style={{ perspective: '1400px' }}>
-          <div className="relative" style={{ transform: 'rotateY(-14deg) rotateX(6deg)' }}>
-            <MiniCrm />
-            <div className="absolute -left-10 top-40 w-[280px]"><MiniSite /></div>
-          </div>
-        </div>
-      </section>
-
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        {[
-          { dot: 'bg-strong-500', t: 'Real', d: 'Field’s published catalogue: every part, photo, fact and lead time shown.' },
-          { dot: 'bg-caution-500', t: 'Synthetic', d: 'Customers and their history, complaints, Field’s staff, suppliers and every price.' },
-          { dot: 'bg-[#8b5cf6]', t: 'Simulated', d: 'Supplier replies and the order in production.' },
-        ].map((x, i) => (
-          <div key={x.t} className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100" style={{ animationDelay: `${300 + i * 90}ms` }}>
-            <p className="flex items-center gap-2 text-[13px] font-semibold text-ink-950"><span className={`h-2 w-2 rounded-full ${x.dot}`} />{x.t}</p>
-            <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-500">{x.d}</p>
-          </div>
-        ))}
       </div>
-    </div>
+
+      {/* two mock-ups, composed: the website in front of the CRM */}
+      <div aria-hidden className="pointer-events-none absolute right-[-6rem] top-1/2 hidden w-[600px] -translate-y-1/2 xl:block" style={{ perspective: '1400px' }}>
+        <div className="drift relative" style={{ transform: 'rotateY(-14deg) rotateX(6deg)' }}>
+          <MiniCrm />
+          <div className="absolute -left-12 top-44 w-[300px]"><MiniSite /></div>
+        </div>
+      </div>
+
+      <footer className="enter relative z-10 mx-auto w-full max-w-6xl px-5 pb-7 sm:px-8 sm:pb-9" style={{ animationDelay: '600ms' }}>
+        <div className="flex flex-col gap-2 border-t border-white/10 pt-5 text-[12px] text-white/50 sm:flex-row sm:gap-8">
+          {[
+            { dot: 'bg-strong-500', t: 'Real', d: 'Field’s published catalogue' },
+            { dot: 'bg-caution-500', t: 'Synthetic', d: 'customers, staff, suppliers and prices' },
+            { dot: 'bg-[#8b5cf6]', t: 'Simulated', d: 'supplier replies and orders' },
+          ].map((x) => (
+            <span key={x.t} className="flex items-center gap-2">
+              <span className={`h-1.5 w-1.5 rounded-full ${x.dot}`} />
+              <span className="font-medium text-white/80">{x.t}</span> {x.d}
+            </span>
+          ))}
+        </div>
+      </footer>
+    </section>
   );
 }
 

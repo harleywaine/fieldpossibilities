@@ -420,10 +420,14 @@ export function Journey({
       className="min-h-screen"
       style={{ background: 'radial-gradient(1200px 500px at 50% -120px, #e3ebf6 0%, transparent 70%), #f5f7fa' }}
     >
-      <TopBar index={index} reachable={reachable} go={go} onRestart={restart} canRestart={Boolean(found)} />
+      {/* The bar arrives with the journey: the cover and the preamble stand alone. */}
+      {!booting && step.id !== 'start' && step.id !== 'uses' && (
+        <TopBar index={index} reachable={reachable} go={go} onRestart={restart} canRestart={Boolean(found)} />
+      )}
 
-      <main key={step.id} className="mx-auto w-full max-w-6xl px-4 pb-36 pt-8 sm:px-8 sm:pt-12">
-        {!booting && step.id === 'start' && <Cover onBegin={() => go(1)} />}
+      {!booting && step.id === 'start' && <Cover onBegin={() => go(1)} />}
+
+      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-36 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : 'pt-8 sm:pt-12'}`}>
 
         {!booting && step.id === 'summary' && (
           <Results
