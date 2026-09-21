@@ -3,7 +3,7 @@
 import {
   AlertTriangle, BookOpen, Building2, Calendar, CheckCircle2, CircleDashed, Clock, CreditCard,
   Factory, FileText, History, Inbox, Mail, MapPin, MessageSquare, Phone, Plane, Plus, Send,
-  ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle,
+  ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle, ExternalLink,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { aircraftLabel, duration, gbp, shortDate, supplierFor } from '@/lib/journey.ts';
@@ -517,6 +517,18 @@ export function ReviewScreen({
 }) {
   const pending = lines.filter((l) => !decisions[l.line]);
   const guidance = brief?.fields?.find((f: any) => f.label === 'Technical position');
+  const checksOf = (l: SimLine) => l.flags.flatMap((f) => (f.kind === 'review' && f.check ? [f.check] : []));
+
+  // One row per kind of question, so the engineer sees the shape of the queue first.
+  const topics = new Map<string, { count: number; asked: string; catalogue: string; question: string }>();
+  for (const l of lines) {
+    for (const c of checksOf(l)) {
+      const t = topics.get(c.topic);
+      if (t) t.count += 1;
+      else topics.set(c.topic, { count: 1, asked: c.asked, catalogue: c.catalogue, question: c.question });
+    }
+  }
+
   return (
     <div>
       <PageHeader
@@ -524,67 +536,124 @@ export function ReviewScreen({
         icon={Wrench}
         title="Technical review"
         badges={lines.length ? (pending.length ? <Badge tone="amber" dot>{pending.length} awaiting you</Badge> : <Badge tone="green" dot>Complete</Badge>) : undefined}
-        meta={[<><Inbox className="h-3.5 w-3.5" />{rfq.reference}</>, <><Building2 className="h-3.5 w-3.5" />{customer}</>]}
+        meta={[
+          <><Inbox className="h-3.5 w-3.5" />{rfq.reference}</>,
+          <><Building2 className="h-3.5 w-3.5" />{customer}</>,
+          <><Plane className="h-3.5 w-3.5" />{aircraftLabel(rfq.aircraft) ?? 'Aircraft not stated'}{rfq.variant ? ` (-${rfq.variant} stated)` : ''}{rfq.engine ? ` · ${rfq.engine}` : ''}</>,
+          ...(rfq.deadlineDays ? [<><Timer className="h-3.5 w-3.5" />Needed within {duration(rfq.deadlineDays)}</>] : []),
+        ]}
         actions={pending.length > 0 && pending.length < lines.length
           ? <Button icon={CheckCircle2} variant="success" onClick={() => pending.forEach((l) => onDecide(l.line, 'approve'))}>Approve remaining {pending.length}</Button>
           : undefined}
       />
-      <Grid>
-        <div className="min-w-0 space-y-3">
-          {!lines.length && (
-            <Card><p className="text-[12.5px] text-ink-600">Nothing in the queue: every line establishes what the customer asked for.</p></Card>
+
+      {topics.size > 0 && (
+        <section className="mb-4 overflow-hidden rounded-lg border border-caution-500/30 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+          <header className="flex items-center gap-2 border-b border-caution-500/20 bg-[#fdf6ea] px-4 py-2.5">
+            <AlertTriangle className="h-3.5 w-3.5 text-caution-600" />
+            <h3 className="text-[12.5px] font-semibold text-ink-900">What needs Engineering</h3>
+            <span className="ml-auto text-[11px] text-ink-500">{plural(lines.length, 'line')} of {rfq.lines.length} on this enquiry</span>
+          </header>
+          <ul className="divide-y divide-ink-100">
+            {[...topics.entries()].map(([topic, t]) => (
+              <li key={topic} className="grid gap-3 px-4 py-3 md:grid-cols-[140px_1fr_1fr_1.2fr] md:items-center">
+                <span>
+                  <span className="block text-[12.5px] font-semibold text-ink-900">{topic}</span>
+                  <span className="block text-[11px] text-ink-500">{plural(t.count, 'line')}</span>
+                </span>
+                <Compare label="Customer asked for" value={t.asked} />
+                <Compare label="Catalogue records" value={t.catalogue} muted />
+                <p className="flex items-start gap-2 text-[12.5px] font-medium leading-snug text-ink-900">
+                  <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-caution-600" />{t.question}
+                </p>
+              </li>
+            ))}
+          </ul>
+          {guidance && (
+            <div className="flex items-start gap-2.5 border-t border-ink-100 bg-ink-25/70 px-4 py-3">
+              <BookOpen className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-400" />
+              <p className="text-[11.5px] leading-relaxed text-ink-600">
+                <span className="font-semibold text-ink-800">Engineering guidance · </span>{guidance.value}
+                {guidance.citations?.[0] && <span className="ml-1.5 whitespace-nowrap text-[10.5px] text-ink-400">— {guidance.citations[0].path}</span>}
+              </p>
+            </div>
           )}
-          {lines.map((l) => {
-            const d = decisions[l.line];
-            return (
-              <section key={l.line} className={`rounded-lg border bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${d ? 'border-ink-100' : 'border-caution-500/40'}`}>
-                <div className="flex items-start gap-3">
-                  <Thumb src={l.image} size={44} />
-                  <div className="min-w-0 flex-1">
-                    <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber}</p>
-                    <p className="text-[13px] font-medium leading-snug text-ink-900">{l.name}</p>
-                  </div>
-                  {d ? <Badge tone={DECIDED[d].tone} dot>{DECIDED[d].text}</Badge> : <Badge tone="amber" dot>Pending</Badge>}
+        </section>
+      )}
+
+      <div className="space-y-3">
+        {!lines.length && (
+          <Card><p className="text-[12.5px] text-ink-600">Nothing in the queue: every line establishes what the customer asked for.</p></Card>
+        )}
+        {lines.map((l) => {
+          const d = decisions[l.line];
+          const checks = checksOf(l);
+          return (
+            <section key={l.line} className={`overflow-hidden rounded-lg border bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${d ? 'border-ink-100' : 'border-caution-500/40'}`}>
+              <div className="flex items-center gap-3 px-4 py-3">
+                <Thumb src={l.image} size={44} />
+                <div className="min-w-0 flex-1">
+                  <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber}</p>
+                  <p className="truncate text-[13px] font-medium text-ink-900">{l.name}</p>
                 </div>
-                <div className="mt-3 space-y-1.5">
-                  {l.flags.filter((f) => f.kind === 'review').map((f) => (
-                    <p key={f.reason} className="flex items-start gap-2 rounded-md bg-[#fdf6ea] px-2.5 py-2 text-[12px] leading-snug text-ink-700">
-                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caution-600" /> {f.reason}
-                    </p>
+                {d ? <Badge tone={DECIDED[d].tone} dot>{DECIDED[d].text}</Badge> : <Badge tone="amber" dot>Pending</Badge>}
+              </div>
+
+              <div className="border-t border-ink-100 px-4 py-3">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-caution-600">To confirm</p>
+                <div className="space-y-2">
+                  {checks.map((c) => (
+                    <div key={c.topic} className="grid gap-2 md:grid-cols-[1fr_1fr_1.3fr] md:items-center">
+                      <Compare label={`${c.topic} · asked for`} value={c.asked} />
+                      <Compare label="Catalogue record" value={c.catalogue} muted />
+                      <p className="flex items-start gap-2 text-[12.5px] font-medium leading-snug text-ink-900">
+                        <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-caution-600" />{c.question}
+                      </p>
+                    </div>
+                  ))}
+                  {!checks.length && l.flags.filter((f) => f.kind === 'review').map((f) => (
+                    <p key={f.reason} className="text-[12px] text-ink-700">{f.reason}</p>
                   ))}
                 </div>
-                <div className="mt-3"><Segmented value={d} onChange={(v) => onDecide(l.line, v)} /></div>
-              </section>
-            );
-          })}
-        </div>
-        <Rail>
-          <Card title="Enquiry">
-            <Fields rows={[
-              ['Customer', customer],
-              ['Aircraft', `${aircraftLabel(rfq.aircraft) ?? 'Not stated'}${rfq.variant ? ` (-${rfq.variant} stated)` : ''}`],
-              ['Engine', rfq.engine ?? 'Not stated'],
-              ['Needed within', rfq.deadlineDays ? duration(rfq.deadlineDays) : 'Not stated'],
-              ['For review', `${lines.length} of ${rfq.lines.length} lines`],
-            ]} />
-          </Card>
-          {guidance && (
-            <Card title="Engineering guidance" icon={BookOpen}>
-              <p className="text-[12px] leading-relaxed text-ink-700">{guidance.value}</p>
-              {guidance.citations?.[0] && (
-                <p className="mt-2 inline-flex items-center gap-1 text-[10.5px] text-ink-400"><FileText className="h-3 w-3" />{guidance.citations[0].path}</p>
-              )}
-            </Card>
-          )}
-          <Card title="Your options" icon={HelpCircle}>
-            <ul className="space-y-2 text-[11.5px] leading-snug text-ink-600">
-              <li><span className="font-medium text-strong-600">Approve</span> — the part goes on the quote.</li>
-              <li><span className="font-medium text-signal-700">Ask customer</span> — held until they confirm.</li>
-              <li><span className="font-medium text-action-600">Remove</span> — dropped from the quote.</li>
-            </ul>
-          </Card>
-        </Rail>
-      </Grid>
+              </div>
+
+              <div className="border-t border-ink-100 bg-ink-25/60 px-4 py-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">From the catalogue record</p>
+                  <a href={l.sourceUrl} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1 text-[11px] font-medium text-signal-600 hover:text-signal-800">
+                    Catalogue page <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+                {l.specs.length ? (
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2 lg:grid-cols-4">
+                    {l.specs.map((sp) => (
+                      <div key={sp.label} className="min-w-0">
+                        <dt className="text-[10.5px] text-ink-400">{sp.label}</dt>
+                        <dd className="text-[12px] leading-snug text-ink-800">{sp.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : <p className="text-[11.5px] text-ink-400">No specification published.</p>}
+                {l.summary && <p className="mt-2 text-[11.5px] leading-snug text-ink-500">{l.summary}</p>}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 border-t border-ink-100 px-4 py-3">
+                <Segmented value={d} onChange={(v) => onDecide(l.line, v)} />
+                <span className="text-[11px] text-ink-400">Approve puts it on the quote · Ask holds it for the customer · Remove drops it</span>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Compare({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+  return (
+    <div className={`min-w-0 rounded-md px-2.5 py-1.5 ring-1 ring-inset ${muted ? 'bg-ink-25 ring-ink-100' : 'bg-signal-50/60 ring-signal-600/10'}`}>
+      <p className="text-[10px] text-ink-400">{label}</p>
+      <p className={`text-[12px] font-medium leading-snug ${muted ? 'text-ink-700' : 'text-signal-800'}`}>{value}</p>
     </div>
   );
 }

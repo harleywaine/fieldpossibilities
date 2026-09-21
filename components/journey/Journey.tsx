@@ -30,7 +30,7 @@ interface SimState {
   risk: string | null;
 }
 
-const STORE = 'field-simulation-v2';
+const STORE = 'field-simulation-v3';
 const EMPTY: SimState = {
   request: '', found: null, excluded: [], form: { email: '', company: '' }, contact: null,
   rfq: null, brief: null, review: {}, supplierSent: false, approval: null, risk: null,
