@@ -2,22 +2,26 @@
 
 **We didn’t write a proposal. We built one.**
 
-The front door (`/`) is **an interactive simulation of one enquiry**. The visitor types the
-request a customer might send (or picks an example) and chooses a synthetic customer. The
-system turns it into a request for quotation built from Field's real catalogue, and shows how:
-what it read in the message, what it searched, and why each line was kept (click any line).
-The enquiry then moves through account research, a line check, engineer review, supplier
-lead-time enquiries, quote approval and manufacture.
+The front door (`/`) is **an interactive simulation of one enquiry, from both sides**. Every
+screen the visitor operates is shown as a mock-up window, so it reads as a picture of a system.
 
-Four steps need a person, and the simulation stops at each one until the visitor decides:
-approve, query or remove each flagged line; approve the supplier enquiries; release or return
-the quote; and choose how to handle any line that would land after the deadline. The rail
-marks these steps with a ring and will not skip past an undecided one. A ledger at the bottom
-adds up people's time, today versus with AI, from the metrics table. Each step has its own URL
-(`?s=0`–`?s=9`), and state is kept for the browser session.
+- **The customer's side**, a mock of Field's website. The visitor describes the job, and the
+  system finds the parts in Field's real catalogue, with the reason for each part and how the
+  search worked. They untick anything they don't need, select *Request a quote*, enter an email
+  and company, and send it.
+- **Field's side**, a mock CRM. The enquiry lands in the inbox already logged, matched to an
+  account and assigned. The account screen shows value, win rate, recent jobs, complaints and
+  cases, activity and a brief assembled from internal documents. Then come the line check,
+  Engineering, Procurement, quote sign-off and the order. At each decision the visitor is
+  signed in as the person who would make it, and the simulation stops until they decide.
 
-Labelling: catalogue parts and lead times are real; customers and internal records are
-synthetic; supplier replies and manufacture are simulated. Prices are never generated.
+A company name matching one of the eight synthetic accounts brings up that account's history;
+any other name becomes a new lead. The email and company stay in the browser tab. The rail
+won't skip an undecided step, every step has its own URL (`?s=0`–`?s=10`), and a ledger adds
+up people's time, today versus with AI, from the metrics table.
+
+Labelling: catalogue parts and lead times are real. Accounts, jobs, complaints, employees and
+suppliers are synthetic. Supplier replies and the order are simulated. Prices are never generated.
 
 The four demonstrations remain individually at `/demos`, and the full platform at
 `/explore`.
@@ -302,7 +306,7 @@ against the cash figure, not the headline.
 | `npm run try:knowledge` | Level 2 enquiry brief from the terminal. |
 | `npm run try:workflow` | Level 3 RFQ processing from the terminal. |
 | `npm run try:roi` | Level 4 opportunity model from the terminal. |
-| `npm run try:sim "<request>"` | The front door's simulated RFQ from the terminal. |
+| `npm run try:sim "<request>"` | The front door's parts search and CRM accounts from the terminal. |
 | `npm run validate` / `npm run report` | Ingestion coverage and status. |
 
 ## Deployment note

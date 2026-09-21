@@ -3,12 +3,10 @@
  *
  * Every line comes from real catalogue retrieval, and every flag on a line is
  * derived from what that catalogue record does or doesn't establish — nothing
- * is scripted. The customer is synthetic (the internal side of Field isn't
- * public); the parts, evidence and lead times are real.
+ * is scripted. The customer is attached later, when they ask for a quote.
  */
 import { createHash } from 'node:crypto';
 import { retrieve } from '../ai/retrieval.ts';
-import { demoDb } from '../db/demo.ts';
 import type { EvidenceItem, MatchClass } from '../catalogue/types.ts';
 
 export type LineFlag =
@@ -30,16 +28,8 @@ export interface SimLine {
   flags: LineFlag[];
 }
 
-export interface SimCustomer {
-  id: string;
-  name: string;
-  country: string;
-  owner: string | null;
-}
-
 export interface SimRfq {
   reference: string;
-  customer: SimCustomer;
   request: string;
   understood: Array<{ label: string; value: string; note?: string }>;
   searchSteps: Array<{ label: string; detail: string }>;
@@ -55,19 +45,7 @@ export interface SimRfq {
 
 const MAX_LINES = 6;
 
-export function listCustomers(): SimCustomer[] {
-  const rows = demoDb().prepare(`
-    SELECT c.id, c.name, c.country, e.name AS owner
-    FROM customers c LEFT JOIN employees e ON e.id = c.account_owner_id
-    ORDER BY c.id
-  `).all() as any[];
-  return rows.map((r) => ({ id: r.id, name: r.name, country: r.country, owner: r.owner ?? null }));
-}
-
-export function buildSimulatedRfq(request: string, customerId?: string): SimRfq {
-  const customers = listCustomers();
-  const customer = customers.find((c) => c.id === customerId) ?? customers[0];
-
+export function buildSimulatedRfq(request: string): SimRfq {
   const result = retrieve(request, { limit: 24 });
   const req = result.requirement;
 
@@ -130,12 +108,11 @@ export function buildSimulatedRfq(request: string, customerId?: string): SimRfq 
     };
   });
 
-  const hash = createHash('sha1').update(`${request}|${customer?.id}`).digest('hex');
+  const hash = createHash('sha1').update(request).digest('hex');
   const reference = `RFQ-S${parseInt(hash.slice(0, 6), 16) % 90000 + 10000}`;
 
   return {
     reference,
-    customer,
     request,
     understood: req.understood,
     searchSteps: result.trace.steps,

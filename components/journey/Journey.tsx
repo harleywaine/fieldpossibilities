@@ -4,17 +4,24 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  STEPS, stepIndex, formatMinutes, simulatedLeadDays, type StepId, type StepMetric,
+  STEPS, PERSONAS, stepIndex, formatMinutes, simulatedLeadDays, matchAccount,
+  type StepId, type StepMetric,
 } from '@/lib/journey.ts';
-import type { SimRfq, SimLine, SimCustomer } from '@/lib/simulation/rfq.ts';
+import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
+import type { CrmAccount, CrmInboxItem } from '@/lib/simulation/crm.ts';
+import { BrowserFrame, CrmFrame, YourDecision, type CrmModule } from '@/components/journey/frames.tsx';
+import { RequestScreen, PartsScreen, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
-  RequestStage, RfqStage, ResearchStage, CheckStage, ReviewStage, SupplierStage,
-  ApprovalStage, ManufactureStage, type Decision,
-} from '@/components/journey/sim-stages.tsx';
+  InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplierScreen, ApprovalScreen, OrderScreen,
+  type Decision, type Contact,
+} from '@/components/journey/crm-stages.tsx';
 
 interface SimState {
   request: string;
-  customerId: string;
+  found: SimRfq | null;
+  excluded: number[];
+  form: QuoteForm;
+  contact: (Contact & { accountId: string | null }) | null;
   rfq: SimRfq | null;
   brief: any | null;
   review: Record<number, Decision>;
@@ -23,25 +30,29 @@ interface SimState {
   risk: string | null;
 }
 
-const STORE = 'field-simulation-v1';
-const EMPTY = (customerId: string): SimState => ({
-  request: '', customerId, rfq: null, brief: null, review: {},
-  supplierSent: false, approval: null, risk: null,
-});
+const STORE = 'field-simulation-v2';
+const EMPTY: SimState = {
+  request: '', found: null, excluded: [], form: { email: '', company: '' }, contact: null,
+  rfq: null, brief: null, review: {}, supplierSent: false, approval: null, risk: null,
+};
+const DOWNSTREAM: Partial<SimState> = {
+  contact: null, rfq: null, brief: null, review: {}, supplierSent: false, approval: null, risk: null,
+};
+
+/** Who takes an enquiry from a company Field has no account for. Synthetic. */
+const NEW_LEADS = { name: 'Tom Whitfield', role: 'Sales Engineer' };
 
 /**
- * The viewer's own enquiry, followed through Field. They type the request; the
- * system builds the RFQ from the real catalogue; every later step works on
- * that RFQ. Human steps halt until the viewer decides, and the rail will not
- * let them skip past an undecided one. State survives reloads (session only),
- * and every step has its own URL.
+ * The viewer's own enquiry: first as Field's customer on a mock of the website,
+ * then through a mock of Field's CRM. Human steps halt until the viewer
+ * decides, and the rail won't let them skip past one. State survives reloads
+ * (this tab only), and every step has its own URL.
  */
 export function Journey({
-  metrics, customers,
-}: { metrics: Record<string, StepMetric>; customers: SimCustomer[] }) {
+  metrics, accounts, inbox,
+}: { metrics: Record<string, StepMetric>; accounts: CrmAccount[]; inbox: CrmInboxItem[] }) {
   const params = useSearchParams();
-  const defaultCustomer = customers[0]?.id ?? '';
-  const [sim, setSim] = useState<SimState>(() => EMPTY(defaultCustomer));
+  const [sim, setSim] = useState<SimState>(EMPTY);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -50,10 +61,10 @@ export function Journey({
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORE);
-      if (raw) setSim({ ...EMPTY(defaultCustomer), ...JSON.parse(raw) });
+      if (raw) setSim({ ...EMPTY, ...JSON.parse(raw) });
     } catch { /* storage unavailable — start fresh */ }
     setLoaded(true);
-  }, [defaultCustomer]);
+  }, []);
 
   useEffect(() => {
     if (!loaded) return;
@@ -63,13 +74,14 @@ export function Journey({
   const patch = (p: Partial<SimState>) => setSim((s) => ({ ...s, ...p }));
 
   // --------------------------------------------------------------- derived
-  const rfq = sim.rfq;
+  const { found, rfq, contact } = sim;
+  const account = accounts.find((a) => a.id === contact?.accountId) ?? null;
+  const customerName = account?.name ?? contact?.company ?? '';
+  const owner = account?.owner ?? NEW_LEADS;
+
   const reviewLines = rfq?.lines.filter((l) => l.flags.some((f) => f.kind === 'review')) ?? [];
   const reviewDone = reviewLines.every((l) => sim.review[l.line]);
-  const included = rfq?.lines.filter((l) => {
-    const d = sim.review[l.line];
-    return !d || d === 'approve';
-  }) ?? [];
+  const included = rfq?.lines.filter((l) => !sim.review[l.line] || sim.review[l.line] === 'approve') ?? [];
   const held = rfq?.lines.filter((l) => sim.review[l.line] && sim.review[l.line] !== 'approve') ?? [];
   const supplierLines = included.filter((l) => l.flags.some((f) => f.kind === 'supplier'));
   const supplierDone = supplierLines.length === 0 || sim.supplierSent;
@@ -85,13 +97,14 @@ export function Journey({
 
   /** The furthest step the viewer may reach — they can't jump past a decision. */
   const reachable = useMemo(() => {
-    if (!rfq || !rfq.lines.length) return stepIndex('request');
+    if (!found) return stepIndex('request');
+    if (!contact || !rfq) return stepIndex('parts');
     if (!reviewDone) return stepIndex('review');
     if (!supplierDone) return stepIndex('supplier');
     if (sim.approval !== 'approved') return stepIndex('approval');
     if (!riskDone) return stepIndex('manufacture');
     return STEPS.length - 1;
-  }, [rfq, reviewDone, supplierDone, sim.approval, riskDone]);
+  }, [found, contact, rfq, reviewDone, supplierDone, sim.approval, riskDone]);
 
   const raw = Number(params.get('s') ?? 0);
   const requested = Number.isFinite(raw) ? Math.max(0, Math.min(STEPS.length - 1, Math.floor(raw))) : 0;
@@ -113,37 +126,51 @@ export function Journey({
   }, [loaded, requested, reachable]);
 
   // ---------------------------------------------------------------- actions
-  const submit = async () => {
+  const find = async () => {
     const q = sim.request.trim();
     if (q.length < 3 || busy) return;
     setBusy(true); setError(null);
     try {
       const res = await fetch('/api/simulate/rfq', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q, customerId: sim.customerId }),
+        body: JSON.stringify({ query: q }),
       });
       const data: SimRfq & { error?: string } = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Could not build the quote request.');
-      if (!data.lines.length) throw new Error('Nothing in the catalogue matched that. Try describing the aircraft or the job.');
-      // A new request resets everything downstream.
-      setSim((s) => ({ ...s, rfq: data, brief: null, review: {}, supplierSent: false, approval: null, risk: null }));
-      window.history.pushState(null, '', `?s=${stepIndex('rfq')}`);
+      if (!res.ok) throw new Error(data.error ?? 'The search failed.');
+      if (!data.lines.length) throw new Error('Nothing in the catalogue matched that. Try naming the aircraft or the job.');
+      setSim((s) => ({ ...s, ...DOWNSTREAM, found: data, excluded: [] }));
+      window.history.pushState(null, '', `?s=${stepIndex('parts')}`);
       window.scrollTo({ top: 0, behavior: 'instant' });
-      // Research runs in the background so it's ready when reached.
-      const about = [data.aircraft, data.engine, 'tooling'].filter(Boolean).join(' ');
-      fetch('/api/knowledge', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: `I've received an enquiry from ${data.customer.name} for ${about}. Tell me everything I need to know before I respond.` }),
-      }).then((r) => r.json()).then((d) => patch({ brief: d.brief ?? null })).catch(() => {});
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not build the quote request.');
+      setError(e instanceof Error ? e.message : 'The search failed.');
     } finally {
       setBusy(false);
     }
   };
 
+  const send = () => {
+    if (!found) return;
+    const matched = matchAccount(sim.form.company, accounts);
+    const lines = found.lines
+      .filter((l) => !sim.excluded.includes(l.line))
+      .map((l, i) => ({ ...l, line: i + 1 }));
+    setSim((s) => ({
+      ...s, ...DOWNSTREAM,
+      rfq: { ...found, lines },
+      contact: { email: s.form.email.trim(), company: s.form.company.trim(), accountId: matched?.id ?? null },
+    }));
+    // The account research runs in the background, so it's ready when reached.
+    if (matched) {
+      const about = [found.aircraft, found.engine, 'tooling'].filter(Boolean).join(' ');
+      fetch('/api/knowledge', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: `I've received an enquiry from ${matched.name} for ${about}. Tell me everything I need to know before I respond.` }),
+      }).then((r) => r.json()).then((d) => patch({ brief: d.brief ?? null })).catch(() => {});
+    }
+  };
+
   const restart = () => {
-    setSim(EMPTY(defaultCustomer));
+    setSim((s) => ({ ...EMPTY, form: s.form }));
     go(0);
   };
 
@@ -165,103 +192,148 @@ export function Journey({
   // -------------------------------------------------------------- screens
   const decisions = Object.keys(sim.review).length + (sim.supplierSent ? 1 : 0)
     + (sim.approval === 'approved' ? 1 : 0) + (sim.risk ? 1 : 0);
+  const pendingReview = reviewLines.filter((l) => !sim.review[l.line]).length;
+  const you = (id: StepId) => ({ ...PERSONAS[id]!, you: true });
+  const crm = (module: CrmModule, crumbs: string[], user: { name: string; role: string; you?: boolean }, body: React.ReactNode) => (
+    <CrmFrame module={module} crumbs={crumbs} user={user} badges={{ Inbox: step.id === 'inbox' ? inbox.length + 1 : undefined }}>
+      {body}
+    </CrmFrame>
+  );
 
-  const screens: Record<StepId, { lines: React.ReactNode[]; stage?: React.ReactNode; blocked?: string; cta?: string }> = {
+  type Screen = {
+    lines: React.ReactNode[];
+    halt?: { done: boolean; text: React.ReactNode };
+    frame?: React.ReactNode;
+    body?: React.ReactNode;
+    blocked?: string;
+    cta?: string;
+    hideContinue?: boolean;
+  };
+
+  const screens: Record<StepId, Screen> = {
     start: {
       lines: [
-        'Play the part of Field’s customer.',
-        'Type a request, and follow it through quotation, review, suppliers and manufacture — deciding what a person would decide along the way.',
+        'Play Field’s customer. Then play Field.',
+        'Ask for tooling the way a customer would, then follow the enquiry through Field’s systems, making the decisions a person would make.',
       ],
-      stage: (
-        <p className="text-[12.5px] leading-relaxed text-ink-400">
-          The catalogue is Field’s real, published one. The customer, their history, supplier
-          replies and manufacturing are synthetic or simulated, and labelled as such. Steps marked
-          with a ring on the rail above will stop and ask you to decide.
+      body: (
+        <p className="max-w-2xl text-[12.5px] leading-relaxed text-ink-400">
+          Each screen shows a mock-up: the customer’s browser, then Field’s CRM. The catalogue is Field’s real,
+          published one. Customers, their history, employees, suppliers and replies are synthetic, and labelled
+          as such. Steps with a ring on the rail above stop and wait for your decision.
         </p>
       ),
       cta: 'Begin',
     },
     request: {
-      lines: ['What does the customer need?', 'Write it the way an engineer would — no part numbers required.'],
-      stage: (
-        <RequestStage
-          value={sim.request}
-          onChange={(v) => patch({ request: v })}
-          customers={customers}
-          customerId={sim.customerId}
-          onCustomer={(id) => patch({ customerId: id })}
-          onSubmit={submit}
-          busy={busy}
-          error={error}
-        />
+      lines: ['You are the customer.', 'Say what you need, the way you would to a supplier.'],
+      frame: (
+        <BrowserFrame address="field — find a part">
+          <RequestScreen value={sim.request} onChange={(v) => patch({ request: v })} onSubmit={find} busy={busy} error={error} />
+        </BrowserFrame>
       ),
-      cta: rfq ? 'Continue with the last request' : undefined,
-      blocked: rfq ? undefined : 'Send a request to continue',
+      cta: 'Continue with these parts',
+      hideContinue: !found,
     },
-    rfq: {
-      lines: ['Here is the quote request it became.', 'Real parts from Field’s catalogue, and the reasoning behind each one.'],
-      stage: rfq && <RfqStage rfq={rfq} />,
+    parts: {
+      lines: contact
+        ? ['Your request is on its way to Field.']
+        : ['These are the parts you’ll need.', 'Each one comes from Field’s real catalogue, with the reason it was picked.'],
+      frame: found && (
+        <BrowserFrame address="field — find a part — results">
+          <PartsScreen
+            found={found}
+            excluded={sim.excluded}
+            onToggle={(line) => setSim((s) => ({
+              ...s, excluded: s.excluded.includes(line) ? s.excluded.filter((x) => x !== line) : [...s.excluded, line],
+            }))}
+            form={sim.form}
+            onForm={(form) => patch({ form })}
+            sent={contact && rfq ? { email: contact.email, company: contact.company, reference: rfq.reference } : null}
+            onSend={send}
+            accountNames={accounts.map((a) => a.name)}
+          />
+        </BrowserFrame>
+      ),
+      cta: 'See it arrive at Field',
+      hideContinue: !contact,
     },
-    research: {
-      lines: [`Before replying, it reads what Field already knows about ${rfq?.customer.name ?? 'this customer'}.`],
-      stage: <ResearchStage brief={sim.brief} />,
+    inbox: {
+      lines: ['Now you’re at Field. The enquiry arrives.', 'Before anyone opens it, the system has logged it, found the account and assigned an owner.'],
+      frame: rfq && contact && crm('Inbox', ['Inbox', rfq.reference], owner,
+        <InboxScreen rfq={rfq} contact={contact} account={account} inbox={inbox} newLeadOwner={NEW_LEADS.name} />),
+    },
+    account: {
+      lines: [
+        account ? `${owner.name} opens the account.` : `${owner.name} opens the new lead.`,
+        account ? `Everything Field holds on ${account.name}, on one screen.` : `${customerName} is new to Field.`,
+      ],
+      frame: rfq && contact && crm('Accounts', ['Accounts', customerName], owner,
+        <AccountScreen account={account} contact={contact} rfq={rfq} brief={sim.brief} />),
     },
     check: {
-      lines: ['Every line is checked against what the catalogue actually establishes.', 'Anything it can’t confirm is sent to a person — never guessed.'],
-      stage: rfq && <CheckStage rfq={rfq} />,
+      lines: ['Every line is checked against the catalogue.', 'Anything the catalogue doesn’t establish goes to a person.'],
+      frame: rfq && crm('Enquiries', ['Enquiries', rfq.reference, 'Lines'], owner,
+        <CheckScreen rfq={rfq} customer={customerName} owner={owner.name} />),
     },
     review: {
-      lines: [reviewLines.length ? 'An engineer’s judgement is needed.' : 'No engineer needed this time.'],
-      stage: <ReviewStage lines={reviewLines} decisions={sim.review} onDecide={(line, d) => setSim((s) => ({ ...s, review: { ...s.review, [line]: d } }))} />,
-      blocked: reviewDone ? undefined : 'Decide on every flagged line to continue',
+      lines: [reviewLines.length ? 'Engineering has lines to decide.' : 'Nothing needs Engineering this time.', `You are ${PERSONAS.review!.name}, ${PERSONAS.review!.role}.`],
+      halt: reviewLines.length ? {
+        done: reviewDone,
+        text: reviewDone
+          ? 'Every line in the queue has a decision.'
+          : `${pendingReview} ${pendingReview === 1 ? 'line is' : 'lines are'} waiting in your queue. The system has given its reasons; it won’t decide for you.`,
+      } : undefined,
+      frame: rfq && crm('Engineering', ['Engineering', 'Review queue', rfq.reference], you('review'),
+        <ReviewScreen rfq={rfq} lines={reviewLines} decisions={sim.review} onDecide={(line, d) => setSim((s) => ({ ...s, review: { ...s.review, [line]: d } }))} />),
+      blocked: reviewDone ? undefined : 'Decide every line in the queue to continue',
     },
     supplier: {
-      lines: [supplierLines.length ? 'Some lead times need confirming before a date is promised.' : 'Every lead time is already known.'],
-      stage: (
-        <SupplierStage
-          lines={supplierLines}
-          sent={sim.supplierSent}
-          onSend={() => patch({ supplierSent: true })}
-          replies={replies}
-          deadlineDays={rfq?.deadlineDays ?? null}
-        />
-      ),
+      lines: [supplierLines.length ? 'Some lead times need confirming.' : 'Every lead time is already known.', `You are ${PERSONAS.supplier!.name}, ${PERSONAS.supplier!.role}.`],
+      halt: supplierLines.length ? {
+        done: sim.supplierSent,
+        text: sim.supplierSent
+          ? 'Enquiries sent. The replies are simulated.'
+          : 'The system has drafted the supplier enquiries. Nothing is sent until you approve it.',
+      } : undefined,
+      frame: rfq && crm('Procurement', ['Procurement', 'Lead-time enquiries', rfq.reference], you('supplier'),
+        <SupplierScreen lines={supplierLines} sent={sim.supplierSent} onSend={() => patch({ supplierSent: true })} replies={replies} deadlineDays={rfq.deadlineDays} />),
       blocked: supplierDone ? undefined : 'Approve the supplier enquiries to continue',
     },
     approval: {
-      lines: ['The quote is ready for sign-off.'],
-      stage: rfq && (
-        <ApprovalStage
-          rfq={rfq}
-          included={included}
-          held={held}
-          leadDays={leadDays}
-          deliveryDays={deliveryDays}
-          decision={sim.approval}
+      lines: ['The quote needs signing off.', `You are ${PERSONAS.approval!.name}, ${PERSONAS.approval!.role}.`],
+      halt: {
+        done: sim.approval === 'approved',
+        text: sim.approval === 'approved'
+          ? 'Signed off. In this mock-up nothing is actually sent.'
+          : 'The quote is assembled. It goes nowhere until you sign it off.',
+      },
+      frame: rfq && contact && crm('Quotes', ['Quotes', rfq.reference.replace('RFQ', 'QT')], you('approval'),
+        <ApprovalScreen
+          rfq={rfq} customer={customerName} contact={contact} included={included} held={held}
+          leadDays={leadDays} deliveryDays={deliveryDays} decision={sim.approval}
           onDecide={(d) => {
             patch({ approval: d });
             if (d === 'returned') go(stepIndex('review'));
           }}
-        />
-      ),
-      blocked: sim.approval === 'approved' ? undefined : 'Approve the quote to continue',
+        />),
+      blocked: sim.approval === 'approved' ? undefined : 'Sign off the quote to continue',
     },
     manufacture: {
-      lines: ['The customer accepts. The order goes to manufacture.', lateCount ? 'One thing needs you before it does.' : 'The system watches every line until it ships.'],
-      stage: (
-        <ManufactureStage
-          included={included}
-          leadDays={leadDays}
-          deadlineDays={rfq?.deadlineDays ?? null}
-          decision={sim.risk}
-          onDecide={(d) => patch({ risk: d })}
-        />
-      ),
+      lines: ['The customer accepts. The order goes into production.', `You are ${PERSONAS.manufacture!.name}, ${PERSONAS.manufacture!.role}.`],
+      halt: lateCount ? {
+        done: Boolean(sim.risk),
+        text: sim.risk
+          ? `Decided: ${sim.risk.toLowerCase()}.`
+          : `${lateCount} ${lateCount === 1 ? 'item' : 'items'} will arrive after the customer’s deadline. The system has spotted it; the call is yours.`,
+      } : undefined,
+      frame: rfq && crm('Orders', ['Orders', rfq.reference.replace('RFQ', 'SO')], you('manufacture'),
+        <OrderScreen rfq={rfq} included={included} leadDays={leadDays} decision={sim.risk} onDecide={(d) => patch({ risk: d })} />),
       blocked: riskDone ? undefined : 'Decide how to handle the late items to continue',
     },
     summary: {
       lines: ['One enquiry, start to finish.'],
-      stage: (
+      body: (
         <Summary
           before={ledger.totalBefore}
           after={ledger.totalAfter}
@@ -277,27 +349,28 @@ export function Journey({
 
   const c = screens[step.id];
   const isLast = index === STEPS.length - 1;
+  const delay = (n: number) => ({ animationDelay: `${n}ms` });
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
       {/* --------------------------------------------------------------- top */}
-      <header className="mx-auto flex w-full max-w-4xl items-center gap-6 px-6 pt-6 sm:px-10">
+      <header className="mx-auto flex w-full max-w-5xl items-center gap-6 px-4 pt-6 sm:px-8">
         <button onClick={() => go(0)} className="flex items-center gap-2" aria-label="Back to the start">
           <span className="h-2 w-2 rotate-45 bg-signal-700" />
           <span className="text-[12px] font-medium tracking-tight text-ink-800">Field</span>
         </button>
-        {rfq && (
+        {found && (
           <button onClick={restart} className="ml-auto text-[11px] text-ink-400 transition-colors hover:text-signal-600">
             New request
           </button>
         )}
-        <Link href="/demos" className={`${rfq ? '' : 'ml-auto'} text-[11px] text-ink-400 transition-colors hover:text-signal-600`}>
+        <Link href="/demos" className={`${found ? '' : 'ml-auto'} text-[11px] text-ink-400 transition-colors hover:text-signal-600`}>
           All demos
         </Link>
       </header>
 
       {/* -------------------------------------------------------------- rail */}
-      <nav aria-label="Journey" className="mx-auto mt-8 w-full max-w-4xl px-6 sm:px-10">
+      <nav aria-label="Journey" className="mx-auto mt-8 w-full max-w-5xl px-4 sm:px-8">
         <ol className="flex items-center">
           {STEPS.map((s, i) => {
             const locked = i > reachable;
@@ -316,7 +389,7 @@ export function Journey({
                       i === index ? 'h-2.5 w-2.5 bg-signal-700'
                       : i < index ? 'h-1.5 w-1.5 bg-signal-600'
                       : 'h-1.5 w-1.5 bg-ink-200'
-                    } ${s.human ? 'ring-2 ring-[color:var(--color-caution-500)] ring-offset-2' : ''}`}
+                    } ${s.human ? 'ring-2 ring-caution-500 ring-offset-2' : ''}`}
                   />
                   <span
                     className={`pointer-events-none absolute top-6 whitespace-nowrap text-[10.5px] transition-opacity ${
@@ -333,29 +406,38 @@ export function Journey({
       </nav>
 
       {/* ------------------------------------------------------------ screen */}
-      <main key={step.id} className="mx-auto w-full max-w-2xl flex-1 px-6 pb-48 pt-[9vh] sm:px-10">
-        {step.data && <DataTag kind={step.data} />}
-
-        <div className="space-y-4">
+      <main key={step.id} className="mx-auto w-full max-w-5xl flex-1 px-4 pb-48 pt-[5vh] sm:px-8">
+        {step.side && (
+          <p className="step-in mono mb-5 text-[10.5px] tracking-[0.12em] text-signal-600">
+            {step.side === 'customer' ? 'THE CUSTOMER’S SIDE · FIELD’S WEBSITE' : 'FIELD’S SIDE · THE CRM'}
+          </p>
+        )}
+        <div className="max-w-2xl space-y-3">
           {c.lines.map((line, i) => (
             <p
               key={i}
-              className={`step-in font-light leading-[1.25] ${i === 0 ? 'text-[28px] text-ink-950 sm:text-[34px]' : 'text-[19px] text-ink-500 sm:text-[22px]'}`}
-              style={{ animationDelay: `${120 + i * 380}ms` }}
+              className={`step-in font-light leading-[1.25] ${i === 0 ? 'text-[26px] text-ink-950 sm:text-[32px]' : 'text-[17px] text-ink-500 sm:text-[20px]'}`}
+              style={delay(120 + i * 320)}
             >
               {line}
             </p>
           ))}
         </div>
 
-        {c.stage && (
-          <div className="step-in mt-12" style={{ animationDelay: `${280 + c.lines.length * 380}ms` }}>
-            {c.stage}
+        {c.halt && (
+          <div className="step-in mt-8 max-w-2xl" style={delay(200 + c.lines.length * 320)}>
+            <YourDecision done={c.halt.done}>{c.halt.text}</YourDecision>
           </div>
         )}
 
-        {!isLast && (step.id !== 'request' || rfq) && (
-          <div className="step-in mt-12 flex flex-wrap items-center gap-x-6 gap-y-3" style={{ animationDelay: `${450 + c.lines.length * 380}ms` }}>
+        {(c.frame || c.body) && (
+          <div className="step-in mt-8" style={delay(280 + c.lines.length * 320)}>
+            {c.frame ?? c.body}
+          </div>
+        )}
+
+        {!isLast && !c.hideContinue && (
+          <div className="step-in mt-10 flex flex-wrap items-center gap-x-6 gap-y-3" style={delay(450 + c.lines.length * 320)}>
             <button
               onClick={() => go(index + 1)}
               disabled={Boolean(c.blocked)}
@@ -363,7 +445,7 @@ export function Journey({
             >
               {c.cta ?? 'Continue'} →
             </button>
-            {c.blocked && <span className="text-[12px] text-[color:var(--color-caution-600)]">{c.blocked}</span>}
+            {c.blocked && <span className="text-[12px] text-caution-600">{c.blocked}</span>}
             {index > 0 && !c.blocked && (
               <button onClick={() => go(index - 1)} className="text-[12.5px] text-ink-400 transition-colors hover:text-signal-600">
                 ← Back
@@ -371,21 +453,16 @@ export function Journey({
             )}
           </div>
         )}
+        {c.hideContinue && index > 0 && (
+          <button onClick={() => go(index - 1)} className="mt-8 text-[12.5px] text-ink-400 transition-colors hover:text-signal-600">
+            ← Back
+          </button>
+        )}
       </main>
 
-      {index > 1 && !isLast && <Ledger ledger={ledger} />}
+      {index >= stepIndex('inbox') && !isLast && <Ledger ledger={ledger} />}
     </div>
   );
-}
-
-function DataTag({ kind }: { kind: 'real' | 'synthetic' | 'mixed' | 'simulated' }) {
-  const t = {
-    real: { text: 'Real Field catalogue', cls: 'text-[color:var(--color-strong-600)]' },
-    synthetic: { text: 'Synthetic records', cls: 'text-[color:var(--color-caution-600)]' },
-    mixed: { text: 'Real catalogue · synthetic customer', cls: 'text-signal-600' },
-    simulated: { text: 'Simulated', cls: 'text-[color:var(--color-caution-600)]' },
-  }[kind];
-  return <p className={`step-in mono mb-6 text-[10.5px] uppercase tracking-[0.12em] ${t.cls}`}>{t.text}</p>;
 }
 
 /* ------------------------------------------------------------------ ledger */
@@ -394,8 +471,8 @@ function Ledger({ ledger }: { ledger: { totalBefore: number; before: number; aft
   const scale = (m: number) => `${(m / ledger.totalBefore) * 100}%`;
   return (
     <div className="fixed inset-x-0 bottom-0 z-20 border-t border-ink-100 bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto w-full max-w-4xl px-6 py-4 sm:px-10">
-        <div className="mb-2.5 flex items-baseline justify-between gap-4">
+      <div className="mx-auto w-full max-w-5xl px-4 py-3.5 sm:px-8">
+        <div className="mb-2 flex items-baseline justify-between gap-4">
           <p className="mono text-[10px] tracking-[0.12em] text-ink-400">PEOPLE’S TIME ON THIS ENQUIRY</p>
           {ledger.latest && (
             <p key={ledger.latest.s.id} className="step-in mono hidden text-[10.5px] text-ink-500 sm:block">
@@ -434,7 +511,7 @@ function Summary({
   const checks = rfq ? rfq.lines.length * 4 : 0;
   const docs = brief?.retrieval?.documents?.length ?? 0;
   return (
-    <div>
+    <div className="max-w-2xl">
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[2px] border border-ink-200 bg-ink-200">
         <div className="bg-white px-5 py-6">
           <p className="mono text-[10.5px] tracking-[0.1em] text-ink-400">PEOPLE’S TIME TODAY</p>
@@ -448,9 +525,9 @@ function Summary({
 
       {rfq && (
         <p className="step-in mt-8 text-[17px] font-light leading-relaxed text-ink-700" style={{ animationDelay: '300ms' }}>
-          The system searched {rfq.considered.toLocaleString()} relevant catalogue records, read {docs} internal
-          documents and ran {checks} checks. <span className="text-ink-950">You made {decisions} decisions.</span>{' '}
-          That division of labour is the point.
+          The system searched {rfq.considered.toLocaleString()} relevant catalogue records,
+          {docs ? ` read ${docs} internal documents,` : ''} logged and routed the enquiry and ran {checks} checks.{' '}
+          <span className="text-ink-950">You made {decisions} decisions.</span>
         </p>
       )}
 

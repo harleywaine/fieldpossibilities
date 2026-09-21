@@ -3,13 +3,13 @@ import type { Metadata } from 'next';
 import { Journey } from '@/components/journey/Journey.tsx';
 import { loadMetrics } from '@/lib/roi/model.ts';
 import { FALLBACK_METRICS, type StepMetric } from '@/lib/journey.ts';
-import { listCustomers, type SimCustomer } from '@/lib/simulation/rfq.ts';
+import { listAccounts, listInbox, type CrmAccount, type CrmInboxItem } from '@/lib/simulation/crm.ts';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Field AI Opportunity Lab',
-  description: 'Play the customer. Follow your own enquiry through Field, deciding what a person would decide.',
+  description: 'Play Field’s customer, then Field: follow your own enquiry from the website through the CRM, deciding what a person would decide.',
 };
 
 /** The front door: one enquiry, told a screen at a time. */
@@ -26,13 +26,14 @@ export default function JourneyPage() {
     }
   } catch { /* synthetic dataset not generated — fall back */ }
 
-  let customers: SimCustomer[] = [];
-  try { customers = listCustomers(); } catch { /* dataset not generated */ }
-  if (!customers.length) customers = [{ id: 'CUST-001', name: 'Singapore Aero MRO', country: 'Singapore', owner: null }];
+  // Without the synthetic dataset every company is a new lead and the inbox is empty.
+  let accounts: CrmAccount[] = [];
+  let inbox: CrmInboxItem[] = [];
+  try { accounts = listAccounts(); inbox = listInbox(); } catch { /* dataset not generated */ }
 
   return (
     <Suspense>
-      <Journey metrics={metrics} customers={customers} />
+      <Journey metrics={metrics} accounts={accounts} inbox={inbox} />
     </Suspense>
   );
 }
