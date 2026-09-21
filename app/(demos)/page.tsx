@@ -3,12 +3,13 @@ import type { Metadata } from 'next';
 import { Journey } from '@/components/journey/Journey.tsx';
 import { loadMetrics } from '@/lib/roi/model.ts';
 import { FALLBACK_METRICS, type StepMetric } from '@/lib/journey.ts';
+import { listCustomers, type SimCustomer } from '@/lib/simulation/rfq.ts';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Field AI Opportunity Lab',
-  description: 'One enquiry, followed from the first question to the finished tool.',
+  description: 'Play the customer. Follow your own enquiry through Field, deciding what a person would decide.',
 };
 
 /** The front door: one enquiry, told a screen at a time. */
@@ -25,9 +26,13 @@ export default function JourneyPage() {
     }
   } catch { /* synthetic dataset not generated — fall back */ }
 
+  let customers: SimCustomer[] = [];
+  try { customers = listCustomers(); } catch { /* dataset not generated */ }
+  if (!customers.length) customers = [{ id: 'CUST-001', name: 'Singapore Aero MRO', country: 'Singapore', owner: null }];
+
   return (
     <Suspense>
-      <Journey metrics={metrics} />
+      <Journey metrics={metrics} customers={customers} />
     </Suspense>
   );
 }

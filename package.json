@@ -21,7 +21,8 @@
     "generate-demo-data": "node scripts/generate-demo-data.ts",
     "try:knowledge": "node scripts/try-knowledge.ts",
     "try:workflow": "node scripts/try-workflow.ts",
-    "try:roi": "node scripts/try-roi.ts"
+    "try:roi": "node scripts/try-roi.ts",
+    "try:sim": "node scripts/try-sim.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.123.0",

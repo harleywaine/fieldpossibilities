@@ -1,37 +1,39 @@
 /**
- * One enquiry, followed from first question to finished tool.
+ * The simulation: a request the viewer types, followed through Field's process.
  *
- * Each step names a real stage of Field's process, literally. Where a step has
- * a people-time cost, it points at a row in the metrics table so the ledger at
- * the bottom of the screen is computed, not written.
+ * Steps marked `human` stop and wait for the viewer's decision — the point of
+ * the exercise is that the machine prepares and the person decides. Where a
+ * step has a people-time cost it points at a row in the metrics table, so the
+ * ledger is computed, not written.
  */
 
 export type StepId =
-  | 'start' | 'search' | 'enquiry' | 'research' | 'quote'
-  | 'review' | 'supplier' | 'manufacture' | 'summary';
+  | 'start' | 'request' | 'rfq' | 'research' | 'check'
+  | 'review' | 'supplier' | 'approval' | 'manufacture' | 'summary';
 
 export interface JourneyStep {
   id: StepId;
-  /** Label on the navigation rail. */
   rail: string;
-  /** Row in the metrics table this step's time comes from, if it has one. */
+  human?: boolean;
   metric?: string;
-  /** How the step reads in the time ledger. */
   ledgerLabel?: string;
-  data?: 'real' | 'synthetic' | 'mixed';
+  data?: 'real' | 'synthetic' | 'mixed' | 'simulated';
 }
 
 export const STEPS: JourneyStep[] = [
   { id: 'start', rail: 'Start' },
-  { id: 'search', rail: 'Customer search', metric: 'Customer enquiry handling', ledgerLabel: 'Finding the product', data: 'real' },
-  { id: 'enquiry', rail: 'Enquiry', data: 'synthetic' },
+  { id: 'request', rail: 'Customer request', data: 'real' },
+  { id: 'rfq', rail: 'Quote request', metric: 'Customer enquiry handling', ledgerLabel: 'Turning the request into an RFQ', data: 'mixed' },
   { id: 'research', rail: 'Research', metric: 'Internal knowledge retrieval', ledgerLabel: 'Researching the account', data: 'synthetic' },
-  { id: 'quote', rail: 'Quotation', metric: 'RFQ preparation', ledgerLabel: 'Preparing the quote', data: 'mixed' },
-  { id: 'review', rail: 'Human review', metric: 'Technical applicability check', ledgerLabel: 'Technical review', data: 'mixed' },
-  { id: 'supplier', rail: 'Supplier', metric: 'Supplier follow-up', ledgerLabel: 'Confirming the lead time', data: 'synthetic' },
-  { id: 'manufacture', rail: 'Manufacture', data: 'synthetic' },
+  { id: 'check', rail: 'Line check', metric: 'RFQ preparation', ledgerLabel: 'Checking every line', data: 'real' },
+  { id: 'review', rail: 'Engineer review', human: true, metric: 'Technical applicability check', ledgerLabel: 'Technical review', data: 'real' },
+  { id: 'supplier', rail: 'Supplier', human: true, metric: 'Supplier follow-up', ledgerLabel: 'Confirming lead times', data: 'simulated' },
+  { id: 'approval', rail: 'Quote approval', human: true, data: 'simulated' },
+  { id: 'manufacture', rail: 'Manufacture', human: true, data: 'simulated' },
   { id: 'summary', rail: 'Summary' },
 ];
+
+export const stepIndex = (id: StepId) => STEPS.findIndex((s) => s.id === id);
 
 export interface StepMetric { before: number; after: number; volume: number }
 
@@ -44,13 +46,11 @@ export const FALLBACK_METRICS: Record<string, StepMetric> = {
   'Supplier follow-up': { before: 25, after: 9, volume: 1800 },
 };
 
-/** The customer's question — asked for real, against the real catalogue. */
-export const CUSTOMER_QUERY =
-  'Tooling for Boeing 787 GEnx thrust reverser maintenance, needed within 10 weeks';
-
-export const RESEARCH_QUESTION =
-  "I've just received an enquiry from Singapore Aero MRO for Boeing 787 GEnx " +
-  'thrust reverser tooling. Tell me everything I need to know before I respond.';
+export const EXAMPLE_REQUESTS = [
+  "We're maintaining Boeing 787-9 aircraft and need tooling for GEnx engine thrust reverser maintenance. We need delivery within 10 weeks.",
+  'Handling equipment for a 737-800 horizontal stabilizer, needed within 8 weeks.',
+  'Landing gear jacking equipment for a 747 heavy check.',
+];
 
 export function formatMinutes(total: number): string {
   const m = Math.round(total);
@@ -58,4 +58,25 @@ export function formatMinutes(total: number): string {
   const h = Math.floor(m / 60);
   const r = m % 60;
   return r ? `${h} h ${r} min` : `${h} h`;
+}
+
+export const weeks = (days: number) => Math.round((days / 7) * 10) / 10;
+
+/** "3 days" under a fortnight, otherwise "4.3 weeks" (or "4.3 wks" when short). */
+export function duration(days: number, short = false): string {
+  if (days < 14) return `${days} ${days === 1 ? 'day' : 'days'}`;
+  return `${weeks(days)} ${short ? 'wks' : 'weeks'}`;
+}
+
+/**
+ * A supplier's reply, SIMULATED. Where the catalogue publishes a lead time the
+ * reply confirms it; otherwise a stable figure between five and thirteen weeks
+ * is derived from the part number, so the same request always replays the same
+ * way. Always labelled as simulated wherever it is shown.
+ */
+export function simulatedLeadDays(partNumber: string | null, catalogueDays: number | null): number {
+  if (catalogueDays !== null) return catalogueDays;
+  let h = 2166136261;
+  for (const ch of partNumber ?? 'x') h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return (5 + (Math.abs(h) % 9)) * 7;
 }

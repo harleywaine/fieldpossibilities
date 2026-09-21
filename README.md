@@ -2,13 +2,22 @@
 
 **We didn’t write a proposal. We built one.**
 
-The front door (`/`) is **one enquiry, told a screen at a time** — an engineer's question
-followed through customer search, the RFQ, account research, quotation, human review,
-supplier confirmation and manufacture. Each screen is a line or two of prose, one visual
-and one Continue; a ledger at the bottom accumulates people's time, today versus with AI,
-computed from the metrics table. Every step has its own URL (`?s=0`–`?s=8`), so back,
-forward and deep links work, and the rail allows jumping anywhere. The search runs live on
-Field's real catalogue; everything behind Field's doors is labelled synthetic.
+The front door (`/`) is **an interactive simulation of one enquiry**. The visitor types the
+request a customer might send (or picks an example) and chooses a synthetic customer. The
+system turns it into a request for quotation built from Field's real catalogue, and shows how:
+what it read in the message, what it searched, and why each line was kept (click any line).
+The enquiry then moves through account research, a line check, engineer review, supplier
+lead-time enquiries, quote approval and manufacture.
+
+Four steps need a person, and the simulation stops at each one until the visitor decides:
+approve, query or remove each flagged line; approve the supplier enquiries; release or return
+the quote; and choose how to handle any line that would land after the deadline. The rail
+marks these steps with a ring and will not skip past an undecided one. A ledger at the bottom
+adds up people's time, today versus with AI, from the metrics table. Each step has its own URL
+(`?s=0`–`?s=9`), and state is kept for the browser session.
+
+Labelling: catalogue parts and lead times are real; customers and internal records are
+synthetic; supplier replies and manufacture are simulated. Prices are never generated.
 
 The four demonstrations remain individually at `/demos`, and the full platform at
 `/explore`.
@@ -215,7 +224,8 @@ data/
 
 | Route | Purpose |
 |---|---|
-| `/` | Landing page and AI search entry |
+| `/` | Interactive enquiry simulation |
+| `/demos` | The four demonstrations |
 | `/search?q=` | Requirement understanding, retrieval trace, evidenced results |
 | `/catalogue` | Conventional faceted browse — the deliberate contrast |
 | `/product/[id]` | Full record, evidence, and link to the original Field page |
@@ -292,6 +302,7 @@ against the cash figure, not the headline.
 | `npm run try:knowledge` | Level 2 enquiry brief from the terminal. |
 | `npm run try:workflow` | Level 3 RFQ processing from the terminal. |
 | `npm run try:roi` | Level 4 opportunity model from the terminal. |
+| `npm run try:sim "<request>"` | The front door's simulated RFQ from the terminal. |
 | `npm run validate` / `npm run report` | Ingestion coverage and status. |
 
 ## Deployment note
