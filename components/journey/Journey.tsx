@@ -1,15 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  STEPS, PERSONAS, stepIndex, formatMinutes, simulatedLeadDays, matchAccount,
+  STEPS, PERSONAS, stepIndex, simulatedLeadDays, matchAccount,
   type StepId, type StepMetric,
 } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
-import { BrowserFrame, CrmFrame, YourDecision, type CrmModule } from '@/components/journey/frames.tsx';
+import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
+import { TopBar, Narration, Stage, Dock, Cover, Results, type Halt } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
   InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplierScreen, ApprovalScreen, OrderScreen,
@@ -210,32 +210,21 @@ export function Journey({
   );
 
   type Screen = {
-    lines: React.ReactNode[];
-    halt?: { done: boolean; text: React.ReactNode };
+    title: React.ReactNode;
+    sub?: React.ReactNode;
+    persona?: { name: string; role: string };
+    halt?: Halt;
     frame?: React.ReactNode;
-    body?: React.ReactNode;
     blocked?: string;
+    hint?: string;
     cta?: string;
     hideContinue?: boolean;
   };
 
-  const screens: Record<StepId, Screen> = {
-    start: {
-      lines: [
-        'Play Field’s customer. Then play Field.',
-        'Ask for tooling the way a customer would, then follow the enquiry through Field’s systems, making the decisions a person would make.',
-      ],
-      body: (
-        <p className="max-w-2xl text-[12.5px] leading-relaxed text-ink-400">
-          Each screen shows a mock-up: the customer’s browser, then Field’s CRM. The catalogue is Field’s real,
-          published one. Customers, their history, employees, suppliers and replies are synthetic, and labelled
-          as such. Steps with a ring on the rail above stop and wait for your decision.
-        </p>
-      ),
-      cta: 'Begin',
-    },
+  const screens: Record<Exclude<StepId, 'start' | 'summary'>, Screen> = {
     request: {
-      lines: ['You are the customer.', 'Say what you need, the way you would to a supplier.'],
+      title: 'You are the customer. What do you need?',
+      sub: 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
       frame: (
         <BrowserFrame path="find-a-part" basket={basket}>
           <RequestScreen value={sim.request} onChange={(v) => patch({ request: v })} onSubmit={find} busy={busy} error={error} />
@@ -243,13 +232,15 @@ export function Journey({
       ),
       cta: 'Continue with these parts',
       hideContinue: !found,
+      hint: 'Search on the website to continue',
     },
     parts: {
-      lines: contact
-        ? ['Your request is on its way to Field.']
-        : ['These are the parts you’ll need.', 'Each one comes from Field’s real catalogue, with the reason it was picked.'],
+      title: contact ? 'Your request is on its way to Field.' : 'These are the parts you’ll need.',
+      sub: contact
+        ? 'Next, the same enquiry from the other side: inside Field.'
+        : 'Each one comes from Field’s real catalogue, with the reason it was picked. Request a quote when you’re ready.',
       frame: found && (
-        <BrowserFrame path={contact ? "find-a-part/request-sent" : "find-a-part/results"} basket={basket}>
+        <BrowserFrame path={contact ? 'find-a-part/request-sent' : 'find-a-part/results'} basket={basket}>
           <PartsScreen
             found={found}
             excluded={sim.excluded}
@@ -267,56 +258,63 @@ export function Journey({
       ),
       cta: 'See it arrive at Field',
       hideContinue: !contact,
+      hint: 'Request a quote on the website to continue',
     },
     inbox: {
-      lines: ['Now you’re at Field. The enquiry arrives.', 'Before anyone opens it, the system has logged it, found the account and assigned an owner.'],
+      title: 'The enquiry arrives at Field.',
+      sub: 'Before anyone opens it, the system has logged it, found the account and assigned an owner.',
       frame: rfq && contact && crm('Enquiries', owner,
         <InboxScreen rfq={rfq} contact={contact} account={account} inbox={inbox} owner={owner.name} />),
     },
     account: {
-      lines: [
-        account ? `${owner.name} opens the account.` : `${owner.name} opens the new lead.`,
-        account ? `Everything Field holds on ${account.name}, on one screen.` : `${customerName} is new to Field.`,
-      ],
+      title: account ? `${owner.name} opens the account.` : `${owner.name} opens the new lead.`,
+      sub: account ? `Everything Field holds on ${account.name}, on one screen — with a brief written from its documents.` : `${customerName} is new to Field.`,
       frame: rfq && contact && crm('Accounts', owner,
         <AccountScreen account={account} contact={contact} rfq={rfq} brief={sim.brief} owner={owner.name} />),
     },
     check: {
-      lines: ['Every line is checked against the catalogue.', 'Anything the catalogue doesn’t establish goes to a person.'],
+      title: 'Every line is checked against the catalogue.',
+      sub: 'Anything the catalogue doesn’t establish goes to a person, never guessed.',
       frame: rfq && crm('Enquiries', owner,
         <CheckScreen rfq={rfq} customer={customerName} owner={owner.name} />),
     },
     review: {
-      lines: [reviewLines.length ? 'Engineering has lines to decide.' : 'Nothing needs Engineering this time.', `You are ${PERSONAS.review!.name}, ${PERSONAS.review!.role}.`],
+      title: reviewLines.length ? 'Engineering has lines to decide.' : 'Nothing needs Engineering this time.',
+      sub: 'The system shows its reasons for every line. The decision is an engineer’s.',
+      persona: PERSONAS.review,
       halt: reviewLines.length ? {
         done: reviewDone,
         text: reviewDone
           ? 'Every line in the queue has a decision.'
-          : `${pendingReview} ${pendingReview === 1 ? 'line is' : 'lines are'} waiting in your queue. The system has given its reasons; it won’t decide for you.`,
+          : `${pendingReview} ${pendingReview === 1 ? 'line is' : 'lines are'} waiting in your queue. Approve, query or remove each one.`,
       } : undefined,
       frame: rfq && crm('Engineering', you('review'),
         <ReviewScreen rfq={rfq} customer={customerName} brief={sim.brief} lines={reviewLines} decisions={sim.review} onDecide={(line, d) => setSim((s) => ({ ...s, review: { ...s.review, [line]: d } }))} />),
-      blocked: reviewDone ? undefined : 'Decide every line in the queue to continue',
+      blocked: reviewDone ? undefined : 'Decide every line to continue',
     },
     supplier: {
-      lines: [supplierLines.length ? 'Some lead times need confirming.' : 'Every lead time is already known.', `You are ${PERSONAS.supplier!.name}, ${PERSONAS.supplier!.role}.`],
+      title: supplierLines.length ? 'Some lead times need confirming.' : 'Every lead time is already known.',
+      sub: 'The system drafts the supplier requests. Nothing goes out without Procurement’s approval.',
+      persona: PERSONAS.supplier,
       halt: supplierLines.length ? {
         done: sim.supplierSent,
         text: sim.supplierSent
-          ? 'Enquiries sent. The replies are simulated.'
-          : 'The system has drafted the supplier enquiries. Nothing is sent until you approve it.',
+          ? 'Requests sent. The supplier replies are simulated.'
+          : 'The drafts are ready. Approve them to send.',
       } : undefined,
       frame: rfq && crm('Procurement', you('supplier'),
         <SupplierScreen rfq={rfq} lines={supplierLines} sent={sim.supplierSent} onSend={() => patch({ supplierSent: true })} replies={replies} suppliers={suppliers} />),
-      blocked: supplierDone ? undefined : 'Approve the supplier enquiries to continue',
+      blocked: supplierDone ? undefined : 'Approve the requests to continue',
     },
     approval: {
-      lines: ['The quote needs signing off.', `You are ${PERSONAS.approval!.name}, ${PERSONAS.approval!.role}.`],
+      title: 'The quote needs signing off.',
+      sub: 'Assembled from the approved lines and confirmed lead times. Prices are set by Commercial, never generated.',
+      persona: PERSONAS.approval,
       halt: {
         done: sim.approval === 'approved',
         text: sim.approval === 'approved'
           ? 'Signed off. In this mock-up nothing is actually sent.'
-          : 'The quote is assembled. It goes nowhere until you sign it off.',
+          : 'The quote goes nowhere until you approve it, or return it to Engineering.',
       },
       frame: rfq && contact && crm('Quotes', you('approval'),
         <ApprovalScreen
@@ -328,244 +326,91 @@ export function Journey({
             if (d === 'returned') go(stepIndex('review'));
           }}
         />),
-      blocked: sim.approval === 'approved' ? undefined : 'Sign off the quote to continue',
+      blocked: sim.approval === 'approved' ? undefined : 'Approve the quote to continue',
     },
     manufacture: {
-      lines: ['The customer accepts. The order goes into production.', `You are ${PERSONAS.manufacture!.name}, ${PERSONAS.manufacture!.role}.`],
+      title: 'The customer accepts. The order goes into production.',
+      sub: lateCount ? 'One thing needs a decision before it ships.' : 'The system tracks every line until it ships.',
+      persona: PERSONAS.manufacture,
       halt: lateCount ? {
         done: Boolean(sim.risk),
         text: sim.risk
           ? `Decided: ${sim.risk.toLowerCase()}.`
-          : `${lateCount} ${lateCount === 1 ? 'item' : 'items'} will arrive after the customer’s deadline. The system has spotted it; the call is yours.`,
+          : `${lateCount} ${lateCount === 1 ? 'item' : 'items'} will arrive after the customer’s deadline. Choose how to handle it.`,
       } : undefined,
       frame: rfq && crm('Orders', you('manufacture'),
         <OrderScreen rfq={rfq} customer={customerName} included={included} leadDays={leadDays} decision={sim.risk} onDecide={(d) => patch({ risk: d })} />),
-      blocked: riskDone ? undefined : 'Decide how to handle the late items to continue',
-    },
-    summary: {
-      lines: ['One enquiry, start to finish.'],
-      body: (
-        <Summary
-          before={ledger.totalBefore}
-          after={ledger.totalAfter}
-          volume={metrics['RFQ preparation']?.volume ?? 1900}
-          decisions={decisions}
-          rfq={rfq}
-          brief={sim.brief}
-          onRestart={restart}
-        />
-      ),
+      blocked: riskDone ? undefined : `Decide how to handle the late ${lateCount === 1 ? 'item' : 'items'} to continue`,
     },
   };
 
-  const c = screens[step.id];
+  // Until the session is read, a deep link would flash the wrong screen, so show nothing.
+  const booting = !loaded && requested > 0;
+  const c = booting || step.id === 'start' || step.id === 'summary' ? null : screens[step.id];
   const isLast = index === STEPS.length - 1;
-  const delay = (n: number) => ({ animationDelay: `${n}ms` });
+  const next = c && !c.hideContinue && !c.blocked ? () => go(index + 1) : undefined;
+
+  // The arrow keys move through the story, except while typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'ArrowRight' && (next || step.id === 'start')) go(index + 1);
+      if (e.key === 'ArrowLeft' && index > 0) go(index - 1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [next, go, index, step.id]);
+
+  const breakdown = STEPS.filter((s) => s.metric && metrics[s.metric]).map((s) => ({
+    label: s.ledgerLabel ?? s.rail, before: metrics[s.metric!]!.before, after: metrics[s.metric!]!.after,
+  }));
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      {/* --------------------------------------------------------------- top */}
-      <header className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 pt-6 sm:px-8">
-        <button onClick={() => go(0)} className="flex items-center gap-2" aria-label="Back to the start">
-          <span className="h-2 w-2 rotate-45 bg-signal-700" />
-          <span className="text-[12px] font-medium tracking-tight text-ink-800">Field</span>
-        </button>
-        {found && (
-          <button onClick={restart} className="ml-auto text-[11px] text-ink-400 transition-colors hover:text-signal-600">
-            New request
-          </button>
-        )}
-        <Link href="/demos" className={`${found ? '' : 'ml-auto'} text-[11px] text-ink-400 transition-colors hover:text-signal-600`}>
-          All demos
-        </Link>
-      </header>
+    <div
+      className="min-h-screen"
+      style={{ background: 'radial-gradient(1200px 500px at 50% -120px, #e3ebf6 0%, transparent 70%), #f5f7fa' }}
+    >
+      <TopBar index={index} reachable={reachable} go={go} onRestart={restart} canRestart={Boolean(found)} />
 
-      {/* -------------------------------------------------------------- rail */}
-      <nav aria-label="Journey" className="mx-auto mt-8 w-full max-w-6xl px-4 sm:px-8">
-        <ol className="flex items-center">
-          {STEPS.map((s, i) => {
-            const locked = i > reachable;
-            return (
-              <li key={s.id} className={`flex items-center ${i > 0 ? 'flex-1' : ''}`}>
-                {i > 0 && <span className={`h-px flex-1 ${i <= index ? 'bg-signal-600' : 'bg-ink-100'}`} />}
-                <button
-                  onClick={() => !locked && go(i)}
-                  disabled={locked}
-                  title={locked ? `${s.rail} — not reached yet` : s.rail}
-                  aria-current={i === index ? 'step' : undefined}
-                  className="group relative grid h-5 w-5 shrink-0 place-items-center disabled:cursor-default"
-                >
-                  <span
-                    className={`block rounded-full transition-all ${
-                      i === index ? 'h-2.5 w-2.5 bg-signal-700'
-                      : i < index ? 'h-1.5 w-1.5 bg-signal-600'
-                      : 'h-1.5 w-1.5 bg-ink-200'
-                    } ${s.human ? 'ring-2 ring-caution-500 ring-offset-2' : ''}`}
-                  />
-                  <span
-                    className={`pointer-events-none absolute top-6 whitespace-nowrap text-[10.5px] transition-opacity ${
-                      i === index ? 'text-ink-800 opacity-100' : 'text-ink-400 opacity-0 group-hover:opacity-100'
-                    }`}
-                  >
-                    {s.rail}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
+      <main key={step.id} className="mx-auto w-full max-w-6xl px-4 pb-36 pt-8 sm:px-8 sm:pt-12">
+        {!booting && step.id === 'start' && <Cover onBegin={() => go(1)} />}
 
-      {/* ------------------------------------------------------------ screen */}
-      <main key={step.id} className="mx-auto w-full max-w-6xl flex-1 px-4 pb-48 pt-[5vh] sm:px-8">
-        {step.side && (
-          <p className="step-in mono mb-5 text-[10.5px] tracking-[0.12em] text-signal-600">
-            {step.side === 'customer' ? 'THE CUSTOMER’S SIDE · FIELD’S WEBSITE' : 'FIELD’S SIDE · THE CRM'}
-          </p>
-        )}
-        <div className="max-w-2xl space-y-3">
-          {c.lines.map((line, i) => (
-            <p
-              key={i}
-              className={`step-in font-light leading-[1.25] ${i === 0 ? 'text-[26px] text-ink-950 sm:text-[32px]' : 'text-[17px] text-ink-500 sm:text-[20px]'}`}
-              style={delay(120 + i * 320)}
-            >
-              {line}
-            </p>
-          ))}
-        </div>
-
-        {c.halt && (
-          <div className="step-in mt-8 max-w-2xl" style={delay(200 + c.lines.length * 320)}>
-            <YourDecision done={c.halt.done}>{c.halt.text}</YourDecision>
-          </div>
+        {!booting && step.id === 'summary' && (
+          <Results
+            before={ledger.totalBefore}
+            after={ledger.totalAfter}
+            volume={metrics['RFQ preparation']?.volume ?? 1900}
+            decisions={decisions}
+            considered={rfq?.considered ?? 0}
+            docs={sim.brief?.retrieval?.documents?.length ?? 0}
+            checks={rfq ? rfq.lines.length * 4 : 0}
+            rows={breakdown}
+            onRestart={restart}
+          />
         )}
 
-        {(c.frame || c.body) && (
-          <div className="step-in mt-8" style={delay(280 + c.lines.length * 320)}>
-            {c.frame ?? c.body}
-          </div>
-        )}
-
-        {!isLast && !c.hideContinue && (
-          <div className="step-in mt-10 flex flex-wrap items-center gap-x-6 gap-y-3" style={delay(450 + c.lines.length * 320)}>
-            <button
-              onClick={() => go(index + 1)}
-              disabled={Boolean(c.blocked)}
-              className="rounded-[2px] bg-action-600 px-6 py-3 text-[14px] font-medium text-white transition-colors hover:bg-action-500 disabled:cursor-not-allowed disabled:bg-ink-200 disabled:text-ink-500"
-            >
-              {c.cta ?? 'Continue'} →
-            </button>
-            {c.blocked && <span className="text-[12px] text-caution-600">{c.blocked}</span>}
-            {index > 0 && !c.blocked && (
-              <button onClick={() => go(index - 1)} className="text-[12.5px] text-ink-400 transition-colors hover:text-signal-600">
-                ← Back
-              </button>
-            )}
-          </div>
-        )}
-        {c.hideContinue && index > 0 && (
-          <button onClick={() => go(index - 1)} className="mt-8 text-[12.5px] text-ink-400 transition-colors hover:text-signal-600">
-            ← Back
-          </button>
+        {c && (
+          <>
+            <Narration step={step} index={index} title={c.title} sub={c.sub} persona={c.persona} halt={c.halt} />
+            {c.frame && <Stage>{c.frame}</Stage>}
+          </>
         )}
       </main>
 
-      {index >= stepIndex('inbox') && !isLast && <Ledger ledger={ledger} />}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ ledger */
-
-function Ledger({ ledger }: { ledger: { totalBefore: number; before: number; after: number; latest: any } }) {
-  const scale = (m: number) => `${(m / ledger.totalBefore) * 100}%`;
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-ink-100 bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto w-full max-w-6xl px-4 py-3.5 sm:px-8">
-        <div className="mb-2 flex items-baseline justify-between gap-4">
-          <p className="mono text-[10px] tracking-[0.12em] text-ink-400">PEOPLE’S TIME ON THIS ENQUIRY</p>
-          {ledger.latest && (
-            <p key={ledger.latest.s.id} className="step-in mono hidden text-[10.5px] text-ink-500 sm:block">
-              + {ledger.latest.s.ledgerLabel}: {ledger.latest.m.before} → {ledger.latest.m.after} min
-            </p>
-          )}
-        </div>
-        <Row label="Today" value={formatMinutes(ledger.before)} width={scale(ledger.before)} colour="bg-ink-300" />
-        <Row label="With AI" value={formatMinutes(ledger.after)} width={scale(ledger.after)} colour="bg-signal-600" />
-      </div>
-    </div>
-  );
-}
-
-function Row({ label, value, width, colour }: { label: string; value: string; width: string; colour: string }) {
-  return (
-    <div className="flex items-center gap-4 py-1">
-      <span className="w-14 shrink-0 text-[11px] text-ink-500">{label}</span>
-      <div className="h-1.5 flex-1 bg-ink-50">
-        <div className={`h-full ${colour} transition-[width] duration-700 ease-out`} style={{ width }} />
-      </div>
-      <span className="mono w-20 shrink-0 text-right text-[12px] text-ink-800">{value}</span>
-    </div>
-  );
-}
-
-/* ----------------------------------------------------------------- summary */
-
-function Summary({
-  before, after, volume, decisions, rfq, brief, onRestart,
-}: {
-  before: number; after: number; volume: number; decisions: number;
-  rfq: SimRfq | null; brief: any | null; onRestart: () => void;
-}) {
-  const hoursPerYear = Math.round(((before - after) * volume) / 60);
-  const checks = rfq ? rfq.lines.length * 4 : 0;
-  const docs = brief?.retrieval?.documents?.length ?? 0;
-  return (
-    <div className="max-w-2xl">
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[2px] border border-ink-200 bg-ink-200">
-        <div className="bg-white px-5 py-6">
-          <p className="mono text-[10.5px] tracking-[0.1em] text-ink-400">PEOPLE’S TIME TODAY</p>
-          <p className="mt-2 text-[30px] font-light text-ink-400">{formatMinutes(before)}</p>
-        </div>
-        <div className="bg-white px-5 py-6">
-          <p className="mono text-[10.5px] tracking-[0.1em] text-signal-600">WITH AI</p>
-          <p className="mt-2 text-[30px] font-light text-ink-950">{formatMinutes(after)}</p>
-        </div>
-      </div>
-
-      {rfq && (
-        <p className="step-in mt-8 text-[17px] font-light leading-relaxed text-ink-700" style={{ animationDelay: '300ms' }}>
-          The system searched {rfq.considered.toLocaleString()} relevant catalogue records,
-          {docs ? ` read ${docs} internal documents,` : ''} logged and routed the enquiry and ran {checks} checks.{' '}
-          <span className="text-ink-950">You made {decisions} decisions.</span>
-        </p>
+      {c && !isLast && (
+        <Dock
+          canBack={index > 0}
+          onBack={() => go(index - 1)}
+          onNext={c.hideContinue ? undefined : () => go(index + 1)}
+          cta={c.cta ?? 'Continue'}
+          blocked={c.blocked}
+          hint={c.hideContinue ? c.hint : undefined}
+          ledger={ledger}
+          showLedger={index >= stepIndex('inbox')}
+        />
       )}
-
-      <p className="step-in mt-6 text-[15px] font-light leading-snug text-ink-600" style={{ animationDelay: '500ms' }}>
-        Across {volume.toLocaleString()} enquiries a year, that is roughly {hoursPerYear.toLocaleString()} hours of people’s time given back.
-      </p>
-      <p className="step-in mt-2 text-[12px] leading-relaxed text-ink-400" style={{ animationDelay: '600ms' }}>
-        Illustrative. Times and volumes are demonstration assumptions, not Field measurements — every one is adjustable in{' '}
-        <Link href="/roi" className="underline decoration-dotted underline-offset-[3px] hover:text-signal-600">the model</Link>.
-      </p>
-
-      <p className="step-in mt-12 text-[15px] leading-relaxed text-ink-700" style={{ animationDelay: '800ms' }}>
-        Everything you’ve just used was built from Field’s public catalogue alone. When you want it
-        pointed at the real thing, reply to the message this link arrived in.
-      </p>
-
-      <div className="step-in mt-10 flex flex-wrap items-center gap-6" style={{ animationDelay: '950ms' }}>
-        <button
-          onClick={onRestart}
-          className="rounded-[2px] border border-ink-300 px-5 py-2.5 text-[13px] text-ink-800 transition-colors hover:border-signal-600 hover:text-signal-700"
-        >
-          ↺ Try another request
-        </button>
-        <Link href="/demos" className="text-[13px] text-signal-600 transition-colors hover:text-action-600">
-          Explore each demo on its own →
-        </Link>
-      </div>
     </div>
   );
 }

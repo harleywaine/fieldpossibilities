@@ -837,10 +837,10 @@ export function OrderScreen({
       <div className="mb-4"><StagePath stages={['Accepted', 'Orders placed', 'In production', 'Shipped', 'Delivered']} current={2} /></div>
       <Grid>
         <Card title="Delivery schedule" icon={Calendar} action="weeks from order · simulated" pad={false}>
-          <div className="overflow-x-auto px-4 pb-3 pt-3">
-            <div className="min-w-[500px]">
+          <div className="px-4 pb-3 pt-3">
+            <div>
               <div className="flex">
-                <span className="w-[150px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.05em] text-ink-400">Line · supplier</span>
+                <span className="w-[128px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.05em] text-ink-400">Line · supplier</span>
                 <div className="relative h-5 flex-1">
                   {ticks.map((w) => (
                     <span key={w} className="absolute -translate-x-1/2 text-[10px] text-ink-400" style={{ left: pct(w * 7) }}>{w}</span>
@@ -848,7 +848,7 @@ export function OrderScreen({
                 </div>
               </div>
               <div className="relative border-t border-ink-100">
-                <div className="pointer-events-none absolute inset-y-0 left-[150px] right-0">
+                <div className="pointer-events-none absolute inset-y-0 left-[128px] right-0">
                   {ticks.map((w) => <span key={w} className="absolute inset-y-0 w-px bg-ink-50" style={{ left: pct(w * 7) }} />)}
                   {deadline !== null && (
                     <span className="absolute inset-y-0 z-10 border-l-2 border-dashed border-action-500" style={{ left: pct(deadline) }}>
@@ -863,7 +863,7 @@ export function OrderScreen({
                     const inside = d / span > 0.22;
                     return (
                       <li key={l.line} className="flex h-11 items-center border-b border-ink-50 last:border-0">
-                        <span className="w-[150px] shrink-0 pr-3">
+                        <span className="w-[128px] shrink-0 pr-3">
                           <span className="mono block text-[11.5px] font-medium text-signal-700">{l.partNumber}</span>
                           <span className="block truncate text-[10.5px] text-ink-400">{supplierFor(l.name)}</span>
                         </span>
