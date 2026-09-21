@@ -2,7 +2,9 @@
 
 **We didn’t write a proposal. We built one.**
 
-The front door (`/`) is **an interactive simulation of one enquiry, from both sides**. Every
+The front door (`/`) is **an interactive simulation of one enquiry, from both sides**. It opens
+with the eight ways AI could be used at Field, each tied to the step where it appears, and states
+what's known (the public catalogue) and what's assumed (everything inside Field). Every
 screen the visitor operates is shown as a mock-up window, so it reads as a picture of a system.
 
 - **The customer's side**, a mock of Field's website. The visitor describes the job, and the
@@ -17,8 +19,12 @@ screen the visitor operates is shown as a mock-up window, so it reads as a pictu
 
 A company name matching one of the eight synthetic accounts brings up that account's history;
 any other name becomes a new lead. The email and company stay in the browser tab. The rail
-won't skip an undecided step, every step has its own URL (`?s=0`–`?s=10`), and a ledger adds
+won't skip an undecided step, every step has its own URL (`?s=0`–`?s=11`), and a ledger adds
 up people's time, today versus with AI, from the metrics table.
+
+The time figures are assumptions written into the synthetic dataset, not measurements. The
+"How is this estimated?" button on the time bar, and the end of the journey, say so and explain
+what each covers, why they'd change with Field's current process, and how to measure the real ones.
 
 Labelling: catalogue parts and lead times are real. Accounts, jobs, complaints, employees and
 suppliers are synthetic. Supplier replies and the order are simulated. Prices are never generated.

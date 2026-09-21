@@ -9,7 +9,7 @@ import {
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
-import { TopBar, Narration, Stage, Dock, Cover, Results, type Halt } from '@/components/journey/shell.tsx';
+import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
   InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplierScreen, ApprovalScreen, OrderScreen,
@@ -49,8 +49,11 @@ const NEW_LEADS = { name: 'Tom Whitfield', role: 'Sales Engineer' };
  * (this tab only), and every step has its own URL.
  */
 export function Journey({
-  metrics, accounts, inbox, suppliers,
-}: { metrics: Record<string, StepMetric>; accounts: CrmAccount[]; inbox: CrmInboxItem[]; suppliers: CrmSupplier[] }) {
+  metrics, accounts, inbox, suppliers, catalogue,
+}: {
+  metrics: Record<string, StepMetric>; accounts: CrmAccount[]; inbox: CrmInboxItem[]; suppliers: CrmSupplier[];
+  catalogue: { products: number; withImages: number; withLeadTime: number } | null;
+}) {
   const params = useSearchParams();
   const [sim, setSim] = useState<SimState>(EMPTY);
   const [busy, setBusy] = useState(false);
@@ -210,6 +213,8 @@ export function Journey({
   );
 
   type Screen = {
+    eyebrow?: string;
+    body?: React.ReactNode;
     title: React.ReactNode;
     sub?: React.ReactNode;
     persona?: { name: string; role: string };
@@ -222,6 +227,13 @@ export function Journey({
   };
 
   const screens: Record<Exclude<StepId, 'start' | 'summary'>, Screen> = {
+    uses: {
+      eyebrow: 'Before you start',
+      title: 'Eight ways AI could work at Field.',
+      sub: 'Each is one step in the enquiry you’re about to follow. They’re based on what we know about Field from the outside, and they show where people still decide.',
+      body: <AiUses catalogue={catalogue} />,
+      cta: 'Start the enquiry',
+    },
     request: {
       title: 'You are the customer. What do you need?',
       sub: 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
@@ -355,6 +367,7 @@ export function Journey({
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+      if (document.body.dataset.dialog) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === 'ArrowRight' && (next || step.id === 'start')) go(index + 1);
       if (e.key === 'ArrowLeft' && index > 0) go(index - 1);
@@ -363,8 +376,9 @@ export function Journey({
     return () => window.removeEventListener('keydown', onKey);
   }, [next, go, index, step.id]);
 
-  const breakdown = STEPS.filter((s) => s.metric && metrics[s.metric]).map((s) => ({
-    label: s.ledgerLabel ?? s.rail, before: metrics[s.metric!]!.before, after: metrics[s.metric!]!.after,
+  const breakdown: EstimateRow[] = STEPS.filter((s) => s.metric && metrics[s.metric]).map((s) => ({
+    process: s.metric!, label: s.ledgerLabel ?? s.rail,
+    before: metrics[s.metric!]!.before, after: metrics[s.metric!]!.after, volume: metrics[s.metric!]!.volume,
   }));
 
   return (
@@ -381,7 +395,6 @@ export function Journey({
           <Results
             before={ledger.totalBefore}
             after={ledger.totalAfter}
-            volume={metrics['RFQ preparation']?.volume ?? 1900}
             decisions={decisions}
             considered={rfq?.considered ?? 0}
             docs={sim.brief?.retrieval?.documents?.length ?? 0}
@@ -393,8 +406,9 @@ export function Journey({
 
         {c && (
           <>
-            <Narration step={step} index={index} title={c.title} sub={c.sub} persona={c.persona} halt={c.halt} />
+            <Narration step={step} index={index} title={c.title} sub={c.sub} persona={c.persona} halt={c.halt} eyebrow={c.eyebrow} />
             {c.frame && <Stage>{c.frame}</Stage>}
+            {c.body}
           </>
         )}
       </main>
@@ -409,6 +423,7 @@ export function Journey({
           hint={c.hideContinue ? c.hint : undefined}
           ledger={ledger}
           showLedger={index >= stepIndex('inbox')}
+          estimates={breakdown}
         />
       )}
     </div>

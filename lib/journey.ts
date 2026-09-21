@@ -10,7 +10,7 @@
  */
 
 export type StepId =
-  | 'start' | 'request' | 'parts' | 'inbox' | 'account' | 'check'
+  | 'start' | 'uses' | 'request' | 'parts' | 'inbox' | 'account' | 'check'
   | 'review' | 'supplier' | 'approval' | 'manufacture' | 'summary';
 
 export type Side = 'customer' | 'field';
@@ -26,6 +26,7 @@ export interface JourneyStep {
 
 export const STEPS: JourneyStep[] = [
   { id: 'start', rail: 'Start' },
+  { id: 'uses', rail: 'Where AI helps' },
   { id: 'request', rail: 'Your request', side: 'customer' },
   { id: 'parts', rail: 'Parts and quote', side: 'customer' },
   { id: 'inbox', rail: 'Inbox', side: 'field', metric: 'Customer enquiry handling', ledgerLabel: 'Logging the enquiry' },
@@ -49,6 +50,49 @@ export const PERSONAS: Partial<Record<StepId, { name: string; role: string }>> =
 };
 
 export interface StepMetric { before: number; after: number; volume: number }
+
+/**
+ * The ways AI is used in the journey, in the order the viewer meets them. Each
+ * names the step it appears in, and whether it can run on what's public today
+ * or would need Field's internal records.
+ */
+export const AI_USES: Array<{ step: StepId; title: string; does: string; data: 'public' | 'internal' }> = [
+  { step: 'request', title: 'Understand a request in plain words', does: 'Reads a customer’s description — aircraft, engine, task, deadline — without needing part numbers.', data: 'public' },
+  { step: 'parts', title: 'Find the right parts, and say why', does: 'Searches the whole catalogue and shows the facts behind every match.', data: 'public' },
+  { step: 'inbox', title: 'Log and route every enquiry', does: 'Creates the enquiry, matches the account, assigns an owner and acknowledges the customer.', data: 'internal' },
+  { step: 'account', title: 'Brief the salesperson', does: 'Reads past quotes, emails, notes and complaints, and writes what to know before replying.', data: 'internal' },
+  { step: 'check', title: 'Check every line', does: 'Tests each part against the request and the catalogue, and routes anything uncertain to a person.', data: 'public' },
+  { step: 'review', title: 'Prepare engineering questions', does: 'Puts the request and the catalogue record side by side, so the engineer only has to judge.', data: 'public' },
+  { step: 'supplier', title: 'Draft supplier requests', does: 'Writes the lead-time requests for Procurement to approve and send.', data: 'internal' },
+  { step: 'manufacture', title: 'Watch every order', does: 'Tracks each line against the customer’s deadline and flags any that will be late.', data: 'internal' },
+];
+
+/**
+ * What each time estimate covers, in words. The minutes themselves come from
+ * the metrics table, so this text and the value model can't disagree.
+ */
+export const ESTIMATE_NOTES: Record<string, { today: string; withAi: string }> = {
+  'Customer enquiry handling': {
+    today: 'Reading the email, finding the customer, entering the enquiry and passing it to the right person.',
+    withAi: 'The system does all of that; a person glances at the result.',
+  },
+  'Internal knowledge retrieval': {
+    today: 'Searching old quotes, emails and notes for this customer’s history.',
+    withAi: 'The system reads them and writes a brief; a person reads the brief.',
+  },
+  'RFQ preparation': {
+    today: 'Looking up each part and checking it fits and can be delivered in time.',
+    withAi: 'The checks run automatically; a person deals only with the lines flagged.',
+  },
+  'Technical applicability check': {
+    today: 'An engineer researches each uncertain part from scratch.',
+    withAi: 'The engineer gets the question and the record side by side. The judgement still takes time, so the saving is smaller.',
+  },
+  'Supplier follow-up': {
+    today: 'Writing lead-time requests and chasing replies.',
+    withAi: 'The requests are drafted; a person approves them and reads the replies.',
+  },
+};
 
 /** Used only if the synthetic dataset hasn't been generated. */
 export const FALLBACK_METRICS: Record<string, StepMetric> = {

@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
   ArrowLeft, ArrowRight, Check, Clock, FileSearch, ListChecks, Lock, RotateCcw, UserRound,
-  Building2, Search, Sparkles,
+  Building2, Search, Sparkles, MessageSquareText, Inbox, Wrench, Truck, Factory, Info, X,
 } from 'lucide-react';
-import { STEPS, formatMinutes, type JourneyStep, type StepMetric } from '@/lib/journey.ts';
+import { STEPS, AI_USES, ESTIMATE_NOTES, formatMinutes, type JourneyStep, type StepMetric } from '@/lib/journey.ts';
 import { Avatar } from '@/components/journey/ui.tsx';
 
 /*
@@ -97,10 +98,10 @@ export function TopBar({
 export interface Halt { done: boolean; text: React.ReactNode }
 
 export function Narration({
-  step, index, title, sub, persona, halt,
+  step, index, title, sub, persona, halt, eyebrow,
 }: {
   step: JourneyStep; index: number; title: React.ReactNode; sub?: React.ReactNode;
-  persona?: { name: string; role: string }; halt?: Halt;
+  persona?: { name: string; role: string }; halt?: Halt; eyebrow?: string;
 }) {
   const t = trackIndex(index);
   return (
@@ -111,6 +112,11 @@ export function Narration({
             <span className={`h-1.5 w-1.5 rounded-full ${step.side === 'customer' ? 'bg-[#38bdf8]' : 'bg-signal-600'}`} />
             <span className="mono text-ink-400">{String(t + 1).padStart(2, '0')}</span>
             {step.side === 'customer' ? 'The customer · Field’s website' : 'Field · the CRM'}
+          </p>
+        )}
+        {eyebrow && (
+          <p className="enter inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11.5px] font-medium text-ink-600 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-ink-100">
+            <Sparkles className="h-3 w-3 text-signal-500" /> {eyebrow}
           </p>
         )}
         <h1 className="enter mt-4 max-w-3xl font-display text-[32px] font-medium leading-[1.06] tracking-[-0.035em] text-ink-950 sm:text-[44px]" style={{ animationDelay: '80ms' }}>
@@ -197,13 +203,16 @@ export interface Ledger {
 }
 
 export function Dock({
-  canBack, onBack, onNext, cta, blocked, hint, ledger, showLedger,
+  canBack, onBack, onNext, cta, blocked, hint, ledger, showLedger, estimates,
 }: {
   canBack: boolean; onBack: () => void; onNext?: () => void; cta: string;
-  blocked?: string; hint?: string; ledger: Ledger; showLedger: boolean;
+  blocked?: string; hint?: string; ledger: Ledger; showLedger: boolean; estimates: EstimateRow[];
 }) {
+  const [explain, setExplain] = useState(false);
   const w = (m: number) => `${Math.max(1.5, (m / ledger.totalBefore) * 100)}%`;
   return (
+    <>
+    {explain && <EstimatesDialog rows={estimates} onClose={() => setExplain(false)} />}
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto max-w-6xl px-3 pb-3 sm:px-8 sm:pb-5">
       <div className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-[#0a1a2f]/[0.97] p-2 text-white shadow-[0_28px_60px_-24px_rgba(4,24,47,0.75)] ring-1 ring-white/10 backdrop-blur-xl sm:gap-5 sm:p-2.5">
         <button
@@ -236,6 +245,13 @@ export function Dock({
           )}
         </div>
 
+        <button
+          onClick={() => setExplain(true)}
+          className="hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] text-white/55 transition-colors hover:bg-white/10 hover:text-white sm:flex"
+        >
+          <Info className="h-3.5 w-3.5" /> How is this estimated?
+        </button>
+
         {showLedger && ledger.latest && (
           <p key={ledger.latest.s.id} className="step-in hidden max-w-[210px] shrink-0 border-l border-white/10 pl-4 text-[11px] leading-snug text-white/50 xl:block">
             <span className="block text-white/80">{ledger.latest.s.ledgerLabel}</span>
@@ -262,6 +278,7 @@ export function Dock({
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -375,19 +392,20 @@ function MiniCrm() {
 /* ----------------------------------------------------------------- results */
 
 export function Results({
-  before, after, volume, decisions, considered, docs, checks, rows, onRestart,
+  before, after, decisions, considered, docs, checks, rows, onRestart,
 }: {
-  before: number; after: number; volume: number; decisions: number;
+  before: number; after: number; decisions: number;
   considered: number; docs: number; checks: number;
-  rows: Array<{ label: string; before: number; after: number }>;
+  rows: EstimateRow[];
   onRestart: () => void;
 }) {
   const saved = before - after;
-  const hoursPerYear = Math.round((saved * volume) / 60);
+  // Each step's saving at its own assumed yearly volume, so this agrees with the table below.
+  const hoursPerYear = Math.round(rows.reduce((a, r) => a + (r.before - r.after) * r.volume, 0) / 60);
   const pct = before ? Math.round((saved / before) * 100) : 0;
   const stats = [
     { icon: FileSearch, v: considered.toLocaleString(), t: 'catalogue records searched' },
-    { icon: Building2, v: String(docs), t: 'internal documents read' },
+    { icon: Building2, v: docs ? String(docs) : '—', t: 'internal documents read' },
     { icon: ListChecks, v: String(checks), t: 'checks run on the lines' },
     { icon: UserRound, v: String(decisions), t: 'decisions made by you', you: true },
   ];
@@ -453,9 +471,10 @@ export function Results({
             {hoursPerYear.toLocaleString()} <span className="text-[18px] font-normal text-ink-400">hours</span>
           </p>
           <p className="mt-2 text-[12.5px] leading-relaxed text-ink-500">
-            of people’s time, across {volume.toLocaleString()} enquiries a year. Illustrative: times and volumes are
-            demonstration assumptions, adjustable in{' '}
-            <Link href="/roi" className="text-signal-600 underline decoration-signal-200 underline-offset-[3px] hover:text-signal-800">the model</Link>.
+            of people’s time a year: each step’s saving multiplied by how often that step is assumed to happen
+            (from {Math.min(...rows.map((r) => r.volume)).toLocaleString()} to {Math.max(...rows.map((r) => r.volume)).toLocaleString()} times a year).
+            Every figure here is an estimate, not a measurement — see{' '}
+            <a href="#estimates" className="text-signal-600 underline decoration-signal-200 underline-offset-[3px] hover:text-signal-800">how they were made</a>.
           </p>
           <div className="mt-auto flex flex-wrap gap-2 pt-6">
             <button onClick={onRestart} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#0a1a2f] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-signal-800">
@@ -467,6 +486,11 @@ export function Results({
           </div>
         </section>
       </div>
+
+      <section id="estimates" className="enter scroll-mt-32 rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '560ms' }}>
+        <h2 className="mb-4 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">Where the time estimates come from</h2>
+        <Estimates rows={rows} />
+      </section>
 
       <p className="enter flex items-start gap-2.5 px-1 text-[13px] leading-relaxed text-ink-500" style={{ animationDelay: '600ms' }}>
         <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-signal-500" />
@@ -486,6 +510,179 @@ function Bar({ label, value, pct, cls }: { label: string; value: string; pct: nu
       </div>
       <div className="h-2.5 overflow-hidden rounded-full bg-white/[0.07]">
         <div className={`h-full rounded-full ${cls}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- AI uses */
+
+const USE_ICON: Partial<Record<string, typeof Search>> = {
+  request: MessageSquareText, parts: Search, inbox: Inbox, account: Sparkles,
+  check: ListChecks, review: Wrench, supplier: Truck, manufacture: Factory,
+};
+
+export function AiUses({ catalogue }: { catalogue: { products: number; withImages: number; withLeadTime: number } | null }) {
+  const people = [
+    { who: 'Engineering', what: 'judges whether a part fits' },
+    { who: 'Procurement', what: 'approves every supplier request' },
+    { who: 'Commercial', what: 'sets prices and signs off the quote' },
+    { who: 'Operations', what: 'decides what to do about late lines' },
+  ];
+  return (
+    <div className="enter mt-8 space-y-4" style={{ animationDelay: '220ms' }}>
+      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {AI_USES.map((u, i) => {
+          const Icon = USE_ICON[u.step] ?? Sparkles;
+          const step = STEPS.find((s) => s.id === u.step);
+          return (
+            <li key={u.title} className="enter flex flex-col rounded-2xl bg-white p-5 ring-1 ring-ink-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)]" style={{ animationDelay: `${260 + i * 60}ms` }}>
+              <div className="flex items-center justify-between">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-signal-50 text-signal-600">
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                </span>
+                <span className="mono text-[11px] text-ink-300">{String(i + 1).padStart(2, '0')}</span>
+              </div>
+              <p className="mt-4 text-[14px] font-semibold leading-snug tracking-tight text-ink-950">{u.title}</p>
+              <p className="mt-1.5 flex-1 text-[12.5px] leading-relaxed text-ink-500">{u.does}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-ink-100 pt-3 text-[10.5px]">
+                <span className="rounded-md bg-ink-50 px-1.5 py-0.5 font-medium text-ink-600">{step?.rail}</span>
+                <span className={`rounded-md px-1.5 py-0.5 font-medium ${u.data === 'public' ? 'bg-strong-600/[0.08] text-strong-600' : 'bg-caution-500/[0.1] text-caution-600'}`}>
+                  {u.data === 'public' ? 'Works on the public catalogue' : 'Needs Field’s own records'}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      <section className="rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-6">
+        <p className="text-[13px] font-semibold text-ink-950">People stay in charge of every judgement</p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {people.map((p) => (
+            <p key={p.who} className="flex items-start gap-2 rounded-xl bg-[#fdf6ea] px-3 py-2.5 text-[12.5px] leading-snug text-ink-700">
+              <UserRound className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caution-600" strokeWidth={2.4} />
+              <span><span className="font-semibold text-ink-900">{p.who}</span> {p.what}</span>
+            </p>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-px overflow-hidden rounded-2xl bg-ink-100 ring-1 ring-ink-100 md:grid-cols-2">
+        <div className="bg-white p-5 sm:p-6">
+          <p className="flex items-center gap-2 text-[13px] font-semibold text-ink-950"><span className="h-2 w-2 rounded-full bg-strong-500" />What we know</p>
+          <ul className="mt-3 space-y-2 text-[12.5px] leading-relaxed text-ink-600">
+            <li>
+              Field’s public website and catalogue
+              {catalogue ? `: ${catalogue.products.toLocaleString()} products, ${catalogue.withImages.toLocaleString()} with photos, ${catalogue.withLeadTime.toLocaleString()} with a published lead time.` : '.'}
+              {' '}Every part you’ll see is real.
+            </li>
+            <li>What Field supplies: aerospace tooling and ground support equipment, for MROs and airlines.</li>
+          </ul>
+        </div>
+        <div className="bg-white p-5 sm:p-6">
+          <p className="flex items-center gap-2 text-[13px] font-semibold text-ink-950"><span className="h-2 w-2 rounded-full bg-caution-500" />What we’ve assumed</p>
+          <ul className="mt-3 space-y-2 text-[12.5px] leading-relaxed text-ink-600">
+            <li>How an enquiry moves inside Field: who handles it, in what order, in which systems. We haven’t seen Field’s internal systems.</li>
+            <li>The customers, their history, the staff and the suppliers. All synthetic, made up for this demo.</li>
+            <li>How long each step takes today. The end of the journey explains how those estimates were made.</li>
+          </ul>
+        </div>
+      </section>
+      <p className="px-1 text-[12.5px] leading-relaxed text-ink-500">
+        So read each one as a possibility to test against how Field actually works, not a finding.
+      </p>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- estimates */
+
+export interface EstimateRow { process: string; label: string; before: number; after: number; volume: number }
+
+export function Estimates({ rows }: { rows: EstimateRow[] }) {
+  return (
+    <div className="space-y-4 text-[13px] leading-relaxed text-ink-600">
+      <p>
+        <span className="font-semibold text-ink-900">They are our assumptions, not measurements.</span>{' '}
+        Nothing has been timed at Field. Each figure is our estimate of how long the task takes a person at a
+        technical tooling supplier handling an enquiry by email, written into this demo when it was built.
+      </p>
+      <p>
+        <span className="font-semibold text-ink-900">“With AI” is not zero.</span>{' '}
+        It assumes the system does the preparation and a person still reads and checks the result. That checking
+        time is what’s left.
+      </p>
+      <p>
+        <span className="font-semibold text-ink-900">They will change with how Field works today.</span>{' '}
+        If enquiries already arrive through a web form, logging takes less time now and there’s less to save. If
+        engineers review lines in batches, or suppliers are called rather than emailed, those numbers move. The
+        yearly volumes are assumptions too.
+      </p>
+
+      <div className="overflow-x-auto rounded-xl ring-1 ring-ink-100">
+        <table className="w-full min-w-[640px] text-[12px]">
+          <thead>
+            <tr className="bg-ink-25 text-left text-[10.5px] uppercase tracking-[0.05em] text-ink-500">
+              <th className="px-3 py-2 font-semibold">Step</th>
+              <th className="px-3 font-semibold">What a person does today</th>
+              <th className="px-3 font-semibold">With AI</th>
+              <th className="px-3 text-right font-semibold">Today</th>
+              <th className="px-3 text-right font-semibold">With AI</th>
+              <th className="px-3 text-right font-semibold">Per year</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-ink-100 align-top">
+            {rows.map((r) => (
+              <tr key={r.process}>
+                <td className="px-3 py-2.5 font-medium text-ink-900">{r.label}</td>
+                <td className="px-3 py-2.5 text-ink-600">{ESTIMATE_NOTES[r.process]?.today}</td>
+                <td className="px-3 py-2.5 text-ink-600">{ESTIMATE_NOTES[r.process]?.withAi}</td>
+                <td className="mono whitespace-nowrap px-3 py-2.5 text-right text-ink-500">{r.before} min</td>
+                <td className="mono whitespace-nowrap px-3 py-2.5 text-right text-ink-900">{r.after} min</td>
+                <td className="mono whitespace-nowrap px-3 py-2.5 text-right text-ink-500">{r.volume.toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[12px] text-ink-500">
+        Quote sign-off and the order aren’t counted: they are decisions, and they take as long as they need.
+      </p>
+      <p>
+        <span className="font-semibold text-ink-900">How to make them real.</span>{' '}
+        Time a sample of real enquiries at each step, or take the times from Field’s email and order systems, then
+        put those figures into{' '}
+        <Link href="/roi" className="font-medium text-signal-600 underline decoration-signal-200 underline-offset-[3px] hover:text-signal-800">the value model</Link>,
+        where every number can be changed.
+      </p>
+    </div>
+  );
+}
+
+export function EstimatesDialog({ rows, onClose }: { rows: EstimateRow[]; onClose: () => void }) {
+  useEffect(() => {
+    document.body.dataset.dialog = 'open';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => { delete document.body.dataset.dialog; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[#07162a]/50 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Where the time estimates come from"
+        onClick={(e) => e.stopPropagation()}
+        className="step-in max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-[0_40px_80px_-30px_rgba(4,24,47,0.6)] sm:p-8"
+      >
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <h2 className="font-display text-[24px] font-medium tracking-[-0.03em] text-ink-950">Where the time estimates come from</h2>
+          <button onClick={onClose} aria-label="Close" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-400 hover:bg-ink-50 hover:text-ink-900">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <Estimates rows={rows} />
       </div>
     </div>
   );
