@@ -8,7 +8,7 @@ import {
   type StepId, type StepMetric,
 } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
-import type { CrmAccount, CrmInboxItem } from '@/lib/simulation/crm.ts';
+import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { BrowserFrame, CrmFrame, YourDecision, type CrmModule } from '@/components/journey/frames.tsx';
 import { RequestScreen, PartsScreen, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
@@ -49,8 +49,8 @@ const NEW_LEADS = { name: 'Tom Whitfield', role: 'Sales Engineer' };
  * (this tab only), and every step has its own URL.
  */
 export function Journey({
-  metrics, accounts, inbox,
-}: { metrics: Record<string, StepMetric>; accounts: CrmAccount[]; inbox: CrmInboxItem[] }) {
+  metrics, accounts, inbox, suppliers,
+}: { metrics: Record<string, StepMetric>; accounts: CrmAccount[]; inbox: CrmInboxItem[]; suppliers: CrmSupplier[] }) {
   const params = useSearchParams();
   const [sim, setSim] = useState<SimState>(EMPTY);
   const [busy, setBusy] = useState(false);
@@ -194,8 +194,17 @@ export function Journey({
     + (sim.approval === 'approved' ? 1 : 0) + (sim.risk ? 1 : 0);
   const pendingReview = reviewLines.filter((l) => !sim.review[l.line]).length;
   const you = (id: StepId) => ({ ...PERSONAS[id]!, you: true });
-  const crm = (module: CrmModule, crumbs: string[], user: { name: string; role: string; you?: boolean }, body: React.ReactNode) => (
-    <CrmFrame module={module} crumbs={crumbs} user={user} badges={{ Inbox: step.id === 'inbox' ? inbox.length + 1 : undefined }}>
+  const basket = found ? found.lines.length - sim.excluded.length : 0;
+  const crm = (module: CrmModule, user: { name: string; role: string; you?: boolean }, body: React.ReactNode) => (
+    <CrmFrame
+      module={module}
+      user={user}
+      badges={{
+        Enquiries: inbox.length + (index <= stepIndex('check') ? 1 : 0),
+        Engineering: reviewDone ? undefined : pendingReview,
+        Procurement: supplierDone ? undefined : 1,
+      }}
+    >
       {body}
     </CrmFrame>
   );
@@ -228,7 +237,7 @@ export function Journey({
     request: {
       lines: ['You are the customer.', 'Say what you need, the way you would to a supplier.'],
       frame: (
-        <BrowserFrame address="field — find a part">
+        <BrowserFrame path="find-a-part" basket={basket}>
           <RequestScreen value={sim.request} onChange={(v) => patch({ request: v })} onSubmit={find} busy={busy} error={error} />
         </BrowserFrame>
       ),
@@ -240,7 +249,7 @@ export function Journey({
         ? ['Your request is on its way to Field.']
         : ['These are the parts you’ll need.', 'Each one comes from Field’s real catalogue, with the reason it was picked.'],
       frame: found && (
-        <BrowserFrame address="field — find a part — results">
+        <BrowserFrame path={contact ? "find-a-part/request-sent" : "find-a-part/results"} basket={basket}>
           <PartsScreen
             found={found}
             excluded={sim.excluded}
@@ -251,6 +260,7 @@ export function Journey({
             onForm={(form) => patch({ form })}
             sent={contact && rfq ? { email: contact.email, company: contact.company, reference: rfq.reference } : null}
             onSend={send}
+            onEdit={() => go(stepIndex('request'))}
             accountNames={accounts.map((a) => a.name)}
           />
         </BrowserFrame>
@@ -260,20 +270,20 @@ export function Journey({
     },
     inbox: {
       lines: ['Now you’re at Field. The enquiry arrives.', 'Before anyone opens it, the system has logged it, found the account and assigned an owner.'],
-      frame: rfq && contact && crm('Inbox', ['Inbox', rfq.reference], owner,
-        <InboxScreen rfq={rfq} contact={contact} account={account} inbox={inbox} newLeadOwner={NEW_LEADS.name} />),
+      frame: rfq && contact && crm('Enquiries', owner,
+        <InboxScreen rfq={rfq} contact={contact} account={account} inbox={inbox} owner={owner.name} />),
     },
     account: {
       lines: [
         account ? `${owner.name} opens the account.` : `${owner.name} opens the new lead.`,
         account ? `Everything Field holds on ${account.name}, on one screen.` : `${customerName} is new to Field.`,
       ],
-      frame: rfq && contact && crm('Accounts', ['Accounts', customerName], owner,
-        <AccountScreen account={account} contact={contact} rfq={rfq} brief={sim.brief} />),
+      frame: rfq && contact && crm('Accounts', owner,
+        <AccountScreen account={account} contact={contact} rfq={rfq} brief={sim.brief} owner={owner.name} />),
     },
     check: {
       lines: ['Every line is checked against the catalogue.', 'Anything the catalogue doesn’t establish goes to a person.'],
-      frame: rfq && crm('Enquiries', ['Enquiries', rfq.reference, 'Lines'], owner,
+      frame: rfq && crm('Enquiries', owner,
         <CheckScreen rfq={rfq} customer={customerName} owner={owner.name} />),
     },
     review: {
@@ -284,8 +294,8 @@ export function Journey({
           ? 'Every line in the queue has a decision.'
           : `${pendingReview} ${pendingReview === 1 ? 'line is' : 'lines are'} waiting in your queue. The system has given its reasons; it won’t decide for you.`,
       } : undefined,
-      frame: rfq && crm('Engineering', ['Engineering', 'Review queue', rfq.reference], you('review'),
-        <ReviewScreen rfq={rfq} lines={reviewLines} decisions={sim.review} onDecide={(line, d) => setSim((s) => ({ ...s, review: { ...s.review, [line]: d } }))} />),
+      frame: rfq && crm('Engineering', you('review'),
+        <ReviewScreen rfq={rfq} customer={customerName} brief={sim.brief} lines={reviewLines} decisions={sim.review} onDecide={(line, d) => setSim((s) => ({ ...s, review: { ...s.review, [line]: d } }))} />),
       blocked: reviewDone ? undefined : 'Decide every line in the queue to continue',
     },
     supplier: {
@@ -296,8 +306,8 @@ export function Journey({
           ? 'Enquiries sent. The replies are simulated.'
           : 'The system has drafted the supplier enquiries. Nothing is sent until you approve it.',
       } : undefined,
-      frame: rfq && crm('Procurement', ['Procurement', 'Lead-time enquiries', rfq.reference], you('supplier'),
-        <SupplierScreen lines={supplierLines} sent={sim.supplierSent} onSend={() => patch({ supplierSent: true })} replies={replies} deadlineDays={rfq.deadlineDays} />),
+      frame: rfq && crm('Procurement', you('supplier'),
+        <SupplierScreen rfq={rfq} lines={supplierLines} sent={sim.supplierSent} onSend={() => patch({ supplierSent: true })} replies={replies} suppliers={suppliers} />),
       blocked: supplierDone ? undefined : 'Approve the supplier enquiries to continue',
     },
     approval: {
@@ -308,10 +318,11 @@ export function Journey({
           ? 'Signed off. In this mock-up nothing is actually sent.'
           : 'The quote is assembled. It goes nowhere until you sign it off.',
       },
-      frame: rfq && contact && crm('Quotes', ['Quotes', rfq.reference.replace('RFQ', 'QT')], you('approval'),
+      frame: rfq && contact && crm('Quotes', you('approval'),
         <ApprovalScreen
           rfq={rfq} customer={customerName} contact={contact} included={included} held={held}
           leadDays={leadDays} deliveryDays={deliveryDays} decision={sim.approval}
+          reviewed={reviewLines.length} supplierAsked={supplierLines.length} approver={PERSONAS.approval!.name}
           onDecide={(d) => {
             patch({ approval: d });
             if (d === 'returned') go(stepIndex('review'));
@@ -327,8 +338,8 @@ export function Journey({
           ? `Decided: ${sim.risk.toLowerCase()}.`
           : `${lateCount} ${lateCount === 1 ? 'item' : 'items'} will arrive after the customer’s deadline. The system has spotted it; the call is yours.`,
       } : undefined,
-      frame: rfq && crm('Orders', ['Orders', rfq.reference.replace('RFQ', 'SO')], you('manufacture'),
-        <OrderScreen rfq={rfq} included={included} leadDays={leadDays} decision={sim.risk} onDecide={(d) => patch({ risk: d })} />),
+      frame: rfq && crm('Orders', you('manufacture'),
+        <OrderScreen rfq={rfq} customer={customerName} included={included} leadDays={leadDays} decision={sim.risk} onDecide={(d) => patch({ risk: d })} />),
       blocked: riskDone ? undefined : 'Decide how to handle the late items to continue',
     },
     summary: {
@@ -354,7 +365,7 @@ export function Journey({
   return (
     <div className="flex min-h-screen flex-col bg-white">
       {/* --------------------------------------------------------------- top */}
-      <header className="mx-auto flex w-full max-w-5xl items-center gap-6 px-4 pt-6 sm:px-8">
+      <header className="mx-auto flex w-full max-w-6xl items-center gap-6 px-4 pt-6 sm:px-8">
         <button onClick={() => go(0)} className="flex items-center gap-2" aria-label="Back to the start">
           <span className="h-2 w-2 rotate-45 bg-signal-700" />
           <span className="text-[12px] font-medium tracking-tight text-ink-800">Field</span>
@@ -370,7 +381,7 @@ export function Journey({
       </header>
 
       {/* -------------------------------------------------------------- rail */}
-      <nav aria-label="Journey" className="mx-auto mt-8 w-full max-w-5xl px-4 sm:px-8">
+      <nav aria-label="Journey" className="mx-auto mt-8 w-full max-w-6xl px-4 sm:px-8">
         <ol className="flex items-center">
           {STEPS.map((s, i) => {
             const locked = i > reachable;
@@ -406,7 +417,7 @@ export function Journey({
       </nav>
 
       {/* ------------------------------------------------------------ screen */}
-      <main key={step.id} className="mx-auto w-full max-w-5xl flex-1 px-4 pb-48 pt-[5vh] sm:px-8">
+      <main key={step.id} className="mx-auto w-full max-w-6xl flex-1 px-4 pb-48 pt-[5vh] sm:px-8">
         {step.side && (
           <p className="step-in mono mb-5 text-[10.5px] tracking-[0.12em] text-signal-600">
             {step.side === 'customer' ? 'THE CUSTOMER’S SIDE · FIELD’S WEBSITE' : 'FIELD’S SIDE · THE CRM'}
@@ -471,7 +482,7 @@ function Ledger({ ledger }: { ledger: { totalBefore: number; before: number; aft
   const scale = (m: number) => `${(m / ledger.totalBefore) * 100}%`;
   return (
     <div className="fixed inset-x-0 bottom-0 z-20 border-t border-ink-100 bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto w-full max-w-5xl px-4 py-3.5 sm:px-8">
+      <div className="mx-auto w-full max-w-6xl px-4 py-3.5 sm:px-8">
         <div className="mb-2 flex items-baseline justify-between gap-4">
           <p className="mono text-[10px] tracking-[0.12em] text-ink-400">PEOPLE’S TIME ON THIS ENQUIRY</p>
           {ledger.latest && (

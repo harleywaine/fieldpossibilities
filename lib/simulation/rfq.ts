@@ -24,6 +24,9 @@ export interface SimLine {
   engine: string | null;
   leadTimeDays: number | null;
   sourceUrl: string;
+  /** Catalogue photo, cached locally where possible; null when Field publishes none. */
+  image: string | null;
+  category: string | null;
   evidence: EvidenceItem[];
   flags: LineFlag[];
 }
@@ -44,6 +47,11 @@ export interface SimRfq {
 }
 
 const MAX_LINES = 6;
+
+function imageOf(p: { images: Array<{ isPlaceholder: boolean; localPath: string | null; thumbnail: string | null; src: string }> }): string | null {
+  const im = p.images.find((i) => !i.isPlaceholder);
+  return im ? (im.localPath ?? im.thumbnail ?? im.src) : null;
+}
 
 export function buildSimulatedRfq(request: string): SimRfq {
   const result = retrieve(request, { limit: 24 });
@@ -103,6 +111,8 @@ export function buildSimulatedRfq(request: string): SimRfq {
       engine: p.engine,
       leadTimeDays: p.leadTimeDays,
       sourceUrl: p.sourceUrl,
+      image: imageOf(p),
+      category: p.maintenanceCategory ?? null,
       evidence: s.evidence,
       flags,
     };

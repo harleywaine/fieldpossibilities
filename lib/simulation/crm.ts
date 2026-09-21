@@ -45,8 +45,10 @@ export interface CrmAccount {
   annualSpendGbp: number;
   notes: string;
   owner: { name: string; role: string; email: string } | null;
-  stats: { wonGbp: number; pipelineGbp: number; winRatePct: number | null; enquiries: number };
+  stats: { wonGbp: number; pipelineGbp: number; winRatePct: number | null; won: number; decided: number; enquiries: number };
   jobs: CrmJob[];
+  /** Every year with an enquiry on record, oldest first. */
+  history: Array<{ year: string; enquiries: number; wonGbp: number }>;
   cases: CrmCase[];
   activity: CrmActivity[];
 }
@@ -143,9 +145,19 @@ export function listAccounts(): CrmAccount[] {
         wonGbp: won.reduce((a, r) => a + (r.value_gbp ?? 0), 0),
         pipelineGbp: own.filter((r) => r.quote_status === 'pending').reduce((a, r) => a + (r.value_gbp ?? 0), 0),
         winRatePct: decided ? Math.round((won.length / decided) * 100) : null,
+        won: won.length,
+        decided,
         enquiries: own.length,
       },
       jobs: jobs.slice(0, 6),
+      history: [...new Set(own.map((r) => r.received_at.slice(0, 4)))].sort().map((year) => {
+        const inYear = own.filter((r) => r.received_at.startsWith(year));
+        return {
+          year,
+          enquiries: inYear.length,
+          wonGbp: inYear.filter((r) => r.status === 'won').reduce((a, r) => a + (r.value_gbp ?? 0), 0),
+        };
+      }),
       cases: CASES[c.id] ?? [],
       activity: docs
         .filter((d) => d.customer_id === c.id)
@@ -153,6 +165,24 @@ export function listAccounts(): CrmAccount[] {
         .map((d) => ({ date: day(d.created_at), kind: d.document_type, title: d.title, author: d.author_name })),
     };
   });
+}
+
+export interface CrmSupplier {
+  name: string;
+  country: string;
+  category: string;
+  standardLeadTimeWeeks: number;
+  reliabilityPct: number;
+}
+
+export function listSuppliers(): CrmSupplier[] {
+  return (demoDb().prepare('SELECT * FROM suppliers ORDER BY id').all() as any[]).map((s) => ({
+    name: s.name,
+    country: s.country,
+    category: s.category,
+    standardLeadTimeWeeks: s.standard_lead_time_weeks,
+    reliabilityPct: s.reliability_pct,
+  }));
 }
 
 /** The enquiries already in Field's inbox when the viewer's one arrives. */

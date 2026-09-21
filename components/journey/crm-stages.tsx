@@ -1,565 +1,939 @@
 'use client';
 
+import {
+  AlertTriangle, BookOpen, Building2, Calendar, CheckCircle2, CircleDashed, Clock, CreditCard,
+  Factory, FileText, History, Inbox, Mail, MapPin, MessageSquare, Phone, Plane, Plus, Send,
+  ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { aircraftLabel, duration, gbp, shortDate, supplierFor } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
-import type { CrmAccount, CrmInboxItem } from '@/lib/simulation/crm.ts';
-import { Choice, Panel, Pill, type Tone } from '@/components/journey/frames.tsx';
+import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
+import { PageHeader } from '@/components/journey/frames.tsx';
+import {
+  Avatar, Badge, Button, Card, Fields, Stat, StagePath, Tabs, Td, Th, Thumb, type Tone,
+} from '@/components/journey/ui.tsx';
 
 export type Decision = 'approve' | 'remove' | 'query';
 export interface Contact { email: string; company: string }
 
 const T = (ms: number) => ({ animationDelay: `${ms}ms` });
+const ENQUIRY_STAGES = ['New', 'Qualifying', 'Engineering', 'Procurement', 'Quote', 'Won'];
+const has = (l: SimLine, kind: 'review' | 'supplier') => l.flags.some((f) => f.kind === kind);
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+const personOf = (email: string) => email.split('@')[0]!.replace(/[._-]+/g, ' ');
 
-function Part({ l }: { l: SimLine }) {
-  return (
-    <span className="flex min-w-0 flex-1 items-baseline gap-3">
-      <span className="mono w-24 shrink-0 text-[11.5px] text-signal-600">{l.partNumber ?? '—'}</span>
-      <span className="min-w-0 flex-1 truncate text-[12px] text-ink-800">{l.name}</span>
-    </span>
-  );
-}
-
-const STATUS: Record<string, { tone: Tone; text: string }> = {
+const JOB: Record<string, { tone: Tone; text: string }> = {
   won: { tone: 'green', text: 'Won' },
   lost: { tone: 'red', text: 'Lost' },
   quoted: { tone: 'blue', text: 'Quoted' },
   open: { tone: 'amber', text: 'Open' },
 };
 
-/* ------------------------------------------------------------------ inbox */
-
-export function InboxScreen({
-  rfq, contact, account, inbox, newLeadOwner,
-}: {
-  rfq: SimRfq; contact: Contact; account: CrmAccount | null; inbox: CrmInboxItem[];
-  newLeadOwner: string;
-}) {
-  const owner = account?.owner?.name ?? newLeadOwner;
-  const done: string[] = [
-    account ? `Matched to the account ${account.name}, by company name` : `No account for ${contact.company}, so a new lead was opened`,
-    `Logged as enquiry ${rfq.reference}, with ${rfq.lines.length} ${rfq.lines.length === 1 ? 'part' : 'parts'} attached`,
-    account?.owner ? `Assigned to ${owner}, the account owner` : `Assigned to ${owner}, who takes new leads`,
-    ...(rfq.deadlineDays ? [`Deadline read from the message: ${rfq.deadlineDays} days`] : []),
-    `Acknowledgement sent to ${contact.email} (simulated)`,
-  ];
+function PartCell({ l, sub }: { l: SimLine; sub?: React.ReactNode }) {
   return (
-    <div className="grid gap-4 md:grid-cols-[14rem_1fr]">
-      <Panel title="Inbox" aside={`${inbox.length + 1} open`}>
-        <ul className="divide-y divide-ink-100">
-          <li className="step-in border-l-2 border-signal-600 bg-signal-50/60 px-3 py-2.5" style={T(150)}>
-            <p className="flex items-center justify-between gap-2 text-[11.5px] font-semibold text-ink-900">
-              <span className="truncate">{account?.name ?? contact.company}</span>
-              <Pill tone="red">New</Pill>
-            </p>
-            <p className="truncate text-[11px] text-ink-600">Quote request · {rfq.lines.length} parts</p>
-            <p className="text-[10px] text-ink-400">Just now</p>
-          </li>
-          {inbox.map((m) => (
-            <li key={m.reference} className="px-3 py-2.5 opacity-80">
-              <p className="truncate text-[11.5px] text-ink-800">{m.customer}</p>
-              <p className="truncate text-[11px] text-ink-500">{m.subject}</p>
-              <p className="text-[10px] text-ink-400">{shortDate(m.date)} · {m.status}</p>
-            </li>
-          ))}
-        </ul>
-      </Panel>
-
-      <div className="min-w-0 space-y-4">
-        <Panel title={`Quote request · ${rfq.lines.length} parts`} aside={rfq.reference}>
-          <div className="px-4 py-3 text-[12px]">
-            <p className="text-ink-500">
-              From <span className="text-ink-900">{contact.email}</span> · {contact.company} · via Find a part
-            </p>
-            <p className="mt-3 border-l-2 border-ink-100 pl-3 text-[13px] leading-relaxed text-ink-800">“{rfq.request}”</p>
-            <ul className="mt-3 space-y-1">
-              {rfq.lines.map((l) => (
-                <li key={l.line} className="flex"><Part l={l} /></li>
-              ))}
-            </ul>
-          </div>
-        </Panel>
-
-        <Panel title="Done automatically, before anyone opened it">
-          <ul className="space-y-1.5 px-4 py-3">
-            {done.map((d, i) => (
-              <li key={d} className="step-in flex gap-2.5 text-[12px] text-ink-700" style={T(500 + i * 380)}>
-                <span className="text-strong-600">✓</span>{d}
-              </li>
-            ))}
-          </ul>
-        </Panel>
+    <div className="flex min-w-0 items-start gap-2.5">
+      <Thumb src={l.image} size={32} />
+      <div className="min-w-0">
+        <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber ?? '—'}</p>
+        <p className="truncate text-[12px] text-ink-700">{l.name}</p>
+        {sub}
       </div>
     </div>
   );
 }
 
-/* ---------------------------------------------------------------- account */
+function Grid({ children }: { children: React.ReactNode }) {
+  return <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_290px]">{children}</div>;
+}
+
+function Rail({ children }: { children: React.ReactNode }) {
+  return <div className="min-w-0 space-y-4">{children}</div>;
+}
+
+/** Enquiry record header: shared by the new-enquiry and line-check pages. */
+function EnquiryHeader({
+  rfq, customer, owner, stage, tab, isNew,
+}: { rfq: SimRfq; customer: string; owner: string; stage: number; tab: string; isNew?: boolean }) {
+  return (
+    <>
+      <PageHeader
+        crumbs={['Enquiries', 'Open', rfq.reference]}
+        icon={Inbox}
+        title={`${rfq.reference} · ${customer}`}
+        badges={<>{isNew && <Badge tone="red" dot>New</Badge>}<Badge tone="violet">Website</Badge></>}
+        meta={[
+          <><Clock className="h-3.5 w-3.5" /> Received just now</>,
+          <><Avatar name={owner} size={18} /> {owner}</>,
+          ...(rfq.deadlineDays ? [<><Timer className="h-3.5 w-3.5" /> Needed within {duration(rfq.deadlineDays)}</>] : []),
+        ]}
+        actions={<><Button icon={Mail}>Reply</Button><Button icon={UserPlus}>Reassign</Button></>}
+      />
+      <div className="mb-4"><StagePath stages={ENQUIRY_STAGES} current={stage} /></div>
+      <div className="mb-4">
+        <Tabs active={tab} tabs={[{ label: 'Overview' }, { label: 'Lines', count: rfq.lines.length }, { label: 'Activity' }, { label: 'Files', count: 0 }]} />
+      </div>
+    </>
+  );
+}
+
+/* -------------------------------------------------------------- 1 enquiry */
+
+export function InboxScreen({
+  rfq, contact, account, inbox, owner,
+}: {
+  rfq: SimRfq; contact: Contact; account: CrmAccount | null; inbox: CrmInboxItem[]; owner: string;
+}) {
+  const customer = account?.name ?? contact.company;
+  const auto: Array<{ icon: LucideIcon; text: string }> = [
+    { icon: FileText, text: `Enquiry ${rfq.reference} created from the website request` },
+    account
+      ? { icon: Building2, text: `Matched to the account ${account.name}` }
+      : { icon: UserPlus, text: `No account for ${contact.company}; opened a new lead` },
+    { icon: Users, text: account?.owner ? `Assigned to ${owner}, the account owner` : `Assigned to ${owner}, who takes new leads` },
+    ...(rfq.deadlineDays ? [{ icon: Timer, text: `Deadline read from the message: ${rfq.deadlineDays} days` }] : []),
+    { icon: Plane, text: `Aircraft and ${plural(rfq.lines.length, 'part')} recorded` },
+    { icon: Mail, text: `Acknowledgement sent to ${contact.email} (simulated)` },
+  ];
+  return (
+    <div>
+      <EnquiryHeader rfq={rfq} customer={customer} owner={owner} stage={0} tab="Overview" isNew />
+      <Grid>
+        <div className="min-w-0 space-y-4">
+          <Card title="Customer request" icon={MessageSquare} action="via Find a part">
+            <div className="flex items-start gap-3">
+              <Avatar name={personOf(contact.email)} size={30} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[12.5px]">
+                  <span className="font-medium text-ink-900">{contact.email}</span>
+                  <span className="text-ink-400"> · {contact.company}</span>
+                </p>
+                <p className="mt-2 rounded-lg rounded-tl-none bg-ink-25 px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-800 ring-1 ring-inset ring-ink-100">
+                  {rfq.request}
+                </p>
+              </div>
+            </div>
+          </Card>
+          <Card title="Requested parts" icon={Wrench} action={plural(rfq.lines.length, 'line')} pad={false}>
+            <table className="w-full table-fixed">
+              <thead><tr><Th>Part</Th><Th right className="w-14">Qty</Th><Th right className="w-32">Lead time</Th></tr></thead>
+              <tbody className="divide-y divide-ink-100">
+                {rfq.lines.map((l) => (
+                  <tr key={l.line}>
+                    <Td><PartCell l={l} /></Td>
+                    <Td right className="text-ink-700">1</Td>
+                    <Td right className="text-ink-700">{l.leadTimeDays !== null ? duration(l.leadTimeDays) : <span className="text-ink-400">Not published</span>}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+        <Rail>
+          <Card title="Details">
+            <Fields rows={[
+              ['Account', account ? <span className="font-medium text-signal-700">{account.name}</span> : <Badge tone="amber">New lead</Badge>],
+              ['Contact', <span className="block truncate" title={contact.email}>{contact.email}</span>],
+              ['Owner', <span className="flex items-center gap-1.5"><Avatar name={owner} size={18} />{owner}</span>],
+              ['Source', 'Website · Find a part'],
+              ['Aircraft', aircraftLabel(rfq.aircraft) ?? 'Not stated'],
+              ['Needed within', rfq.deadlineDays ? duration(rfq.deadlineDays) : 'Not stated'],
+            ]} />
+          </Card>
+          <Card title="Automation" icon={Zap} action="before anyone opened it">
+            <ol className="relative space-y-3 before:absolute before:bottom-2 before:left-[11px] before:top-2 before:w-px before:bg-ink-100">
+              {auto.map(({ icon: Icon, text }, i) => (
+                <li key={text} className="step-in relative flex gap-2.5" style={T(300 + i * 300)}>
+                  <span className="relative grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#e7f4ee] text-strong-600 ring-2 ring-white">
+                    <Icon className="h-3 w-3" strokeWidth={2.2} />
+                  </span>
+                  <span className="pt-0.5 text-[12px] leading-snug text-ink-700">{text}</span>
+                </li>
+              ))}
+            </ol>
+          </Card>
+          <Card title="Also open" icon={Inbox} action={plural(inbox.length, 'enquiry', 'enquiries')} pad={false}>
+            <ul className="divide-y divide-ink-100">
+              {inbox.slice(0, 4).map((m) => (
+                <li key={m.reference} className="flex items-center gap-2.5 px-4 py-2">
+                  <Avatar name={m.customer} size={22} square />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[11.5px] font-medium text-ink-800">{m.customer}</span>
+                    <span className="block truncate text-[10.5px] text-ink-400">{m.reference} · {shortDate(m.date)}</span>
+                  </span>
+                  <Badge tone={m.status === 'Open' ? 'amber' : 'blue'}>{m.status}</Badge>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Rail>
+      </Grid>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------- 2 account */
 
 const BRIEF = ['Previous interactions', 'Previous quote', 'Technical position', 'Potential issue'];
+const ACTIVITY: Record<string, LucideIcon> = { email: Mail, 'meeting-notes': Users, quote: FileText, 'account-history': History };
 
 export function AccountScreen({
-  account, contact, rfq, brief,
-}: { account: CrmAccount | null; contact: Contact; rfq: SimRfq; brief: any | null }) {
-  const newJob = (
-    <tr className="bg-signal-50/60">
-      <td className="mono whitespace-nowrap py-1.5 pl-4 pr-2 text-signal-700">{rfq.reference}</td>
-      <td className="px-2 text-ink-500">Today</td>
-      <td className="px-2 text-ink-800">{[aircraftLabel(rfq.aircraft), `${rfq.lines.length} parts`].filter(Boolean).join(' · ')}</td>
-      <td className="px-2"><Pill tone="red">New</Pill></td>
-      <td className="pr-4 text-right text-ink-400">—</td>
-    </tr>
-  );
-
-  if (!account) {
-    return (
-      <div className="space-y-4">
-        <Panel title={contact.company} aside="New lead">
-          <div className="px-4 py-3 text-[12.5px] leading-relaxed text-ink-600">
-            <p>Contact: <span className="text-ink-900">{contact.email}</span></p>
-            <p className="mt-2">
-              No account, jobs, cases or correspondence on record for this company. The system searched the CRM
-              for similar names and found none, so it opened a new lead. With no history, a salesperson would
-              normally call to qualify it.
-            </p>
-          </div>
-        </Panel>
-        <Panel title="Jobs">
-          <table className="w-full text-[11.5px]"><tbody>{newJob}</tbody></table>
-        </Panel>
-      </div>
-    );
-  }
+  account, contact, rfq, brief, owner,
+}: { account: CrmAccount | null; contact: Contact; rfq: SimRfq; brief: any | null; owner: string }) {
+  if (!account) return <NewLead contact={contact} rfq={rfq} owner={owner} />;
 
   const open = account.cases.filter((c) => c.status === 'Open');
   const openComplaint = open.some((c) => c.kind === 'Complaint');
   const health: { tone: Tone; text: string } = openComplaint
     ? { tone: 'red', text: 'Open complaint' }
-    : open.length ? { tone: 'amber', text: `${open.length} open ${open.length === 1 ? 'case' : 'cases'}` }
+    : open.length ? { tone: 'amber', text: plural(open.length, 'open case') }
     : { tone: 'green', text: 'No open cases' };
-  const kpis: Array<[string, string]> = [
-    ['Annual spend', gbp(account.annualSpendGbp)],
-    ['Won to date', account.stats.wonGbp ? gbp(account.stats.wonGbp) : '—'],
-    ['Win rate', account.stats.winRatePct === null ? '—' : `${account.stats.winRatePct}%`],
-    ['Open quotes', account.stats.pipelineGbp ? gbp(account.stats.pipelineGbp) : '—'],
-    ['Enquiries', String(account.stats.enquiries + 1)],
-  ];
   const fields = brief ? BRIEF.map((l) => brief.fields.find((f: any) => f.label === l)).filter(Boolean) : [];
+  const maxYear = Math.max(1, ...account.history.map((h) => h.enquiries));
 
   return (
-    <div className="space-y-4">
-      {/* header */}
-      <section className="step-in rounded-[4px] border border-ink-100 bg-white px-4 py-3.5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-[16px] font-semibold tracking-tight text-ink-950">{account.name}</p>
-            <p className="mt-0.5 text-[11.5px] text-ink-500">
-              {account.type} · {account.country} · customer since {account.since.slice(0, 4)} · {account.paymentTerms} terms
-            </p>
-            <p className="mt-1.5 flex flex-wrap gap-1">
-              {account.fleet.map((f) => <Pill key={f} tone="grey">{f}</Pill>)}
-            </p>
-          </div>
-          <div className="text-right text-[11px] text-ink-500">
-            <Pill tone={health.tone}>{health.text}</Pill>
-            {account.owner && <p className="mt-1.5">Owner: <span className="text-ink-800">{account.owner.name}</span></p>}
-            <p>New contact: <span className="text-ink-800">{contact.email}</span></p>
-          </div>
-        </div>
-        <p className="mt-3 text-[11.5px] italic text-ink-500">“{account.notes}”</p>
-      </section>
-
-      {/* numbers */}
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[4px] border border-ink-100 bg-ink-100 sm:grid-cols-5">
-        {kpis.map(([k, v], i) => (
-          <div key={k} className="step-in bg-white px-3 py-2.5" style={T(100 + i * 70)}>
-            <p className="text-[10px] text-ink-400">{k}</p>
-            <p className="mt-0.5 text-[16px] font-light text-ink-950">{v}</p>
-          </div>
-        ))}
+    <div>
+      <PageHeader
+        crumbs={['Accounts', account.name]}
+        logo={<Avatar name={account.name} size={40} square />}
+        title={account.name}
+        badges={<><Badge>{account.type}</Badge><Badge>{account.region}</Badge><Badge tone={health.tone} dot>{health.text}</Badge></>}
+        meta={[
+          <><MapPin className="h-3.5 w-3.5" />{account.country}</>,
+          <><Calendar className="h-3.5 w-3.5" />Customer since {account.since.slice(0, 4)}</>,
+          <><CreditCard className="h-3.5 w-3.5" />{account.paymentTerms} terms</>,
+          ...(account.owner ? [<><Avatar name={account.owner.name} size={18} />{account.owner.name}</>] : []),
+        ]}
+        actions={<><Button icon={Phone}>Log call</Button><Button icon={Mail}>Email</Button><Button icon={Plus} variant="primary">New quote</Button></>}
+      />
+      <div className="mb-4">
+        <Tabs active="Overview" tabs={[
+          { label: 'Overview' }, { label: 'Enquiries', count: account.stats.enquiries + 1 },
+          { label: 'Cases', count: account.cases.length }, { label: 'Contacts', count: 2 }, { label: 'Documents' },
+        ]} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
-        <Panel title="Recent jobs" aside={`${account.stats.enquiries + 1} enquiries`}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-[11.5px]">
-              <tbody className="divide-y divide-ink-100">
-                {newJob}
-                {account.jobs.map((j) => (
-                  <tr key={j.reference}>
-                    <td className="mono py-1.5 pl-4 pr-2 text-ink-600">{j.reference}</td>
-                    <td className="whitespace-nowrap px-2 text-ink-500">{shortDate(j.date)}</td>
-                    <td className="px-2 text-ink-800">{[j.aircraft, j.application?.toLowerCase()].filter(Boolean).join(' · ')}</td>
-                    <td className="px-2"><Pill tone={STATUS[j.status].tone}>{STATUS[j.status].text}</Pill></td>
-                    <td className="mono whitespace-nowrap pr-4 text-right text-ink-700">{j.valueGbp ? gbp(j.valueGbp) : '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-
-        <Panel title="Complaints and cases" aside={`${open.length} open`}>
-          {account.cases.length ? (
-            <ul className="divide-y divide-ink-100">
-              {account.cases.map((c) => (
-                <li key={c.id} className="px-4 py-2.5">
-                  <p className="flex items-center gap-2 text-[11.5px]">
-                    <Pill tone={c.status === 'Open' ? (c.kind === 'Complaint' ? 'red' : 'amber') : 'grey'}>{c.kind} · {c.status}</Pill>
-                    <span className="text-[10.5px] text-ink-400">{shortDate(c.opened)}</span>
-                  </p>
-                  <p className="mt-1 text-[12px] text-ink-900">{c.subject}</p>
-                  <p className="text-[11px] leading-snug text-ink-500">{c.detail}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="px-4 py-3 text-[12px] text-ink-500">No complaints or cases on record.</p>
-          )}
-        </Panel>
+      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
+        <Stat label="Annual spend" value={gbp(account.annualSpendGbp)} sub="indicative" />
+        <Stat label="Won to date" value={account.stats.wonGbp ? gbp(account.stats.wonGbp) : '—'} sub={plural(account.stats.won, 'order')} />
+        <Stat label="Win rate" value={account.stats.winRatePct === null ? '—' : `${account.stats.winRatePct}%`} sub={`${account.stats.won} of ${account.stats.decided} decided`} />
+        <Stat label="Open quotes" value={account.stats.pipelineGbp ? gbp(account.stats.pipelineGbp) : '—'} sub="awaiting the customer" />
+        <Stat label="Open cases" value={String(open.length)} sub={openComplaint ? 'includes a complaint' : open.length ? 'queries only' : 'none'} tone={openComplaint ? 'bad' : open.length ? undefined : 'good'} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.35fr]">
-        <Panel title="Recent activity">
-          <ul className="divide-y divide-ink-100">
-            {account.activity.map((a) => (
-              <li key={a.title + a.date} className="px-4 py-2">
-                <p className="text-[10.5px] text-ink-400">{shortDate(a.date)} · {a.kind.replace('-', ' ')}{a.author ? ` · ${a.author}` : ''}</p>
-                <p className="truncate text-[11.5px] text-ink-800">{a.title}</p>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-
-        <Panel title="Before you reply" aside={brief ? `from ${brief.retrieval?.documents?.length ?? 0} internal documents` : 'reading…'}>
-          {!brief ? (
-            <p className="mono px-4 py-3 text-[10.5px] tracking-[0.08em] text-ink-300">READING THE ACCOUNT…</p>
-          ) : fields.length ? (
-            <dl className="divide-y divide-ink-100">
-              {fields.map((f: any, i: number) => (
-                <div key={f.label} className="step-in px-4 py-2" style={T(i * 120)}>
-                  <dt className="text-[10.5px] text-ink-400">{f.label}</dt>
-                  <dd className="text-[12px] leading-snug text-ink-800">{f.value}</dd>
-                  {f.citations?.[0] && <p className="mono mt-0.5 text-[9.5px] text-ink-300">{f.citations[0].path}</p>}
+      <Grid>
+        <div className="min-w-0 space-y-4">
+          <Card title="Enquiries per year" icon={History} action="figures show value won">
+            <div className="flex h-32 items-end gap-3">
+              {account.history.map((h, i) => (
+                <div key={h.year} className="flex h-full flex-1 flex-col items-center gap-1.5">
+                  <span className="h-3.5 text-[10.5px] text-ink-500">{h.wonGbp ? gbp(h.wonGbp) : ''}</span>
+                  <div className="flex w-full max-w-11 flex-1 items-end">
+                    <div className="step-in w-full rounded-t bg-signal-500/80" style={{ height: `${(h.enquiries / maxYear) * 100}%`, ...T(i * 80) }} />
+                  </div>
+                  <span className="text-[10.5px] text-ink-400">{h.year}</span>
                 </div>
               ))}
-            </dl>
-          ) : (
-            <p className="px-4 py-3 text-[12px] text-ink-500">Little on file beyond the profile — itself worth knowing before replying.</p>
-          )}
-        </Panel>
-      </div>
+              <div className="flex h-full flex-1 flex-col items-center gap-1.5">
+                <span className="h-3.5 text-[10.5px] font-medium text-action-600">this one</span>
+                <div className="flex w-full max-w-11 flex-1 items-end">
+                  <div className="w-full rounded-t bg-action-500" style={{ height: `${(1 / maxYear) * 100}%` }} />
+                </div>
+                <span className="text-[10.5px] text-ink-400">Now</span>
+              </div>
+            </div>
+          </Card>
+
+          <Card title="Recent enquiries" icon={Inbox} pad={false}>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead><tr><Th>Reference</Th><Th>Date</Th><Th>Aircraft · work</Th><Th>Status</Th><Th right>Value</Th></tr></thead>
+                <tbody className="divide-y divide-ink-100">
+                  <tr className="bg-signal-50/50">
+                    <Td className="mono whitespace-nowrap font-medium text-signal-700">{rfq.reference}</Td>
+                    <Td className="whitespace-nowrap text-ink-500">Today</Td>
+                    <Td className="text-ink-800">{[aircraftLabel(rfq.aircraft), plural(rfq.lines.length, 'part')].filter(Boolean).join(' · ')}</Td>
+                    <Td><Badge tone="red" dot>New</Badge></Td>
+                    <Td right className="text-ink-400">—</Td>
+                  </tr>
+                  {account.jobs.map((j) => (
+                    <tr key={j.reference} className="hover:bg-ink-25">
+                      <Td className="mono whitespace-nowrap text-ink-600">{j.reference}</Td>
+                      <Td className="whitespace-nowrap text-ink-500">{shortDate(j.date)}</Td>
+                      <Td className="text-ink-800">{[j.aircraft, j.application?.toLowerCase()].filter(Boolean).join(' · ')}</Td>
+                      <Td><Badge tone={JOB[j.status].tone} dot>{JOB[j.status].text}</Badge></Td>
+                      <Td right className="mono whitespace-nowrap text-ink-800">{j.valueGbp ? gbp(j.valueGbp) : '—'}</Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <Card title="Complaints and cases" icon={AlertTriangle} action={`${open.length} open`} pad={false}>
+            {account.cases.length ? (
+              <ul className="divide-y divide-ink-100">
+                {account.cases.map((c) => {
+                  const openC = c.status === 'Open';
+                  const Icon = c.kind === 'Complaint' ? AlertTriangle : HelpCircle;
+                  return (
+                    <li key={c.id} className="flex gap-3 px-4 py-3">
+                      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${openC ? (c.kind === 'Complaint' ? 'bg-[#fdecec] text-action-600' : 'bg-[#fdf3e3] text-caution-600') : 'bg-ink-50 text-ink-400'}`}>
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[12.5px] font-medium text-ink-900">{c.subject}</p>
+                        <p className="mt-0.5 text-[11.5px] leading-snug text-ink-500">{c.detail}</p>
+                        <p className="mt-1 text-[10.5px] text-ink-400">{c.id} · {c.kind} · opened {shortDate(c.opened)}</p>
+                      </div>
+                      <span className="shrink-0"><Badge tone={openC ? (c.kind === 'Complaint' ? 'red' : 'amber') : 'grey'} dot>{c.status}</Badge></span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="px-4 py-4 text-[12px] text-ink-500">No complaints or cases on record.</p>
+            )}
+          </Card>
+        </div>
+
+        <Rail>
+          <section className="overflow-hidden rounded-lg border border-[#ddd5ff] bg-gradient-to-b from-[#f7f5ff] to-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+            <header className="flex items-center justify-between gap-2 border-b border-[#ebe5ff] px-4 py-2.5">
+              <h3 className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-900">
+                <Sparkles className="h-3.5 w-3.5 text-[#6d4fe0]" /> Before you reply
+              </h3>
+              <span className="text-[10.5px] text-ink-400">{brief ? `${brief.retrieval?.documents?.length ?? 0} documents read` : 'reading…'}</span>
+            </header>
+            {!brief ? (
+              <div className="space-y-2 p-4">
+                {[80, 95, 70].map((w) => <div key={w} className="h-2.5 animate-pulse rounded bg-[#ebe5ff]" style={{ width: `${w}%` }} />)}
+              </div>
+            ) : fields.length ? (
+              <dl className="divide-y divide-[#f0ecff]">
+                {fields.map((f: any, i: number) => (
+                  <div key={f.label} className="step-in px-4 py-2.5" style={T(i * 140)}>
+                    <dt className="text-[10.5px] font-semibold uppercase tracking-[0.05em] text-[#6d4fe0]">{f.label}</dt>
+                    <dd className="mt-0.5 text-[12px] leading-snug text-ink-800">{f.value}</dd>
+                    {f.citations?.[0] && (
+                      <p className="mt-1 inline-flex max-w-full items-center gap-1 rounded bg-white px-1.5 py-0.5 text-[10px] text-ink-400 ring-1 ring-ink-100">
+                        <FileText className="h-2.5 w-2.5 shrink-0" /><span className="truncate">{f.citations[0].path}</span>
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="p-4 text-[12px] text-ink-500">Little on file beyond the profile — itself worth knowing before replying.</p>
+            )}
+          </section>
+
+          <Card title="Contacts" icon={Users} pad={false}>
+            <ul className="divide-y divide-ink-100">
+              <li className="flex items-center gap-2.5 px-4 py-2.5">
+                <Avatar name={personOf(contact.email)} size={26} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12px] font-medium text-ink-900">{contact.email}</span>
+                  <span className="block text-[10.5px] text-ink-400">Added from this enquiry</span>
+                </span>
+                <Badge tone="blue">New</Badge>
+              </li>
+              {account.owner && (
+                <li className="flex items-center gap-2.5 px-4 py-2.5">
+                  <Avatar name={account.owner.name} size={26} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[12px] font-medium text-ink-900">{account.owner.name}</span>
+                    <span className="block text-[10.5px] text-ink-400">Account owner · {account.owner.role}</span>
+                  </span>
+                </li>
+              )}
+            </ul>
+          </Card>
+
+          <Card title="Fleet" icon={Plane}>
+            <div className="flex flex-wrap gap-1.5">{account.fleet.map((f) => <Badge key={f}>{f}</Badge>)}</div>
+            <p className="mt-3 text-[11.5px] italic leading-snug text-ink-500">“{account.notes}”</p>
+          </Card>
+
+          <Card title="Recent activity" icon={History} pad={false}>
+            <ul className="divide-y divide-ink-100">
+              {account.activity.map((a) => {
+                const Icon = ACTIVITY[a.kind] ?? FileText;
+                return (
+                  <li key={a.title + a.date} className="flex gap-2.5 px-4 py-2.5">
+                    <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-400" />
+                    <span className="min-w-0">
+                      <span className="block truncate text-[11.5px] text-ink-800">{a.title}</span>
+                      <span className="block text-[10.5px] text-ink-400">{shortDate(a.date)}{a.author ? ` · ${a.author}` : ''}</span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        </Rail>
+      </Grid>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ check */
+function NewLead({ contact, rfq, owner }: { contact: Contact; rfq: SimRfq; owner: string }) {
+  return (
+    <div>
+      <PageHeader
+        crumbs={['Accounts', 'Leads', contact.company]}
+        logo={<Avatar name={contact.company} size={40} square />}
+        title={contact.company}
+        badges={<Badge tone="amber" dot>New lead</Badge>}
+        meta={[<><Avatar name={owner} size={18} />{owner}</>, <><Mail className="h-3.5 w-3.5" />{contact.email}</>]}
+        actions={<><Button icon={Phone}>Log call</Button><Button icon={Building2} variant="primary">Convert to account</Button></>}
+      />
+      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Won to date" value="—" sub="no orders" />
+        <Stat label="Enquiries" value="1" sub="this one" />
+        <Stat label="Open cases" value="0" sub="none" />
+        <Stat label="Contacts" value="1" sub="from this enquiry" />
+      </div>
+      <Grid>
+        <Card title="No history on record" icon={CircleDashed}>
+          <p className="text-[12.5px] leading-relaxed text-ink-600">
+            The system searched the CRM for this company and for similar names and found none, so it opened
+            a new lead instead of matching an account. There are no previous enquiries, orders, cases or
+            correspondence to read. A salesperson would normally call to qualify it.
+          </p>
+          <div className="mt-4 rounded-lg bg-ink-25 px-3.5 py-3 text-[12px] text-ink-600 ring-1 ring-inset ring-ink-100">
+            <span className="mono font-medium text-signal-700">{rfq.reference}</span> · {plural(rfq.lines.length, 'part')} · received just now
+          </div>
+        </Card>
+        <Card title="Contacts" icon={Users}>
+          <p className="break-all text-[12px] font-medium text-ink-900">{contact.email}</p>
+          <p className="text-[10.5px] text-ink-400">Added from this enquiry</p>
+        </Card>
+      </Grid>
+    </div>
+  );
+}
 
-const has = (l: SimLine, kind: 'review' | 'supplier') => l.flags.some((f) => f.kind === kind);
+/* ---------------------------------------------------------------- 3 check */
 
 export function CheckScreen({ rfq, customer, owner }: { rfq: SimRfq; customer: string; owner: string }) {
   const ready = rfq.lines.filter((l) => !l.flags.length).length;
   const toEng = rfq.lines.filter((l) => has(l, 'review')).length;
   const toProc = rfq.lines.filter((l) => has(l, 'supplier')).length;
-  const info: Array<[string, string]> = [
-    ['Customer', customer],
-    ['Owner', owner],
-    ['Aircraft', rfq.aircraft ? `${aircraftLabel(rfq.aircraft)}${rfq.variant ? ` (-${rfq.variant} stated)` : ''}` : 'Not stated'],
-    ['Engine', rfq.engine ?? 'Not stated'],
-    ['Needed within', rfq.deadlineDays ? `${rfq.deadlineDays} days` : 'Not stated'],
-  ];
   return (
-    <div className="space-y-4">
-      <section className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-[4px] border border-ink-100 bg-white px-4 py-3 sm:grid-cols-5">
-        {info.map(([k, v]) => (
-          <div key={k}>
-            <p className="text-[10px] text-ink-400">{k}</p>
-            <p className="text-[12px] text-ink-900">{v}</p>
-          </div>
-        ))}
-      </section>
-      <Panel title="Lines" aside={`${ready} ready · ${toEng} to Engineering · ${toProc} to Procurement`}>
-        <ul className="divide-y divide-ink-100">
-          {rfq.lines.map((l, i) => {
-            return (
-              <li key={l.line} className="step-in px-4 py-2.5" style={T(i * 160)}>
-                <div className="flex items-center gap-3">
-                  <span className="mono w-5 shrink-0 text-[10.5px] text-ink-300">{String(l.line).padStart(2, '0')}</span>
-                  <Part l={l} />
-                  <span className="flex shrink-0 gap-1">
-                    {!l.flags.length && <Pill tone="green">Ready</Pill>}
-                    {has(l, 'review') && <Pill tone="amber">Engineering</Pill>}
-                    {has(l, 'supplier') && <Pill tone="blue">Procurement</Pill>}
-                  </span>
-                </div>
-                {l.flags.length > 0 && (
-                  <ul className="mt-1 space-y-0.5 pl-8">
-                    {l.flags.map((f, j) => (
-                      <li key={j} className="text-[11px] leading-snug text-ink-500">{f.reason}</li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </Panel>
+    <div>
+      <EnquiryHeader rfq={rfq} customer={customer} owner={owner} stage={1} tab="Lines" />
+      <div className="mb-4 grid grid-cols-3 gap-3">
+        <Stat label="Ready to quote" value={String(ready)} sub="nothing to check" tone={ready ? 'good' : undefined} />
+        <Stat label="To Engineering" value={String(toEng)} sub="applicability to confirm" />
+        <Stat label="To Procurement" value={String(toProc)} sub="lead time to confirm" />
+      </div>
+      <Card title="Line check" icon={CheckCircle2} action="against each catalogue record" pad={false}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] table-fixed">
+            <thead>
+              <tr><Th className="w-10">#</Th><Th>Part</Th><Th className="w-36">Applicability</Th><Th className="w-32">Lead time</Th><Th className="w-52">Routed to</Th></tr>
+            </thead>
+            <tbody className="divide-y divide-ink-100">
+              {rfq.lines.map((l, i) => {
+                const reasons = l.flags.map((f) => f.reason);
+                const over = rfq.deadlineDays !== null && l.leadTimeDays !== null && l.leadTimeDays > rfq.deadlineDays;
+                return (
+                  <tr key={l.line} className="step-in align-top" style={T(i * 120)}>
+                    <Td className="mono pt-3.5 text-[11px] text-ink-400">{String(l.line).padStart(2, '0')}</Td>
+                    <Td>
+                      <PartCell l={l} sub={reasons.length > 0 && (
+                        <ul className="mt-1.5 space-y-0.5">
+                          {reasons.map((r) => <li key={r} className="whitespace-normal text-[11px] leading-snug text-ink-500">{r}</li>)}
+                        </ul>
+                      )} />
+                    </Td>
+                    <Td className="pt-3.5">
+                      {has(l, 'review')
+                        ? <span className="flex items-center gap-1.5 text-[12px] text-caution-600"><AlertTriangle className="h-3.5 w-3.5" />Not established</span>
+                        : <span className="flex items-center gap-1.5 text-[12px] text-strong-600"><CheckCircle2 className="h-3.5 w-3.5" />Confirmed</span>}
+                    </Td>
+                    <Td className="pt-3.5">
+                      {l.leadTimeDays === null
+                        ? <span className="flex items-center gap-1.5 text-[12px] text-caution-600"><AlertTriangle className="h-3.5 w-3.5" />Not published</span>
+                        : <span className={`flex items-center gap-1.5 text-[12px] ${over ? 'text-action-600' : 'text-strong-600'}`}>
+                            {over ? <XCircle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}{duration(l.leadTimeDays)}
+                          </span>}
+                    </Td>
+                    <Td className="pt-3.5">
+                      <span className="flex flex-wrap gap-1">
+                        {!l.flags.length && <Badge tone="green">Ready</Badge>}
+                        {has(l, 'review') && <Badge tone="amber">Engineering</Badge>}
+                        {has(l, 'supplier') && <Badge tone="blue">Procurement</Badge>}
+                      </span>
+                    </Td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 }
 
-/* ----------------------------------------------------------------- review */
+/* --------------------------------------------------------------- 4 review */
 
-export function ReviewScreen({
-  rfq, lines, decisions, onDecide,
-}: { rfq: SimRfq; lines: SimLine[]; decisions: Record<number, Decision>; onDecide: (line: number, d: Decision) => void }) {
-  const pending = lines.filter((l) => !decisions[l.line]);
-  if (!lines.length) {
-    return (
-      <Panel title="Review queue">
-        <p className="px-4 py-4 text-[12.5px] text-ink-600">Nothing in the queue for {rfq.reference}: every line establishes what the customer asked for.</p>
-      </Panel>
-    );
-  }
+function Segmented({ value, onChange }: { value?: Decision; onChange: (d: Decision) => void }) {
+  const opts: Array<{ d: Decision; label: string; icon: LucideIcon; on: string }> = [
+    { d: 'approve', label: 'Approve', icon: CheckCircle2, on: 'bg-strong-600 text-white' },
+    { d: 'query', label: 'Ask customer', icon: MessageSquare, on: 'bg-signal-600 text-white' },
+    { d: 'remove', label: 'Remove', icon: XCircle, on: 'bg-action-600 text-white' },
+  ];
   return (
-    <Panel title={`Review queue · ${rfq.reference}`} aside={`${pending.length} awaiting you`}>
-      <ul className="divide-y divide-ink-100">
-        {lines.map((l) => {
-          const d = decisions[l.line];
-          return (
-            <li key={l.line} className={`px-4 py-3 ${d ? '' : 'bg-caution-500/[0.04]'}`}>
-              <div className="flex"><Part l={l} /></div>
-              <ul className="mt-1 space-y-0.5 pl-[108px]">
-                {l.flags.filter((f) => f.kind === 'review').map((f, i) => (
-                  <li key={i} className="text-[11.5px] leading-snug text-ink-500">{f.reason}</li>
-                ))}
-              </ul>
-              <div className="mt-2 flex flex-wrap gap-1.5 pl-[108px]">
-                <Choice active={d === 'approve'} tone="go" onClick={() => onDecide(l.line, 'approve')}>Approve for the quote</Choice>
-                <Choice active={d === 'query'} onClick={() => onDecide(l.line, 'query')}>Ask the customer</Choice>
-                <Choice active={d === 'remove'} tone="stop" onClick={() => onDecide(l.line, 'remove')}>Remove</Choice>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-      {pending.length > 0 && pending.length < lines.length && (
-        <div className="border-t border-ink-100 px-4 py-2.5">
-          <button onClick={() => pending.forEach((l) => onDecide(l.line, 'approve'))} className="text-[11.5px] text-signal-600 hover:text-action-600">
-            Approve the remaining {pending.length} →
-          </button>
-        </div>
-      )}
-    </Panel>
+    <div className="inline-flex overflow-hidden rounded-lg bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)] ring-1 ring-inset ring-ink-200">
+      {opts.map(({ d, label, icon: Icon, on }, i) => (
+        <button
+          key={d}
+          onClick={() => onChange(d)}
+          className={`inline-flex h-8 items-center gap-1.5 px-3 text-[12px] font-medium transition-colors ${i > 0 ? 'border-l border-ink-200' : ''} ${
+            value === d ? on : 'text-ink-600 hover:bg-ink-25'
+          }`}
+        >
+          <Icon className="h-3.5 w-3.5" /> {label}
+        </button>
+      ))}
+    </div>
   );
 }
 
-/* --------------------------------------------------------------- supplier */
+const DECIDED: Record<Decision, { tone: Tone; text: string }> = {
+  approve: { tone: 'green', text: 'Approved' },
+  query: { tone: 'blue', text: 'Query to customer' },
+  remove: { tone: 'red', text: 'Removed' },
+};
+
+export function ReviewScreen({
+  rfq, customer, lines, decisions, onDecide, brief,
+}: {
+  rfq: SimRfq; customer: string; lines: SimLine[]; decisions: Record<number, Decision>;
+  onDecide: (line: number, d: Decision) => void; brief: any | null;
+}) {
+  const pending = lines.filter((l) => !decisions[l.line]);
+  const guidance = brief?.fields?.find((f: any) => f.label === 'Technical position');
+  return (
+    <div>
+      <PageHeader
+        crumbs={['Engineering', 'Review queue', rfq.reference]}
+        icon={Wrench}
+        title="Technical review"
+        badges={lines.length ? (pending.length ? <Badge tone="amber" dot>{pending.length} awaiting you</Badge> : <Badge tone="green" dot>Complete</Badge>) : undefined}
+        meta={[<><Inbox className="h-3.5 w-3.5" />{rfq.reference}</>, <><Building2 className="h-3.5 w-3.5" />{customer}</>]}
+        actions={pending.length > 0 && pending.length < lines.length
+          ? <Button icon={CheckCircle2} variant="success" onClick={() => pending.forEach((l) => onDecide(l.line, 'approve'))}>Approve remaining {pending.length}</Button>
+          : undefined}
+      />
+      <Grid>
+        <div className="min-w-0 space-y-3">
+          {!lines.length && (
+            <Card><p className="text-[12.5px] text-ink-600">Nothing in the queue: every line establishes what the customer asked for.</p></Card>
+          )}
+          {lines.map((l) => {
+            const d = decisions[l.line];
+            return (
+              <section key={l.line} className={`rounded-lg border bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${d ? 'border-ink-100' : 'border-caution-500/40'}`}>
+                <div className="flex items-start gap-3">
+                  <Thumb src={l.image} size={44} />
+                  <div className="min-w-0 flex-1">
+                    <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber}</p>
+                    <p className="text-[13px] font-medium leading-snug text-ink-900">{l.name}</p>
+                  </div>
+                  {d ? <Badge tone={DECIDED[d].tone} dot>{DECIDED[d].text}</Badge> : <Badge tone="amber" dot>Pending</Badge>}
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  {l.flags.filter((f) => f.kind === 'review').map((f) => (
+                    <p key={f.reason} className="flex items-start gap-2 rounded-md bg-[#fdf6ea] px-2.5 py-2 text-[12px] leading-snug text-ink-700">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caution-600" /> {f.reason}
+                    </p>
+                  ))}
+                </div>
+                <div className="mt-3"><Segmented value={d} onChange={(v) => onDecide(l.line, v)} /></div>
+              </section>
+            );
+          })}
+        </div>
+        <Rail>
+          <Card title="Enquiry">
+            <Fields rows={[
+              ['Customer', customer],
+              ['Aircraft', `${aircraftLabel(rfq.aircraft) ?? 'Not stated'}${rfq.variant ? ` (-${rfq.variant} stated)` : ''}`],
+              ['Engine', rfq.engine ?? 'Not stated'],
+              ['Needed within', rfq.deadlineDays ? duration(rfq.deadlineDays) : 'Not stated'],
+              ['For review', `${lines.length} of ${rfq.lines.length} lines`],
+            ]} />
+          </Card>
+          {guidance && (
+            <Card title="Engineering guidance" icon={BookOpen}>
+              <p className="text-[12px] leading-relaxed text-ink-700">{guidance.value}</p>
+              {guidance.citations?.[0] && (
+                <p className="mt-2 inline-flex items-center gap-1 text-[10.5px] text-ink-400"><FileText className="h-3 w-3" />{guidance.citations[0].path}</p>
+              )}
+            </Card>
+          )}
+          <Card title="Your options" icon={HelpCircle}>
+            <ul className="space-y-2 text-[11.5px] leading-snug text-ink-600">
+              <li><span className="font-medium text-strong-600">Approve</span> — the part goes on the quote.</li>
+              <li><span className="font-medium text-signal-700">Ask customer</span> — held until they confirm.</li>
+              <li><span className="font-medium text-action-600">Remove</span> — dropped from the quote.</li>
+            </ul>
+          </Card>
+        </Rail>
+      </Grid>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- 5 supplier */
 
 export function SupplierScreen({
-  lines, sent, onSend, replies, deadlineDays,
+  rfq, lines, sent, onSend, replies, suppliers,
 }: {
-  lines: SimLine[]; sent: boolean; onSend: () => void;
-  replies: Record<number, number>; deadlineDays: number | null;
+  rfq: SimRfq; lines: SimLine[]; sent: boolean; onSend: () => void;
+  replies: Record<number, number>; suppliers: CrmSupplier[];
 }) {
-  if (!lines.length) {
-    return (
-      <Panel title="Lead-time enquiries">
-        <p className="px-4 py-4 text-[12.5px] text-ink-600">Nothing to ask: every line has a published lead time inside the deadline.</p>
-      </Panel>
-    );
-  }
   const bySupplier = new Map<string, SimLine[]>();
   for (const l of lines) {
     const s = supplierFor(l.name);
     bySupplier.set(s, [...(bySupplier.get(s) ?? []), l]);
   }
+  const deadline = rfq.deadlineDays;
   return (
-    <div className="space-y-4">
-      {[...bySupplier.entries()].map(([supplier, ls], si) => (
-        <Panel key={supplier} title={supplier} aside={sent ? 'Sent · reply received (simulated)' : 'Draft'}>
-          {!sent && (
-            <p className="border-b border-ink-100 px-4 py-2.5 text-[11.5px] leading-relaxed text-ink-600">
-              “Please confirm your current lead time for the items below, for delivery to Field. We are quoting a
-              customer who needs them within {deadlineDays ? `${deadlineDays} days` : 'a stated window'}.”
-            </p>
-          )}
-          <ul className="divide-y divide-ink-100">
-            {ls.map((l, i) => {
-              const days = replies[l.line];
-              const late = deadlineDays !== null && days > deadlineDays;
-              return (
-                <li key={l.line} className="flex items-center gap-3 px-4 py-2">
-                  <Part l={l} />
-                  {sent ? (
-                    <span className="step-in mono shrink-0 whitespace-nowrap text-[11.5px]" style={T(si * 300 + i * 250 + 300)}>
-                      <span className={late ? 'text-action-600' : 'text-strong-600'}>{duration(days)}</span>
-                      {late && <span className="ml-1.5 text-[10px] text-action-600">after deadline</span>}
-                    </span>
-                  ) : (
-                    <span className="mono shrink-0 text-[10.5px] text-ink-300">not asked</span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </Panel>
-      ))}
-      {!sent && (
-        <button onClick={onSend} className="rounded-[3px] bg-signal-700 px-4 py-2 text-[12px] font-medium text-white transition-colors hover:bg-signal-600">
-          Approve and send {bySupplier.size} {bySupplier.size === 1 ? 'enquiry' : 'enquiries'}
-        </button>
-      )}
-    </div>
-  );
-}
-
-/* --------------------------------------------------------------- approval */
-
-export function ApprovalScreen({
-  rfq, customer, contact, included, held, leadDays, deliveryDays, decision, onDecide,
-}: {
-  rfq: SimRfq; customer: string; contact: Contact; included: SimLine[]; held: SimLine[];
-  leadDays: (l: SimLine) => number; deliveryDays: number | null;
-  decision: 'approved' | 'returned' | null; onDecide: (d: 'approved' | 'returned') => void;
-}) {
-  const lateCount = rfq.deadlineDays === null ? 0 : included.filter((l) => leadDays(l) > rfq.deadlineDays!).length;
-  const late = lateCount > 0;
-  return (
-    <div className="space-y-4">
-      <section className="rounded-[4px] border border-ink-100 bg-white">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-ink-100 px-5 py-4">
-          <div>
-            <p className="mono text-[10.5px] tracking-[0.12em] text-ink-400">QUOTATION</p>
-            <p className="mt-1 text-[15px] font-semibold text-ink-950">{customer}</p>
-            <p className="text-[11px] text-ink-500">For the attention of {contact.email}</p>
-          </div>
-          <div className="text-right text-[11px] text-ink-500">
-            <p className="mono text-ink-800">{rfq.reference.replace('RFQ', 'QT')}</p>
-            <p>Against {rfq.reference}</p>
-            <Pill tone={decision === 'approved' ? 'green' : 'amber'}>{decision === 'approved' ? 'Approved' : 'Awaiting sign-off'}</Pill>
-          </div>
-        </div>
-        <table className="w-full table-fixed text-[11.5px]">
-          <colgroup>
-            <col className="w-[7.5rem]" />
-            <col />
-            <col className="w-20" />
-            <col className="w-32" />
-          </colgroup>
-          <thead>
-            <tr className="text-left text-[10px] text-ink-400">
-              <th className="py-2 pl-5 font-normal">Part</th>
-              <th className="font-normal">Description</th>
-              <th className="px-3 text-right font-normal">Lead time</th>
-              <th className="pr-5 text-right font-normal">Price</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-ink-100 border-t border-ink-100">
-            {included.map((l) => {
-              const over = rfq.deadlineDays !== null && leadDays(l) > rfq.deadlineDays;
-              return (
-                <tr key={l.line}>
-                  <td className="mono py-2 pl-5 pr-3 text-signal-600">{l.partNumber}</td>
-                  <td className="truncate text-ink-800">{l.name}</td>
-                  <td className={`mono whitespace-nowrap px-3 text-right ${over ? 'text-action-600' : 'text-ink-700'}`}>{duration(leadDays(l), true)}</td>
-                  <td className="whitespace-nowrap pr-5 text-right italic text-ink-400">set by Commercial</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-t border-ink-100 px-5 py-3 text-[11.5px]">
-          <span className="text-ink-500">Delivery position</span>
-          <span className={`mono ${late ? 'text-action-600' : 'text-ink-900'}`}>
-            {deliveryDays === null ? '—'
-              : late ? `${lateCount} ${lateCount === 1 ? 'item' : 'items'} after the deadline · latest ${duration(deliveryDays)}`
-              : `all items within ${duration(deliveryDays)}`}
-            {rfq.deadlineDays ? ` · deadline ${duration(rfq.deadlineDays)}` : ''}
-          </span>
-        </div>
-      </section>
-      <p className="text-[11px] text-ink-500">
-        {held.length > 0 && `${held.length} ${held.length === 1 ? 'line is' : 'lines are'} held back, pending the customer or removed on review. `}
-        Prices are never generated: the catalogue publishes none, so Commercial sets them.
-      </p>
-      <div className="flex flex-wrap gap-1.5">
-        <Choice active={decision === 'approved'} tone="go" onClick={() => onDecide('approved')}>Approve and send to the customer</Choice>
-        <Choice active={decision === 'returned'} onClick={() => onDecide('returned')}>Send back to Engineering</Choice>
+    <div>
+      <PageHeader
+        crumbs={['Procurement', 'Lead-time requests', rfq.reference]}
+        icon={Truck}
+        title="Lead-time requests"
+        badges={lines.length ? (sent ? <Badge tone="green" dot>Sent · replies in</Badge> : <Badge tone="amber" dot>{plural(bySupplier.size, 'draft')}</Badge>) : undefined}
+        meta={[<><Inbox className="h-3.5 w-3.5" />{rfq.reference}</>, ...(deadline ? [<><Timer className="h-3.5 w-3.5" />Customer needs within {duration(deadline)}</>] : [])]}
+        actions={lines.length && !sent ? <Button icon={Send} variant="primary" size="md" onClick={onSend}>Approve and send {plural(bySupplier.size, 'request')}</Button> : undefined}
+      />
+      {!lines.length && <Card><p className="text-[12.5px] text-ink-600">Nothing to ask: every line has a published lead time inside the deadline.</p></Card>}
+      <div className="space-y-4">
+        {[...bySupplier.entries()].map(([name, ls], si) => {
+          const s = suppliers.find((x) => x.name === name);
+          return (
+            <section key={name} className="overflow-hidden rounded-lg border border-ink-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+              <header className="flex flex-wrap items-center gap-3 border-b border-ink-100 px-4 py-3">
+                <Avatar name={name} size={34} square />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-semibold text-ink-900">{name}</p>
+                  {s && <p className="text-[11px] text-ink-400">{s.category} · {s.country}</p>}
+                </div>
+                {s && (
+                  <div className="flex gap-5 text-right">
+                    <span><span className="block text-[10.5px] text-ink-400">On time</span><span className="block text-[12.5px] font-semibold text-ink-900">{s.reliabilityPct}%</span></span>
+                    <span><span className="block text-[10.5px] text-ink-400">Usual lead time</span><span className="block text-[12.5px] font-semibold text-ink-900">{s.standardLeadTimeWeeks} wks</span></span>
+                  </div>
+                )}
+                {sent ? <Badge tone="green" dot>Replied</Badge> : <Badge dot>Draft</Badge>}
+              </header>
+              {!sent && (
+                <div className="border-b border-ink-100 bg-ink-25 px-4 py-3 text-[12px]">
+                  <p className="text-ink-400">Subject <span className="ml-2 font-medium text-ink-800">Lead time request — {rfq.reference}</span></p>
+                  <p className="mt-2 leading-relaxed text-ink-700">
+                    Please confirm your current lead time for the items below, for delivery to Field. We are quoting a
+                    customer who needs them within {deadline ? `${deadline} days` : 'a stated window'}.
+                  </p>
+                  <p className="mt-2 flex items-center gap-1.5 text-[10.5px] text-ink-400"><Sparkles className="h-3 w-3 text-[#6d4fe0]" />Drafted by the system · not sent</p>
+                </div>
+              )}
+              <table className="w-full table-fixed">
+                <thead><tr><Th>Item</Th><Th right className="w-32">Catalogue</Th><Th right className="w-52">Supplier reply</Th></tr></thead>
+                <tbody className="divide-y divide-ink-100">
+                  {ls.map((l, i) => {
+                    const days = replies[l.line];
+                    const late = deadline !== null && days > deadline;
+                    return (
+                      <tr key={l.line}>
+                        <Td><PartCell l={l} /></Td>
+                        <Td right className="text-[12px] text-ink-500">{l.leadTimeDays !== null ? duration(l.leadTimeDays) : 'Not published'}</Td>
+                        <Td right>
+                          {sent ? (
+                            <span className="step-in inline-flex items-center gap-2" style={T(si * 300 + i * 250 + 200)}>
+                              <span className="mono whitespace-nowrap text-[12px] font-medium text-ink-900">{duration(days)}</span>
+                              <Badge tone={late ? 'red' : 'green'}>{late ? 'After deadline' : 'In time'}</Badge>
+                            </span>
+                          ) : <span className="text-[12px] text-ink-300">Not asked</span>}
+                        </Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </section>
+          );
+        })}
+        {sent && lines.length > 0 && <p className="text-[11px] text-ink-400">Supplier replies are simulated.</p>}
       </div>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ order */
+/* ------------------------------------------------------------- 6 approval */
+
+export function ApprovalScreen({
+  rfq, customer, contact, included, held, leadDays, deliveryDays, decision, onDecide, reviewed, supplierAsked, approver,
+}: {
+  rfq: SimRfq; customer: string; contact: Contact; included: SimLine[]; held: SimLine[];
+  leadDays: (l: SimLine) => number; deliveryDays: number | null;
+  decision: 'approved' | 'returned' | null; onDecide: (d: 'approved' | 'returned') => void;
+  reviewed: number; supplierAsked: number; approver: string;
+}) {
+  const lateCount = rfq.deadlineDays === null ? 0 : included.filter((l) => leadDays(l) > rfq.deadlineDays!).length;
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const qt = rfq.reference.replace('RFQ', 'QT');
+  const checks: Array<{ ok: boolean; label: string; detail: string }> = [
+    { ok: true, label: 'Engineering review', detail: reviewed ? `${plural(reviewed, 'line')} decided${held.length ? `, ${held.length} held back` : ''}` : 'not needed' },
+    { ok: true, label: 'Supplier lead times', detail: supplierAsked ? `${supplierAsked} confirmed` : 'all published' },
+    { ok: !lateCount, label: 'Delivery against deadline', detail: lateCount ? `${plural(lateCount, 'item')} late` : 'all in time' },
+    { ok: false, label: 'Pricing', detail: 'set by Commercial' },
+  ];
+  return (
+    <div>
+      <PageHeader
+        crumbs={['Quotes', qt]}
+        icon={FileText}
+        title={qt}
+        badges={decision === 'approved' ? <Badge tone="green" dot>Approved</Badge> : <Badge tone="amber" dot>Awaiting approval</Badge>}
+        meta={[<><Building2 className="h-3.5 w-3.5" />{customer}</>, <><Inbox className="h-3.5 w-3.5" />From {rfq.reference}</>, <>{plural(included.length, 'line')}</>]}
+      />
+      <div className="mb-4"><StagePath stages={ENQUIRY_STAGES} current={4} /></div>
+      <Grid>
+        <div className="min-w-0 rounded-md bg-white p-6 shadow-[0_1px_3px_rgba(16,24,40,0.1),0_12px_32px_-16px_rgba(16,24,40,0.25)] ring-1 ring-ink-100 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-signal-700 pb-4">
+            <span className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded bg-signal-700"><span className="h-2.5 w-2.5 rotate-45 bg-white" /></span>
+              <span className="leading-none">
+                <span className="block text-[15px] font-semibold text-signal-900">Field</span>
+                <span className="block text-[8.5px] tracking-[0.18em] text-ink-400">INTERNATIONAL</span>
+              </span>
+            </span>
+            <span className="text-right">
+              <span className="block text-[18px] font-light tracking-[0.12em] text-ink-900">QUOTATION</span>
+              <span className="mono block text-[11px] text-ink-500">{qt} · {today}</span>
+            </span>
+          </div>
+          <div className="mt-4 grid gap-4 text-[11.5px] sm:grid-cols-2">
+            <div><p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">Prepared for</p><p className="mt-1 font-medium text-ink-900">{customer}</p><p className="break-all text-ink-500">{contact.email}</p></div>
+            <div><p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">Your reference</p><p className="mono mt-1 text-ink-900">{rfq.reference}</p><p className="text-ink-500">{aircraftLabel(rfq.aircraft) ?? ''}{rfq.engine ? ` · ${rfq.engine}` : ''}</p></div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="mt-5 w-full min-w-[400px] table-fixed text-[11.5px]">
+              <thead>
+                <tr className="border-y border-ink-200 text-left text-[10px] uppercase tracking-[0.06em] text-ink-500">
+                  <th className="w-6 py-2 font-semibold">#</th><th className="w-24 font-semibold">Part</th><th className="font-semibold">Description</th>
+                  <th className="w-9 text-right font-semibold">Qty</th><th className="w-[4.5rem] text-right font-semibold">Lead time</th><th className="w-24 text-right font-semibold">Unit price</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-100">
+                {included.map((l, i) => {
+                  const over = rfq.deadlineDays !== null && leadDays(l) > rfq.deadlineDays;
+                  return (
+                    <tr key={l.line}>
+                      <td className="py-2 text-ink-400">{i + 1}</td>
+                      <td className="mono text-signal-700">{l.partNumber}</td>
+                      <td className="truncate pr-2 text-ink-800">{l.name}</td>
+                      <td className="text-right text-ink-700">1</td>
+                      <td className={`text-right ${over ? 'font-medium text-action-600' : 'text-ink-700'}`}>{duration(leadDays(l), true)}</td>
+                      <td className="whitespace-nowrap text-right text-[11px] text-ink-400">Commercial</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-ink-200 pt-3 text-[11.5px]">
+            <span className="text-ink-500">Delivery: {deliveryDays !== null ? `all items within ${duration(deliveryDays)}` : '—'}{rfq.deadlineDays ? ` (requested ${duration(rfq.deadlineDays)})` : ''}</span>
+            <span className="font-medium text-ink-900">Total: set by Commercial</span>
+          </div>
+          <p className="mt-4 text-[10.5px] leading-relaxed text-ink-400">
+            {held.length > 0 && `${plural(held.length, 'line')} not included pending confirmation. `}
+            Prices are never generated: the catalogue publishes none, so Commercial sets them.
+          </p>
+        </div>
+
+        <Rail>
+          <Card title="Approval" icon={ShieldCheck}>
+            <div className="flex items-center gap-2.5">
+              <Avatar name={approver} size={30} you />
+              <span className="leading-tight">
+                <span className="block text-[12.5px] font-medium text-ink-900">{approver}</span>
+                <span className="block text-[11px] text-ink-400">{decision === 'approved' ? 'Approved' : 'Your approval is required'}</span>
+              </span>
+            </div>
+            <ul className="mt-4 space-y-2.5">
+              {checks.map((c) => (
+                <li key={c.label} className="flex items-start gap-2.5">
+                  {c.ok
+                    ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-strong-600" />
+                    : <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-caution-500" />}
+                  <span className="leading-tight">
+                    <span className="block text-[12px] font-medium text-ink-900">{c.label}</span>
+                    <span className="block text-[11px] text-ink-500">{c.detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 space-y-2">
+              <button
+                onClick={() => onDecide('approved')}
+                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-strong-600 text-[12.5px] font-medium text-white transition-colors hover:bg-strong-500"
+              >
+                <CheckCircle2 className="h-4 w-4" /> {decision === 'approved' ? 'Approved and sent' : 'Approve and send'}
+              </button>
+              <button
+                onClick={() => onDecide('returned')}
+                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-white text-[12.5px] font-medium text-ink-700 ring-1 ring-inset ring-ink-200 hover:bg-ink-25"
+              >
+                <Wrench className="h-4 w-4" /> Return to Engineering
+              </button>
+            </div>
+          </Card>
+        </Rail>
+      </Grid>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- 7 order */
 
 export const LATE_OPTIONS = ['Offer a phased delivery', 'Ask the supplier to expedite', 'Agree a new date with the customer'];
+const LATE_DETAIL: Record<string, string> = {
+  'Offer a phased delivery': 'Ship what’s ready by the deadline; the rest follows.',
+  'Ask the supplier to expedite': 'Procurement asks for an earlier date, possibly at a cost.',
+  'Agree a new date with the customer': 'The account owner contacts the customer.',
+};
 
 export function OrderScreen({
-  rfq, included, leadDays, decision, onDecide,
+  rfq, customer, included, leadDays, decision, onDecide,
 }: {
-  rfq: SimRfq; included: SimLine[]; leadDays: (l: SimLine) => number;
+  rfq: SimRfq; customer: string; included: SimLine[]; leadDays: (l: SimLine) => number;
   decision: string | null; onDecide: (d: string) => void;
 }) {
-  const deadlineDays = rfq.deadlineDays;
-  const longest = Math.max(...included.map(leadDays), deadlineDays ?? 0, 1);
-  const scale = (d: number) => `${(d / longest) * 100}%`;
-  const late = included.filter((l) => deadlineDays !== null && leadDays(l) > deadlineDays);
-  const stages = ['Quote accepted', 'Purchase orders placed', 'In production', 'Shipped'];
+  const deadline = rfq.deadlineDays;
+  const longestDays = Math.max(...included.map(leadDays), deadline ?? 0, 7);
+  const totalWeeks = Math.max(2, Math.ceil(longestDays / 7 / 2) * 2);
+  const span = totalWeeks * 7;
+  const pct = (d: number) => `${(d / span) * 100}%`;
+  const ticks = Array.from({ length: totalWeeks / 2 + 1 }, (_, i) => i * 2);
+  const late = included.filter((l) => deadline !== null && leadDays(l) > deadline);
+  const so = rfq.reference.replace('RFQ', 'SO');
+
   return (
-    <div className="space-y-4">
-      <section className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[4px] border border-ink-100 bg-white px-4 py-3 text-[11.5px]">
-        {stages.map((s, i) => (
-          <span key={s} className="flex items-center gap-2">
-            {i > 0 && <span className="h-px w-5 bg-ink-200" />}
-            <span className={`h-2 w-2 rounded-full ${i < 3 ? 'bg-signal-600' : 'bg-ink-200'}`} />
-            <span className={i < 3 ? 'text-ink-900' : 'text-ink-400'}>{s}</span>
-          </span>
-        ))}
-      </section>
-
-      <Panel title={`Order ${rfq.reference.replace('RFQ', 'SO')} · delivery tracking`} aside="simulated">
-        <div className="relative px-4 pb-4 pt-7">
-          {deadlineDays !== null && (
-            <div className="pointer-events-none absolute bottom-3 top-3 z-10 border-l border-dashed border-action-600" style={{ left: `calc(1rem + 6.5rem + (100% - 2rem - 6.5rem) * ${deadlineDays / longest})` }}>
-              <span className="mono absolute -top-0.5 -translate-x-1/2 whitespace-nowrap bg-white px-1 text-[9.5px] text-action-600">deadline</span>
+    <div>
+      <PageHeader
+        crumbs={['Orders', so]}
+        icon={Factory}
+        title={so}
+        badges={<><Badge tone="blue" dot>In production</Badge>{late.length > 0 && <Badge tone="red" dot>{plural(late.length, 'exception')}</Badge>}</>}
+        meta={[<><Building2 className="h-3.5 w-3.5" />{customer}</>, <><FileText className="h-3.5 w-3.5" />From {rfq.reference.replace('RFQ', 'QT')}</>, <>{plural(included.length, 'line')}</>]}
+      />
+      <div className="mb-4"><StagePath stages={['Accepted', 'Orders placed', 'In production', 'Shipped', 'Delivered']} current={2} /></div>
+      <Grid>
+        <Card title="Delivery schedule" icon={Calendar} action="weeks from order · simulated" pad={false}>
+          <div className="overflow-x-auto px-4 pb-3 pt-3">
+            <div className="min-w-[500px]">
+              <div className="flex">
+                <span className="w-[150px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.05em] text-ink-400">Line · supplier</span>
+                <div className="relative h-5 flex-1">
+                  {ticks.map((w) => (
+                    <span key={w} className="absolute -translate-x-1/2 text-[10px] text-ink-400" style={{ left: pct(w * 7) }}>{w}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="relative border-t border-ink-100">
+                <div className="pointer-events-none absolute inset-y-0 left-[150px] right-0">
+                  {ticks.map((w) => <span key={w} className="absolute inset-y-0 w-px bg-ink-50" style={{ left: pct(w * 7) }} />)}
+                  {deadline !== null && (
+                    <span className="absolute inset-y-0 z-10 border-l-2 border-dashed border-action-500" style={{ left: pct(deadline) }}>
+                      <span className="absolute left-1 top-1 whitespace-nowrap rounded bg-action-600 px-1 text-[9.5px] font-medium text-white">Deadline</span>
+                    </span>
+                  )}
+                </div>
+                <ul>
+                  {included.map((l, i) => {
+                    const d = leadDays(l);
+                    const over = deadline !== null && d > deadline;
+                    const inside = d / span > 0.22;
+                    return (
+                      <li key={l.line} className="flex h-11 items-center border-b border-ink-50 last:border-0">
+                        <span className="w-[150px] shrink-0 pr-3">
+                          <span className="mono block text-[11.5px] font-medium text-signal-700">{l.partNumber}</span>
+                          <span className="block truncate text-[10.5px] text-ink-400">{supplierFor(l.name)}</span>
+                        </span>
+                        <span className="relative h-5 flex-1">
+                          <span
+                            className={`step-in absolute inset-y-0 left-0 flex items-center rounded ${over ? 'bg-action-500' : 'bg-signal-500'}`}
+                            style={{ width: pct(d), ...T(i * 100) }}
+                          >
+                            {inside && <span className="px-2 text-[10.5px] font-medium text-white">{duration(d, true)}</span>}
+                          </span>
+                          {!inside && <span className="absolute inset-y-0 flex items-center pl-1.5 text-[10.5px] text-ink-600" style={{ left: pct(d) }}>{duration(d, true)}</span>}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </div>
-          )}
-          <ul className="space-y-2">
-            {included.map((l, i) => {
-              const d = leadDays(l);
-              const over = deadlineDays !== null && d > deadlineDays;
-              return (
-                <li key={l.line} className="flex items-center">
-                  <span className="mono w-[6.5rem] shrink-0 text-[11px] text-signal-600">{l.partNumber}</span>
-                  <div className="relative h-4 flex-1">
-                    <div className={`step-in absolute inset-y-0 left-0 rounded-[1px] ${over ? 'bg-action-600' : 'bg-signal-600'}`} style={{ width: scale(d), ...T(i * 120) }} />
-                    {d / longest > 0.4 ? (
-                      <span className="mono absolute inset-y-0 left-1.5 flex items-center text-[9.5px] text-white">{duration(d, true)}</span>
-                    ) : (
-                      <span className="mono absolute inset-y-0 flex items-center pl-1.5 text-[9.5px] text-ink-600" style={{ left: scale(d) }}>{duration(d, true)}</span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </Panel>
-
-      {late.length === 0 ? (
-        <p className="text-[12px] text-ink-600">Every item is due inside the deadline. The system tracks each order and flags any that slip.</p>
-      ) : (
-        <div>
-          <p className="mb-2 text-[12px] text-ink-700">
-            {late.length} {late.length === 1 ? 'item is' : 'items are'} due after the customer’s deadline. How should it be handled?
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {LATE_OPTIONS.map((o) => (
-              <Choice key={o} active={decision === o} onClick={() => onDecide(o)}>{o}</Choice>
-            ))}
           </div>
-        </div>
-      )}
+        </Card>
+
+        <Rail>
+          {late.length > 0 ? (
+            <section className="overflow-hidden rounded-lg border border-action-600/25 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+              <header className="flex items-center gap-2 border-b border-action-600/15 bg-[#fdf3f3] px-4 py-2.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-action-600" />
+                <h3 className="text-[12.5px] font-semibold text-ink-900">Delivery exception</h3>
+              </header>
+              <div className="p-4">
+                <p className="text-[12px] leading-snug text-ink-600">
+                  <span className="mono font-medium text-ink-900">{late.map((l) => l.partNumber).join(', ')}</span>{' '}
+                  {late.length === 1 ? 'is' : 'are'} due after the customer’s deadline. Choose how to handle it:
+                </p>
+                <div className="mt-3 space-y-2">
+                  {LATE_OPTIONS.map((o) => {
+                    const on = decision === o;
+                    return (
+                      <button
+                        key={o}
+                        onClick={() => onDecide(o)}
+                        className={`flex w-full items-start gap-2.5 rounded-lg p-2.5 text-left ring-1 ring-inset transition-colors ${on ? 'bg-signal-50 ring-signal-500' : 'ring-ink-200 hover:bg-ink-25'}`}
+                      >
+                        <span className={`mt-0.5 grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full ring-1 ${on ? 'bg-signal-600 ring-signal-600' : 'ring-ink-300'}`}>
+                          {on && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </span>
+                        <span>
+                          <span className="block text-[12px] font-medium text-ink-900">{o}</span>
+                          <span className="block text-[11px] leading-snug text-ink-500">{LATE_DETAIL[o]}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          ) : (
+            <Card title="Tracking" icon={CheckCircle2}>
+              <p className="text-[12px] leading-snug text-ink-600">Every line is due inside the deadline. The system flags any that slip.</p>
+            </Card>
+          )}
+          <Card title="Details">
+            <Fields rows={[
+              ['Customer', customer],
+              ['Quote', rfq.reference.replace('RFQ', 'QT')],
+              ['Needed within', deadline ? duration(deadline) : 'Not stated'],
+              ['Latest line', duration(Math.max(...included.map(leadDays), 0))],
+            ]} />
+          </Card>
+        </Rail>
+      </Grid>
     </div>
   );
 }

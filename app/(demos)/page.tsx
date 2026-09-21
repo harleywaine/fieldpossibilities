@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Journey } from '@/components/journey/Journey.tsx';
 import { loadMetrics } from '@/lib/roi/model.ts';
 import { FALLBACK_METRICS, type StepMetric } from '@/lib/journey.ts';
-import { listAccounts, listInbox, type CrmAccount, type CrmInboxItem } from '@/lib/simulation/crm.ts';
+import { listAccounts, listInbox, listSuppliers, type CrmAccount, type CrmInboxItem, type CrmSupplier } from '@/lib/simulation/crm.ts';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,11 +29,12 @@ export default function JourneyPage() {
   // Without the synthetic dataset every company is a new lead and the inbox is empty.
   let accounts: CrmAccount[] = [];
   let inbox: CrmInboxItem[] = [];
-  try { accounts = listAccounts(); inbox = listInbox(); } catch { /* dataset not generated */ }
+  let suppliers: CrmSupplier[] = [];
+  try { accounts = listAccounts(); inbox = listInbox(); suppliers = listSuppliers(); } catch { /* dataset not generated */ }
 
   return (
     <Suspense>
-      <Journey metrics={metrics} accounts={accounts} inbox={inbox} />
+      <Journey metrics={metrics} accounts={accounts} inbox={inbox} suppliers={suppliers} />
     </Suspense>
   );
 }
