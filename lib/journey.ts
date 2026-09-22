@@ -170,6 +170,9 @@ export function supplierFor(name: string): string {
   return 'Halden Precision Works';
 }
 
+/** A requested variant as written after the model: "-9", "-800", but "MAX", "NEO". */
+export const variantTag = (v: string) => (/^\d/.test(v) ? `-${v}` : v);
+
 /** "BOEING 787" → "Boeing 787"; anything already mixed-case is left alone. */
 export function aircraftLabel(s: string | null): string | null {
   if (!s || s !== s.toUpperCase()) return s;

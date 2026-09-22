@@ -72,7 +72,7 @@ export function retrieve(query: string, opts: RetrieveOptions = {}): RetrievalRe
   });
 
   // ---- 3. Lexical BM25 ----
-  const lexical = lexicalSearch(req.raw, 400);
+  const lexical = lexicalSearch(req.searchText, 400);
   steps.push({ label: 'Application', detail: `${lexical.length} records matched on catalogue text` });
 
   // ---- 4. Exact part number, when supplied ----

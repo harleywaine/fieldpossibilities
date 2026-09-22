@@ -7,6 +7,7 @@
  */
 import { createHash } from 'node:crypto';
 import { retrieve } from '../ai/retrieval.ts';
+import { withVariant } from '../ai/requirement.ts';
 import type { EvidenceItem, MatchClass } from '../catalogue/types.ts';
 
 /** What an engineer has to settle: the request and the record, side by side. */
@@ -108,7 +109,10 @@ export function buildSimulatedRfq(request: string): SimRfq {
     const flags: LineFlag[] = [];
 
     if (s.matchClass !== 'strong') {
-      const asked = req.applications[0] ?? req.maintenanceCategories[0] ?? 'The task described in the request';
+      const job = req.applications[0] ?? req.maintenanceCategories[0] ?? null;
+      const asked = req.itemTypes.length
+        ? `A ${req.itemTypes[0]}${job ? ` — ${titleCase(job).toLowerCase()}` : ''}`
+        : job ?? 'The task described in the request';
       flags.push({
         kind: 'review',
         reason: 'Relevant, but the catalogue doesn’t establish every part of the request for this item.',
@@ -124,12 +128,12 @@ export function buildSimulatedRfq(request: string): SimRfq {
       const model = titleCase(req.aircraftModels[0] ?? p.aircraftModel);
       flags.push({
         kind: 'review',
-        reason: `The request mentions a variant (-${req.aircraftVariantRequested}); the catalogue lists ${p.aircraftModel} only.`,
+        reason: `The request names the ${withVariant(model, req.aircraftVariantRequested)}; the catalogue lists ${p.aircraftModel} only.`,
         check: {
           topic: 'Aircraft variant',
-          asked: `${model}-${req.aircraftVariantRequested}`,
+          asked: withVariant(model, req.aircraftVariantRequested),
           catalogue: `${(p.aircraftModels.length ? p.aircraftModels : [p.aircraftModel]).map(titleCase).join(', ')} — model only, no variant`,
-          question: `Does it fit the ${model}-${req.aircraftVariantRequested}?`,
+          question: `Does it fit the ${withVariant(model, req.aircraftVariantRequested)}?`,
         },
       });
     }

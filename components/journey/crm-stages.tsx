@@ -6,7 +6,7 @@ import {
   ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle, ExternalLink, PoundSterling,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { aircraftLabel, duration, gbp, shortDate, supplierFor } from '@/lib/journey.ts';
+import { aircraftLabel, duration, gbp, shortDate, supplierFor, variantTag } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { MIN_MARGIN, gbpExact, marginOf, type LinePrice } from '@/lib/simulation/pricing.ts';
@@ -563,7 +563,7 @@ export function ReviewScreen({
         meta={[
           <><Inbox className="h-3.5 w-3.5" />{rfq.reference}</>,
           <><Building2 className="h-3.5 w-3.5" />{customer}</>,
-          <><Plane className="h-3.5 w-3.5" />{aircraftLabel(rfq.aircraft) ?? 'Aircraft not stated'}{rfq.variant ? ` (-${rfq.variant} stated)` : ''}{rfq.engine ? ` · ${rfq.engine}` : ''}</>,
+          <><Plane className="h-3.5 w-3.5" />{aircraftLabel(rfq.aircraft) ?? 'Aircraft not stated'}{rfq.variant ? ` (${variantTag(rfq.variant)} stated)` : ''}{rfq.engine ? ` · ${rfq.engine}` : ''}</>,
           ...(rfq.deadlineDays ? [<><Timer className="h-3.5 w-3.5" />Needed within {duration(rfq.deadlineDays)}</>] : []),
         ]}
         actions={pending.length > 0 && pending.length < lines.length

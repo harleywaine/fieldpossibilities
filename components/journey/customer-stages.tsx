@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import {
   ArrowRight, Check, CheckCircle2, ChevronDown, ClipboardList, ExternalLink, FileSearch,
-  ListChecks, Plane, Plus, Search, Send, Timer, Cog,
+  ListChecks, Plane, Plus, Search, Send, Timer, Cog, Package,
 } from 'lucide-react';
-import { EXAMPLE_REQUESTS, aircraftLabel, duration } from '@/lib/journey.ts';
+import { EXAMPLE_REQUESTS, aircraftLabel, duration, variantTag } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import { Badge, Button, Thumb, type Tone } from '@/components/journey/ui.tsx';
 
@@ -104,6 +104,14 @@ export function RequestScreen({
 
 /* --------------------------------------------------------------- 2 parts */
 
+/** Echo the customer's own terms: "by end of next month", not "within 5.7 weeks". */
+function deadlineText(days: number, phrase: string | null): string {
+  if (phrase?.startsWith('by ')) return `Needed ${phrase}`;
+  if (phrase && /^(end of|next )/.test(phrase)) return `Needed by ${phrase}`;
+  if (phrase && /^a (fortnight|couple)/.test(phrase)) return `Needed within ${phrase}`;
+  return `Needed within ${duration(days)}`;
+}
+
 export interface QuoteForm { email: string; company: string }
 
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -127,10 +135,12 @@ export function PartsScreen({
 
   if (sent) return <Sent sent={sent} chosen={chosen} />;
 
+  const item = found.understood.find((u) => u.label === 'Item identified')?.value;
   const chips: Array<{ icon: typeof Plane; text: string }> = [
-    ...(found.aircraft ? [{ icon: Plane, text: `${aircraftLabel(found.aircraft)}${found.variant ? ` (-${found.variant})` : ''}` }] : []),
+    ...(found.aircraft ? [{ icon: Plane, text: `${aircraftLabel(found.aircraft)}${found.variant ? ` (${variantTag(found.variant)})` : ''}` }] : []),
     ...(found.engine ? [{ icon: Cog, text: found.engine }] : []),
-    ...(found.deadlineDays ? [{ icon: Timer, text: `Needed within ${duration(found.deadlineDays)}` }] : []),
+    ...(item ? [{ icon: Package, text: item[0]!.toUpperCase() + item.slice(1) }] : []),
+    ...(found.deadlineDays ? [{ icon: Timer, text: deadlineText(found.deadlineDays, found.deadlinePhrase) }] : []),
   ];
 
   return (
@@ -166,6 +176,12 @@ export function PartsScreen({
             <span className="text-[11.5px] text-ink-400">Closest match first</span>
           </div>
 
+          {found.lines.every((l) => l.matchClass !== 'strong') && (
+            <p className="mb-3 flex items-start gap-2 rounded-lg bg-[#fdf6ea] px-3 py-2.5 text-[12px] leading-snug text-ink-700 ring-1 ring-inset ring-caution-500/25">
+              <Search className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caution-600" />
+              <span>Nothing in Field’s catalogue matches this exactly. These are the closest records; Field will confirm what fits.</span>
+            </p>
+          )}
           <ul className="space-y-2.5">
             {found.lines.map((l) => {
               const on = !excluded.includes(l.line);

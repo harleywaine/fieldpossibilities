@@ -8,7 +8,7 @@
  */
 import type { Product, EvidenceItem, MatchClass, ScoredProduct } from '../catalogue/types.ts';
 import type { Requirement } from './requirement.ts';
-import { APPLICATIONS } from '../catalogue/lexicon.ts';
+import { APPLICATIONS, ITEM_TYPES } from '../catalogue/lexicon.ts';
 
 export interface RankingWeights {
   aircraft: number;
@@ -75,6 +75,13 @@ function applicationMatch(p: Product, req: Requirement): { score: number; matche
     }
   }
   return { score: 0, matched: null };
+}
+
+/** Does the record's own name say it is the kind of item requested? */
+function itemMatch(p: Product, req: Requirement): boolean {
+  if (!req.itemTypes.length) return true;
+  const name = `${p.name} ${p.equipmentType ?? ''}`;
+  return req.itemTypes.some((t) => ITEM_TYPES.find((i) => i.canonical === t)?.patterns.some((re) => re.test(name)));
 }
 
 function engineMatch(p: Product, req: Requirement): { score: number; matched: string | null } {
@@ -179,7 +186,7 @@ export function rankProduct(input: RankInput): ScoredProduct {
   return {
     product: p,
     score,
-    matchClass: classify(score, { ac: ac.score, app: app.score, eng: eng.score, req }),
+    matchClass: classify(score, { ac: ac.score, app: app.score, eng: eng.score, item: itemMatch(p, req), req }),
     evidence,
     gaps,
     breakdown: {
@@ -196,9 +203,9 @@ export function rankProduct(input: RankInput): ScoredProduct {
  */
 function classify(
   score: number,
-  ctx: { ac: number; app: number; eng: number; req: Requirement },
+  ctx: { ac: number; app: number; eng: number; item: boolean; req: Requirement },
 ): MatchClass {
-  const { ac, app, eng, req } = ctx;
+  const { ac, app, eng, item, req } = ctx;
   const needsAircraft = req.aircraftModels.length > 0;
   const needsApp = req.applications.length > 0 || req.maintenanceCategories.length > 0;
   const needsEngine = req.engines.length > 0;
@@ -209,7 +216,7 @@ function classify(
   // engine fit from aircraft model is exactly the overclaim the brief forbids.
   const engineEstablished = !needsEngine || eng >= 1;
 
-  if (aircraftEstablished && applicationEstablished && engineEstablished && score >= 0.6) {
+  if (aircraftEstablished && applicationEstablished && engineEstablished && item && score >= 0.6) {
     return 'strong';
   }
   if (score >= 0.45 && (aircraftEstablished || applicationEstablished)) return 'potential';

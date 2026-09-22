@@ -117,6 +117,33 @@ export const APPLICATIONS: ConceptEntry[] = [
   },
 ];
 
+/**
+ * Kinds of item a request can ask for. A catalogue record only establishes the
+ * request if its own name is that kind of item: a "wing stand" is not met by
+ * an access-panel lever that happens to fit the same aircraft.
+ */
+export const ITEM_TYPES: LexEntry[] = [
+  // Specific kinds first; a request naming one is not met by the general kind.
+  { canonical: 'wing stand', patterns: [/\bWING\s+(?:ACCESS\s+|WORK\s+|MAINTENANCE\s+)?STANDS?\b/i] },
+  { canonical: 'engine stand', patterns: [/\bENGINE\s+(?:TRANSPORT(?:ATION)?\s+|SHIPPING\s+|MAINTENANCE\s+)?STANDS?\b/i] },
+  { canonical: 'tail stand', patterns: [/\bTAIL\s+(?:STANDS?|SUPPORTS?)\b/i] },
+  { canonical: 'stand', patterns: [/\bSTANDS?\b/i] },
+  { canonical: 'jack', patterns: [/\bJACK(?:S|ING)?\b/i] },
+  { canonical: 'sling', patterns: [/\bSLINGS?\b/i] },
+  { canonical: 'hoist', patterns: [/\bHOISTS?\b/i] },
+  { canonical: 'cover', patterns: [/\bCOVERS?\b/i] },
+  { canonical: 'plug', patterns: [/\bPLUGS?\b|\bBLANKS?\b/i] },
+  { canonical: 'towbar', patterns: [/\bTOW\s?BARS?\b/i] },
+  { canonical: 'dolly', patterns: [/\bDOLL(?:Y|IES)\b|\bTROLLEYS?\b|\bCARTS?\b/i] },
+  { canonical: 'wrench', patterns: [/\bWRENCH(?:ES)?\b|\bSPANNERS?\b/i] },
+  { canonical: 'gauge', patterns: [/\bGAUGES?\b/i] },
+  { canonical: 'test set', patterns: [/\bTEST\s+(?:SET|STAND|EQUIPMENT|KIT)S?\b/i] },
+  { canonical: 'adapter', patterns: [/\bADAPTERS?\b/i] },
+  { canonical: 'hold open', patterns: [/\bHOLD[\s-]OPEN\b/i] },
+  { canonical: 'lock', patterns: [/\bLOCK(?:S|PIN)?\b|\bLOCKPIN\b/i] },
+  { canonical: 'kit', patterns: [/\bKITS?\b/i] },
+];
+
 /** Aircraft vocabulary — used to map free text onto real taxonomy terms. */
 export const AIRCRAFT_SYNONYMS: Record<string, string[]> = {
   'BOEING 707': ['707', 'b707'],
