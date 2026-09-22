@@ -20,8 +20,6 @@
     "try": "node scripts/try-query.ts",
     "generate-demo-data": "node scripts/generate-demo-data.ts",
     "try:knowledge": "node scripts/try-knowledge.ts",
-    "try:workflow": "node scripts/try-workflow.ts",
-    "try:roi": "node scripts/try-roi.ts",
     "try:sim": "node scripts/try-sim.ts"
   },
   "dependencies": {

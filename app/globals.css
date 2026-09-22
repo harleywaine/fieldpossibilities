@@ -131,87 +131,9 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
 /* Figures should align in columns wherever they are compared. */
 .figure { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
 
-.card {
-  background: #ffffff;
-  border: 1px solid var(--color-ink-100);
-  border-radius: 3px;
-  transition: border-color .18s ease, background-color .18s ease;
-}
-.card-hover:hover { border-color: var(--color-signal-300); }
-
 /* A hairline is the primary structural device — it reads as a drawing rule
    rather than as a UI shadow. */
 .rule { border-top: 1px solid var(--color-ink-100); }
-
-/* ------------------------------------------------------------------- hero */
-
-.field-banner {
-  position: relative;
-  background:
-    radial-gradient(120% 140% at 12% -10%, #0a4d9e 0%, transparent 55%),
-    linear-gradient(150deg, #04182f 0%, #00316a 48%, #034694 100%);
-}
-
-/* Fine technical grid — reads as a drawing sheet, not a SaaS mesh. */
-.grid-bg-light {
-  background-image:
-    linear-gradient(to right, rgba(3, 70, 148, .055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(3, 70, 148, .055) 1px, transparent 1px);
-  background-size: 56px 56px;
-}
-
-/* Ruler ticks along a section boundary, like the reference edge of a drawing. */
-.ruler {
-  height: 10px;
-  background-image:
-    repeating-linear-gradient(to right,
-      rgba(3, 70, 148, .28) 0 1px, transparent 1px 14px),
-    repeating-linear-gradient(to right,
-      rgba(3, 70, 148, .45) 0 1px, transparent 1px 70px);
-  background-size: auto 5px, auto 10px;
-  background-repeat: repeat-x;
-  background-position: bottom;
-}
-
-/* Tiny self-annotation, in the manner of a drawing calling out its own values. */
-.annot {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: .08em;
-  color: var(--color-ink-300);
-  user-select: none;
-}
-
-.grid-bg {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, .055) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, .055) 1px, transparent 1px);
-  background-size: 56px 56px;
-}
-
-/* Bright hairline where the hero meets the page: a single precise edge. */
-.hero-edge::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(126, 167, 215, .55), transparent);
-}
-
-/* Corner ticks — a restrained nod to technical drawing registration marks. */
-.ticked { position: relative; }
-.ticked::before,
-.ticked::after {
-  content: "";
-  position: absolute;
-  width: 7px; height: 7px;
-  border-color: var(--color-signal-300);
-  border-style: solid;
-  opacity: .7;
-}
-.ticked::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
-.ticked::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
 
 }
 
@@ -237,42 +159,9 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
 }
 .drift { animation: drift 9s ease-in-out infinite; }
 
-@keyframes sweep {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(300%); }
-}
-.sweep::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(3, 70, 148, .14), transparent);
-  animation: sweep 1.4s ease-in-out infinite;
-}
-
-/* The boot: a dark frame that lifts once, like power coming on. */
-@keyframes bootLift {
-  0%   { opacity: 1; }
-  55%  { opacity: 1; }
-  100% { opacity: 0; visibility: hidden; }
-}
-.boot {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  display: grid;
-  place-items: center;
-  background: #0b0e13;
-  animation: bootLift 1.05s ease-out .15s both;
-  pointer-events: none;
-}
-@keyframes bootMark {
-  from { opacity: 0; transform: scale(.92); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.boot > * { animation: bootMark .4s ease-out both; }
-
 /* Motion is decoration here; dropping it must leave content visible, which the
    `both` fill mode would otherwise prevent. */
 @media (prefers-reduced-motion: reduce) {
-  .step-in, .enter, .drift, .sweep::after { animation: none !important; }
-  .boot { display: none !important; }
+  .step-in, .enter, .drift { animation: none !important; }
   html { scroll-behavior: auto; }
 }

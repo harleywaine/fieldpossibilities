@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import {
   ArrowLeft, ArrowRight, Check, Clock, FileSearch, ListChecks, Lock, RotateCcw, UserRound,
@@ -49,9 +48,6 @@ export function TopBar({
               <RotateCcw className="h-3.5 w-3.5" /> <span className="hidden sm:inline">New request</span>
             </button>
           )}
-          <Link href="/demos" className="flex h-8 items-center rounded-lg px-2.5 text-[12px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-ink-900">
-            All demos
-          </Link>
         </span>
       </div>
 
@@ -321,7 +317,6 @@ export function Cover({ onBegin }: { onBegin: () => void }) {
           </span>
           <span className="text-[13px] font-semibold tracking-tight">Field</span>
         </span>
-        <Link href="/demos" className="ml-auto text-[12px] text-white/45 transition-colors hover:text-white">All demos</Link>
       </header>
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center px-5 sm:px-8">
@@ -514,9 +509,6 @@ export function Results({
             <button onClick={onRestart} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#0a1a2f] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-signal-800">
               <RotateCcw className="h-4 w-4" /> Try another request
             </button>
-            <Link href="/demos" className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-[13px] font-medium text-ink-800 ring-1 ring-inset ring-ink-200 transition-colors hover:bg-ink-25">
-              Each demo on its own <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
         </section>
       </div>
@@ -700,10 +692,8 @@ export function Estimates({ rows }: { rows: EstimateRow[] }) {
       </p>
       <p>
         <span className="font-semibold text-ink-900">How to make them real.</span>{' '}
-        Time a sample of real enquiries at each step, or take the times from Field’s email and order systems, then
-        put those figures into{' '}
-        <Link href="/roi" className="font-medium text-signal-600 underline decoration-signal-200 underline-offset-[3px] hover:text-signal-800">the value model</Link>,
-        where every number can be changed.
+        Time a sample of real enquiries at each step, or take the times from Field’s email and order systems, and
+        replace these figures with them. Every number here comes from one table, so the whole journey updates.
       </p>
     </div>
   );

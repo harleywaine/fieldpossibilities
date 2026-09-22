@@ -1,23 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // The tour became the cutaway became the four demos. Anything still holding
-  // an old URL — stale tabs, history, forwarded links — lands on the right
-  // demonstration instead of a 404.
+  // Everything before the enquiry journey has been retired. Stale tabs,
+  // history and forwarded links land on the journey instead of a 404.
   async redirects() {
     return [
-      { source: '/tour', destination: '/', permanent: false },
-      { source: '/tour/watch', destination: '/demo/product-search', permanent: false },
-      { source: '/tour/try', destination: '/demo/product-search', permanent: false },
-      { source: '/tour/understand', destination: '/demo/enquiry-research', permanent: false },
-      { source: '/tour/do', destination: '/demo/rfq-processing', permanent: false },
-      { source: '/tour/value', destination: '/demo/operations-analysis', permanent: false },
-      { source: '/tour/next', destination: '/demo/operations-analysis', permanent: false },
-      { source: '/depth', destination: '/', permanent: false },
-      { source: '/depth/interior', destination: '/demo/enquiry-research', permanent: false },
-      { source: '/depth/workings', destination: '/demo/rfq-processing', permanent: false },
-      { source: '/depth/core', destination: '/demo/operations-analysis', permanent: false },
-      { source: '/demo', destination: '/demos', permanent: false },
-    ];
+      '/tour', '/tour/:path*', '/depth', '/depth/:path*', '/demo', '/demo/:path*', '/demos',
+      '/explore', '/customer-ai', '/knowledge-ai', '/workflow-ai', '/operating-layer',
+      '/search', '/catalogue', '/compare', '/product/:path*', '/requests', '/requests/:path*',
+      '/roi', '/architecture', '/ingestion',
+    ].map((source) => ({ source, destination: '/', permanent: false }));
   },
   // The catalogue is read through node:sqlite in server components.
   serverExternalPackages: ['node:sqlite'],

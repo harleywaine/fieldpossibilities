@@ -29,8 +29,8 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: 'Field AI Opportunity Lab',
   description:
-    'A working AI system built on Field International’s own published catalogue. ' +
-    'Six chapters, about six minutes, self-guided.',
+    'Follow one enquiry through Field, from the customer’s request to the factory, ' +
+    'built on Field International’s own published catalogue.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

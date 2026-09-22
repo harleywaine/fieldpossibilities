@@ -1,342 +1,173 @@
 # Field AI Opportunity Lab
 
-**We didn’t write a proposal. We built one.**
+**One enquiry, followed from the customer's request to the factory — built on Field
+International's own published catalogue.**
 
-The front door (`/`) is **an interactive simulation of one enquiry, from both sides**. It opens
-with the eight ways AI could be used at Field, each tied to the step where it appears, and states
-what's known (the public catalogue) and what's assumed (everything inside Field). Every
-screen the visitor operates is shown as a mock-up window, so it reads as a picture of a system.
+The site is a single interactive journey. It opens on a full-screen cover, then sets out the
+nine ways AI could be used at Field, each tied to the step where it appears, and states what's
+known (the public catalogue) and what's assumed (everything inside Field). Every screen the
+visitor operates is a mock-up window, so it reads as a picture of a system.
 
 - **The customer's side**, a mock of Field's website. The visitor describes the job, and the
   system finds the parts in Field's real catalogue, with the reason for each part and how the
-  search worked. They untick anything they don't need, select *Request a quote*, enter an email
-  and company, and send it.
-- **Field's side**, a mock CRM. The enquiry lands in the inbox already logged, matched to an
-  account and assigned. The account screen shows value, win rate, recent jobs, complaints and
-  cases, activity and a brief assembled from internal documents. Then come the line check,
-  Engineering, Procurement, quote sign-off and the order. At each decision the visitor is
-  signed in as the person who would make it, and the simulation stops until they decide.
+  search worked. They untick anything they don't need, request a quote with an email and
+  company, and send it.
+- **Field's side**, a mock CRM. The enquiry lands already logged, matched to an account and
+  assigned. The account screen shows value, win rate, recent jobs, complaints, activity and a
+  brief assembled from internal documents. Then come the line check, Engineering, Procurement,
+  pricing, quote sign-off and the order. At each decision the visitor is signed in as the person
+  who would make it, and the journey stops until they decide.
 
 A company name matching one of the eight synthetic accounts brings up that account's history;
-any other name becomes a new lead. The email and company stay in the browser tab. The rail
-won't skip an undecided step, every step has its own URL (`?s=0`–`?s=11`), and a ledger adds
-up people's time, today versus with AI, from the metrics table.
+any other name becomes a new lead. The email and company stay in the browser tab. Every step has
+its own URL (`?s=0`–`?s=12`), the progress bar won't skip an undecided step, and a time bar adds
+up people's time, today versus with AI.
 
-The time figures are assumptions written into the synthetic dataset, not measurements. The
-"How is this estimated?" button on the time bar, and the end of the journey, say so and explain
-what each covers, why they'd change with Field's current process, and how to measure the real ones.
+Retired addresses from earlier versions (`/demos`, `/explore`, `/search`, …) redirect to the
+journey rather than 404.
 
-The pricing step uses **synthetic prices** — invented costs, freight, margin rules, account
-discounts and price history, seeded per part number (`lib/simulation/pricing.ts`) — because Field
-publishes none. Every screen that shows a price carries a striped SYNTHETIC banner or tag, and the
-quote carries a watermark.
+## What's real, synthetic and simulated
 
-Labelling: catalogue parts and lead times are real. Accounts, jobs, complaints, employees and
-suppliers are synthetic. Supplier replies and the order are simulated. Prices are never generated.
+- **Real:** Field's published catalogue — every part, photo, specification and lead time shown.
+- **Synthetic:** customers and their history, complaints, Field's staff, suppliers, and every
+  price, cost and margin. Field publishes no prices, so the pricing step invents them, seeded per
+  part number (`lib/simulation/pricing.ts`), and every screen showing one carries a striped
+  SYNTHETIC banner or tag; the quote carries a watermark.
+- **Simulated:** supplier replies and the order in production.
 
-The four demonstrations remain individually at `/demos`, and the full platform at
-`/explore`.
-
-```
-FIND  →  UNDERSTAND  →  DO  →  OPTIMISE
-```
-
-| Level | Capability | Data | Status |
-|---|---|---|---|
-| 1 · Customer Intelligence | AI **finds** — natural-language catalogue search | **Real** public Field catalogue (8,316 products) | Working |
-| 2 · Knowledge Intelligence | AI **understands** — cross-document enquiry briefs | Synthetic internal corpus (173 documents) | Working |
-| 3 · Workflow Automation | AI **does** — reads an RFQ, matches it, flags exceptions | Synthetic RFQ × real catalogue | Working |
-| 4 · AI Operating Layer | AI **optimises** — opportunity analysis and ROI | Synthetic operational dataset | Working |
+The **time figures are assumptions**, not measurements. The "How is this estimated?" button on
+the time bar, and the end of the journey, say so, explain what each figure covers, why it would
+change with Field's current process, and how to measure the real ones.
 
 ## Access
 
 The whole site sits behind one shared password (`proxy.ts`, `lib/access.ts`): an unlock screen
-sets a signed cookie that lasts 30 days, and API routes answer 401 without it. The repository is
+sets a signed cookie that lasts 30 days, and the APIs answer 401 without it. The repository is
 public, so only a hash of the default password is in the source. Set `DEMO_PASSWORD` to change it
 and `DEMO_SECRET` to sign sessions with a key that isn't in the repo. It keeps the link private;
 it isn't user authentication.
-
-## Real vs synthetic — the line that matters
-
-Only **Level 1 uses real data**: the public Field International catalogue, ingested and linked
-back to every source page. Everything internal — customers, employees, RFQs, quotes, emails,
-supplier correspondence, operational volumes — is **fabricated for demonstration** and labelled
-as such wherever it appears. That distinction is enforced in the UI by a provenance badge on
-every level and a notice on every synthetic page, not left to the reader to infer.
 
 ## Quick start
 
 ```bash
 npm install
-npm run scrape                # ingest the real catalogue (~35 min, resumable)
-npm run generate-demo-data    # build the synthetic corpus (deterministic, instant)
 npm run dev                   # http://localhost:3000
 ```
 
-`catalogue.db` is committed, so a clone runs immediately without the crawl.
+Both databases are committed, so a clone runs immediately. To rebuild them:
+
+```bash
+npm run scrape                # ingest the real catalogue (~35 min, resumable)
+npm run generate-demo-data    # rebuild the synthetic data (deterministic, instant)
+```
 
 ## The architectural point
 
 > **The LLM is not the database.** AI is not the system of record.
 
 The catalogue stays structured and authoritative. The AI layer supplies natural-language
-understanding, retrieval, ranking, summarisation and explanation. Every factual claim in
-the interface traces to a stored catalogue record, and every record links back to its
-original public product page.
+understanding, retrieval, ranking and explanation. Every factual claim traces to a stored
+catalogue record, and every record links back to its public product page.
 
----
+The AI layer defaults to a **deterministic grounded composer** that assembles prose strictly from
+retrieved fields, so it cannot fabricate: no key, no network, no per-query cost. To use Claude for
+the account brief instead, set `ANTHROPIC_API_KEY` and `AI_PROVIDER=anthropic` (optionally
+`ANTHROPIC_MODEL`, default `claude-haiku-4-5`). If the provider fails, it falls back to the
+deterministic path.
 
-## Quick start
-
-```bash
-npm install
-npm run scrape        # ingest the catalogue (~35 min for the full crawl)
-npm run dev           # http://localhost:3000
-```
-
-The app reads only the persisted snapshot — it never scrapes at request time.
-A search returns in well under a second.
-
-### Without an API key
-
-The AI layer defaults to a **deterministic grounded composer**: it assembles prose
-strictly from fields already retrieved, so it cannot fabricate. No key, no network,
-no per-query cost, and it works offline.
-
-To use Claude for more fluent prose instead:
-
-```bash
-export ANTHROPIC_API_KEY=sk-...
-export AI_PROVIDER=anthropic          # optional: ANTHROPIC_MODEL, default claude-haiku-4-5
-```
-
-Both paths receive identical grounded context and are bound by the same rules. If the
-provider errors or rate-limits, it degrades to the deterministic path rather than failing.
-
----
-
-## What the ingestion actually does
+## What the ingestion does
 
 Field runs WordPress + WooCommerce and publicly exposes `wp/v2/product` and
-`wc/store/v1/products`. Both are keyed on the same post id, so merging them yields a
-complete core record for all **8,317 products in ~170 requests** rather than 8,317 page
-fetches — considerably kinder to the origin and more reliable than parsing themed HTML.
-
-The per-product HTML crawl still runs, for one reason the APIs cannot serve: Field's
-product template renders a specification table containing **Lead Time (days)**, Weight,
-Dimensions and Stock location. That table is why the crawler visits every product page.
+`wc/store/v1/products`. Both are keyed on the same post id, so merging them yields a complete core
+record for every product in ~170 requests rather than one fetch per product. The per-product page
+crawl still runs for the one thing the APIs don't serve: the specification table with lead time,
+weight, dimensions and stock location.
 
 ```
-robots.txt + sitemap index      →  URL discovery graph
+robots.txt + sitemap index      →  URL discovery
 wp/v2 + wc/store REST           →  core records, taxonomy, images
-8,317 product pages             →  lead time, weight, dimensions
-normalise → deduplicate         →  canonical records, alternate source URLs
+product pages                   →  lead time, weight, dimensions
+normalise → deduplicate         →  canonical records
 SQLite + FTS5 + vector index    →  structured, lexical and semantic retrieval
 dated snapshot + crawl report   →  provenance and validation
 ```
 
-### Commands
+The crawler is robots-aware, rate-limited, retries with backoff and checkpoints every URL, so an
+interrupted run resumes. `CRAWL_CONCURRENCY` and `CRAWL_DELAY_MS` tune its politeness.
 
-| Command | Purpose |
-|---|---|
-| `npm run scrape` | Full ingestion. Resumes from checkpoint if interrupted. |
-| `npm run scrape:incremental` | Revisit known URLs, detect changed content. |
-| `npm run scrape:api` | REST records only; reuse cached pages. |
-| `npm run rebuild-index` | Rebuild DB + indexes from stored raw payloads. No network. |
-| `npm run validate` | Coverage and data-quality report. Non-zero exit if products are lost. |
-| `npm run report` | Compact ingestion status. |
-| `npm run cache-images` | Download catalogue imagery locally for demo resilience. |
-| `npm run try "<query>"` | Run a retrieval query from the terminal. |
-
-Politeness and resumption are configurable:
-
-```bash
-CRAWL_CONCURRENCY=5 CRAWL_DELAY_MS=180 npm run scrape
-```
-
-The crawler is robots-aware, rate-limited, retries with exponential backoff and
-checkpoints every URL in `crawl_records`. Killing it mid-run loses almost nothing.
-
----
-
-## How retrieval works
+## How the parts search works
 
 ```
-query → requirement extraction → structured constraints + semantic search
-      → candidate set → ranking → grounded explanation → evidence
+request → requirement extraction → structured + lexical + semantic retrieval
+        → ranking → evidence per match → engineering and supplier checks
 ```
 
-**Requirement extraction is deliberately not an LLM call.** The catalogue's vocabulary is
-closed — 27 aircraft models, 6 manufacturers, ~57 ATA maintenance categories, a known set
-of engine programmes. Entity resolution against that vocabulary is more reliable than
-open-ended parsing, instant, and free.
-
-Three retrieval strategies are fused:
-
-- **Structured** — SQL over catalogue fields. Answers structured facts.
-- **Lexical** — FTS5 with BM25 over the product document.
-- **Semantic** — cosine similarity over a TF-IDF vector index built from the catalogue
-  itself, reached through an inverted index. Pluggable: `EmbeddingProvider` accepts a
-  hosted embedding model without touching retrieval.
-
-Ranking uses explicit, configurable weights (`lib/ai/ranking.ts`), re-normalised across
-the dimensions a given requirement actually constrains — a query that names no engine is
-not penalised on the engine axis.
-
----
+**Requirement extraction is deliberately not an LLM call.** The catalogue's vocabulary is closed —
+aircraft models, manufacturers, ATA maintenance categories, engine programmes — so resolving
+against it is more reliable than open-ended parsing, instant and free. Structured SQL, FTS5/BM25
+and a TF-IDF vector index built from the catalogue are fused, and ranked with explicit weights
+(`lib/ai/ranking.ts`) re-normalised across what the request actually constrains.
 
 ## Data honesty
 
-This is the part that matters most in a technically sensitive domain, and it is enforced
-in code rather than left to prompt wording.
+Enforced in code, not left to wording:
 
-**Absent fields stay `null`.** They are never inferred, and the UI prints
-"Not published in catalogue" rather than leaving a blank that reads as absence of a problem.
-
-**Model-level applicability is never promoted to variant level.** The catalogue records
-`BOEING 787`. A request for a 787-9 resolves to `BOEING 787` and the requirement's variant
-is retained separately, so every affected result carries:
-
-> Catalogue lists applicability as BOEING 787. It does not state whether this covers the
-> 787-9 variant specifically.
-
-**Engine is only ever read from source text.** If a listing does not name an engine, the
-product cannot be classified as a strong match for an engine-specific requirement — a
-high blended score is not sufficient.
-
-**Lead time is reported, never promised.** "The catalogue lists a lead time of 75 days",
-not "this will arrive in time". Where a lead time is unpublished the interface says so.
-
-**Equivalence questions are refused.** Asked whether one tool can replace another, the
-system states that the catalogue records no interchangeability or certification data and
-that the question cannot be answered from it.
-
-**No confidence percentages.** Scores translate to *Strong match / Potential match /
-Alternative / No confirmed match*.
-
-**Source inconsistencies are surfaced, not resolved.** Some listings carry one part number
-in the SKU and a different one in the title. Both are shown, flagged, and left to Field.
-
----
+- **Absent fields stay empty** and are shown as not published, never inferred.
+- **Model-level fit is never promoted to variant level.** A request for a 787-9 matches records
+  listed for the 787, and the gap becomes an Engineering question: "Does it fit the Boeing 787-9?"
+- **An engine is only read from source text.** A record that names no engine can't be a strong
+  match for an engine-specific request.
+- **Lead time is reported, never promised.** Where it's unpublished, Procurement is asked.
+- **No confidence percentages** — Direct match, Likely match, Alternative.
 
 ## Project layout
 
 ```
-ingestion/     crawler, discovery, parser, normalise, deduplicate, validate,
-               storage, writer, embeddings, images, snapshot, logger
+app/           the journey (/), unlock screen, and three APIs:
+               simulate/rfq (parts search), knowledge (account brief), unlock
+components/
+  journey/     Journey (controller), shell (cover, bar, dock, results),
+               frames (browser + CRM windows), customer-stages, crm-stages, ui
 lib/
-  ai/          requirement, retrieval, ranking, provider, prompts, explain
-  search/      structured, lexical, semantic
-  catalogue/   types, lexicon, browse
-  db/          client
-app/           landing, search, catalogue, product, compare, requests,
-               architecture, ingestion, api routes
-scripts/       scrape, rebuild-index, validate, snapshot, report, cache-images
+  simulation/  rfq (parts → quote request), crm (accounts, inbox), pricing (synthetic)
+  ai/ search/  requirement extraction, retrieval, ranking
+  knowledge/   the account brief
+  db/          read-only access to both databases
+  journey.ts   steps, people, AI uses, time-estimate notes
+ingestion/     crawler, parser, normalise, deduplicate, validate, storage, indexes
+scripts/       scrape, rebuild-index, generate-demo-data, validate, report, try-*
 data/
-  raw/         gzipped source HTML + raw API payloads (source evidence)
-  catalogue/   products.json, products.csv, catalogue.db, metadata.json
-  snapshots/   dated immutable snapshots
+  catalogue/   catalogue.db (committed), metadata.json
+  demo/        demo.db (committed), dataset.json
 ```
-
-`data/raw/` and `public/catalogue-images/` are gitignored — regenerate with
-`npm run scrape` and `npm run cache-images`.
-
----
-
-## Routes
-
-| Route | Purpose |
-|---|---|
-| `/` | Interactive enquiry simulation |
-| `/demos` | The four demonstrations |
-| `/search?q=` | Requirement understanding, retrieval trace, evidenced results |
-| `/catalogue` | Conventional faceted browse — the deliberate contrast |
-| `/product/[id]` | Full record, evidence, and link to the original Field page |
-| `/compare?ids=` | Comparison table built from available fields only |
-| `/requests` | Demo RFQ records (local; never transmitted to Field) |
-| `/architecture` | Pipeline view and live index figures |
-| `/ingestion` | Crawl report, field population, data honesty notes |
-
----
-
-## Prototype boundaries
-
-- Catalogue data is a snapshot of publicly available Field International listings.
-- Customer and quote data is **synthetic**. RFQs are written to a local JSON file and are
-  **never transmitted to Field International** — there is no commercial backend integration.
-- This prototype makes no certification, approval or airworthiness claims, and is not a
-  substitute for the applicable maintenance manual.
-
-
----
-
-## Levels 2–4: how they work
-
-### Level 2 — Knowledge Intelligence
-
-A hybrid RAG pipeline over 173 synthetic internal documents (~176 chunks):
-
-```
-question → intent → query rewriting → metadata filters
-        → keyword (BM25) + vector (cosine) + aspect sub-queries
-        → fusion → rerank → context selection → cited brief
-```
-
-Aspect sub-queries matter: a single query vector pulls towards whichever aspect of a question
-dominates the wording, so supplier and technical context — which carry no customer link to boost
-them — would otherwise never surface. The brief that results is assembled across a dozen
-documents, and every field carries its sources.
-
-The corpus is deliberately awkward. It contains a **lead-time conflict** (an internal note saying
-12 weeks, superseded by a supplier email saying 8–10), a **stale document** flagged by age, an
-**engineering caveat** that blocks any variant-level approval claim, and a **part number with no
-catalogue equivalent**. The system surfaces all four rather than resolving them silently — and if
-one half of a conflicting pair is retrieved, the counterpart is pulled in deliberately, because
-showing one side of a disagreement reads as settled fact.
-
-### Level 3 — Workflow Automation
-
-A 17-line RFQ is read, extracted, and matched **against the real catalogue**. The outcome is
-computed, not scripted: **14 matched, 2 requiring review, 1 with no confirmed match.**
-
-The exception path is the point. A requested part number that does not resolve is reported as
-*no confirmed match* — a loose description match is not evidence that a different item is
-equivalent. An engine mismatch is always a human call. Four approval gates are explicit: no
-pricing, no delivery date, no statement of technical suitability, and nothing sent externally.
-
-### Level 4 — AI Operating Layer and ROI
-
-Every figure is computed from stated assumptions; changing an input moves the whole model. The
-ROI calculator exposes the distinction a board will ask about:
-
-> Recovering 3,159 employee hours does not mean payroll falls by £199,002. Productivity value is
-> recovered **capacity**. The cash-equivalent view applies an explicit conversion assumption.
-
-Hours are the primary unit; money is derived from hours, never the reverse. Payback is calculated
-against the cash figure, not the headline.
 
 ## Commands
 
 | Command | Purpose |
 |---|---|
+| `npm run dev` | Run locally. |
 | `npm run scrape` | Ingest the real catalogue. Resumable. |
-| `npm run generate-demo-data` | Rebuild the synthetic corpus from a fixed seed. |
-| `npm run try "<query>"` | Level 1 retrieval from the terminal. |
-| `npm run try:knowledge` | Level 2 enquiry brief from the terminal. |
-| `npm run try:workflow` | Level 3 RFQ processing from the terminal. |
-| `npm run try:roi` | Level 4 opportunity model from the terminal. |
-| `npm run try:sim "<request>"` | The front door's parts search and CRM accounts from the terminal. |
+| `npm run rebuild-index` | Rebuild the catalogue and indexes from stored raw payloads. No network. |
+| `npm run generate-demo-data` | Rebuild the synthetic data from a fixed seed. |
+| `npm run try "<query>"` | Parts retrieval from the terminal. |
+| `npm run try:sim "<request>"` | The journey's parts search and CRM accounts from the terminal. |
+| `npm run try:knowledge` | The account brief from the terminal. |
 | `npm run validate` / `npm run report` | Ingestion coverage and status. |
 
-## Deployment note
+## Deployment
 
-Everything persists in SQLite with FTS5 and a locally-built vector index, so the demo runs with
-no external services and no network dependency. The schema and retrieval design map onto
-PostgreSQL with pgvector, which is the expected production target; retrieval interfaces are
-storage-agnostic and the embedding provider is pluggable.
+Hosted on Vercel from `main`. Two things matter on a serverless host, whose code folder is
+read-only:
+
+- **The databases ship in rollback journal mode.** A WAL-mode SQLite file can't be opened on a
+  read-only filesystem, so every script that writes one seals it before closing
+  (`sealForReadOnly` in `ingestion/storage.ts`), and `next.config.mjs` names the files so every
+  function bundles them.
+- **The little the app writes** (an audit trail of briefs) goes to the temporary directory when
+  `data/` isn't writable (`lib/writable.ts`).
 
 ## Non-goals
 
-No production ERP or CRM integration, no real employee accounts, no real customer communication,
-no purchasing, no technical approvals, no autonomous commercial or engineering decisions. This
-demonstrates the architecture and the opportunity, not a deployed system.
+No ERP or CRM integration, no real accounts, no real customer communication, no purchasing, no
+technical approvals, no autonomous commercial or engineering decisions. This demonstrates the
+opportunity, not a deployed system.
