@@ -19,6 +19,16 @@ export function openDb(path = CONFIG.paths.db): DatabaseSync {
   return db;
 }
 
+/**
+ * Leave the file ready to ship. WAL suits writing, but a WAL database can't be
+ * opened on a read-only filesystem (SQLite needs to create its -shm file
+ * beside it), which is what a serverless deployment is. Call before close().
+ */
+export function sealForReadOnly(db: DatabaseSync): void {
+  db.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+  db.exec('PRAGMA journal_mode = DELETE;');
+}
+
 export function createSchema(db: DatabaseSync): void {
   db.exec(`
   CREATE TABLE IF NOT EXISTS products (

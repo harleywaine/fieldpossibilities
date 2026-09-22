@@ -9,6 +9,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { generateDataset } from '../lib/demo/generate.ts';
 import { writeDemoDataset, buildDocumentIndexes } from '../ingestion/documents.ts';
 import { makeLogger } from '../ingestion/logger.ts';
+import { sealForReadOnly } from '../ingestion/storage.ts';
 
 const log = makeLogger('demo-data');
 
@@ -22,7 +23,7 @@ db.exec('PRAGMA journal_mode = WAL;');
 
 writeDemoDataset(db, data);
 await buildDocumentIndexes(db);
-db.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+sealForReadOnly(db);
 db.close();
 
 log.info(

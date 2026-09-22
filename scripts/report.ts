@@ -3,7 +3,7 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { CONFIG } from '../ingestion/config.ts';
-import { openDb } from '../ingestion/storage.ts';
+import { openDb, sealForReadOnly } from '../ingestion/storage.ts';
 
 const metaPath = join(CONFIG.paths.catalogue, 'metadata.json');
 if (!existsSync(metaPath)) {
@@ -47,4 +47,5 @@ row('Search index', fts ? `✓ ${fts.toLocaleString()} docs` : '✗ missing');
 row('Embeddings', emb?.m ? `✓ ${emb.m}` : '✗ missing');
 row('Snapshots', snapshots.length ? snapshots[snapshots.length - 1] : '—');
 console.log('');
+sealForReadOnly(db);
 db.close();

@@ -21,6 +21,11 @@ const nextConfig = {
   },
   // The catalogue is read through node:sqlite in server components.
   serverExternalPackages: ['node:sqlite'],
+  // The databases are opened by path at runtime, which tracing can't follow;
+  // name them so every serverless function ships with them.
+  outputFileTracingIncludes: {
+    '/**': ['./data/catalogue/catalogue.db', './data/catalogue/metadata.json', './data/demo/demo.db'],
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'www.fieldinternational.com' },

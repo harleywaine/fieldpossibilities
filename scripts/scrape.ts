@@ -13,6 +13,7 @@ import { validate, formatReport } from '../ingestion/validate.ts';
 import { writeSnapshot } from '../ingestion/snapshot.ts';
 import { buildVectorIndex } from '../ingestion/embeddings.ts';
 import { makeLogger } from '../ingestion/logger.ts';
+import { sealForReadOnly } from '../ingestion/storage.ts';
 
 const log = makeLogger('scrape');
 const argv = process.argv.slice(2);
@@ -44,6 +45,7 @@ const { dir, meta } = writeSnapshot(products, terms, stats, report);
 db.prepare('INSERT OR REPLACE INTO crawl_runs (id, mode, started_at, completed_at, stats_json) VALUES (?,?,?,?,?)')
   .run(stats.runId, stats.mode, stats.startedAt, stats.completedAt, JSON.stringify({ stats, report: { ...report, failedUrls: [] } }));
 
+sealForReadOnly(db);
 db.close();
 
 console.log('\n' + '─'.repeat(46));

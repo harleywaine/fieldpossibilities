@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { CONFIG } from '../ingestion/config.ts';
 import type { WpProduct, StoreProduct } from '../ingestion/catalogue.ts';
 import type { TaxonomyTerm } from '../ingestion/discovery.ts';
-import { openDb, createSchema, ensureDirs } from '../ingestion/storage.ts';
+import { openDb, createSchema, ensureDirs, sealForReadOnly } from '../ingestion/storage.ts';
 import { normaliseProduct } from '../ingestion/normalise.ts';
 import { deduplicate } from '../ingestion/deduplicate.ts';
 import { writeProducts, writeTaxonomy, buildSearchIndex } from '../ingestion/writer.ts';
@@ -64,5 +64,6 @@ db.prepare(
   `rebuild-${stats.startedAt}`, 'rebuild', stats.startedAt, stats.completedAt,
   JSON.stringify({ stats, report: { ...report, failedUrls: [] } }),
 );
+sealForReadOnly(db);
 db.close();
 console.log('\n' + formatReport(report, dedupe.products.length));
