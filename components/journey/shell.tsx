@@ -530,6 +530,8 @@ export function Results({
         </section>
       </div>
 
+      <WhatIf rows={rows} />
+
       <section id="estimates" className="enter scroll-mt-32 rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '560ms' }}>
         <h2 className="mb-4 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">Where the time estimates come from</h2>
         <Estimates rows={rows} />
@@ -562,6 +564,69 @@ export function Results({
         real thing, reply to the message this link arrived in.
       </p>
     </div>
+  );
+}
+
+/**
+ * The viewer's own numbers. Three dials the board will reach for: how many
+ * enquiries a year, what an hour of people's time costs, and how much of the
+ * work the system actually touches. Hours are the unit; money follows hours,
+ * and capacity is named as capacity, not cash.
+ */
+function WhatIf({ rows }: { rows: EstimateRow[] }) {
+  const [scale, setScale] = useState(1);
+  const [rate, setRate] = useState(63);
+  const [adoption, setAdoption] = useState(75);
+  const enquiries = Math.round(Math.max(...rows.map((r) => r.volume)) * scale);
+  const hours = Math.round(rows.reduce((a, r) => a + (r.before - r.after) * r.volume * scale, 0) / 60 * (adoption / 100));
+  const fte = Math.round((hours / 1650) * 10) / 10;
+  const value = hours * rate;
+  const cash = Math.round(value * 0.3);
+  const money = (n: number) => `£${Math.round(n / 1000).toLocaleString()}k`;
+  return (
+    <section className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '540ms' }}>
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-500">Make the numbers yours</p>
+          <h2 className="mt-2 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">Three dials, and the whole year moves.</h2>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-ink-500">
+            The step times stay as estimated above. These are the figures Field knows and we don’t.
+          </p>
+          <div className="mt-5 space-y-4">
+            {[
+              { label: 'Enquiries a year', value: enquiries.toLocaleString(), min: 0.25, max: 3, step: 0.25, v: scale, set: setScale, note: `${scale}× the assumed volumes` },
+              { label: 'Loaded cost of an hour', value: `£${rate}`, min: 40, max: 120, step: 1, v: rate, set: setRate, note: 'salary, employer costs and overhead' },
+              { label: 'Share of the work the system touches', value: `${adoption}%`, min: 25, max: 100, step: 5, v: adoption, set: setAdoption, note: 'not every enquiry will go through it' },
+            ].map((d) => (
+              <label key={d.label} className="block">
+                <span className="flex items-baseline justify-between text-[12.5px]">
+                  <span className="font-medium text-ink-800">{d.label}</span>
+                  <span className="mono font-medium text-ink-950">{d.value}</span>
+                </span>
+                <input type="range" min={d.min} max={d.max} step={d.step} value={d.v} onChange={(e) => d.set(Number(e.target.value))} className="mt-1.5 w-full" aria-label={d.label} />
+                <span className="block text-[11px] text-ink-400">{d.note}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 self-start">
+          {[
+            { v: hours.toLocaleString(), t: 'hours of people’s time a year' },
+            { v: String(fte), t: 'full-time people, at 1,650 productive hours each' },
+            { v: money(value), t: 'of capacity, at your hourly cost' },
+            { v: money(cash), t: 'if 30% of that capacity turns into cash or growth' },
+          ].map((s, i) => (
+            <div key={s.t} className={`rounded-2xl p-4 ring-1 ${i === 0 ? 'bg-[#07162a] text-white ring-transparent' : 'bg-ink-25 ring-ink-100'}`}>
+              <p className={`font-display text-[28px] font-medium leading-none tracking-[-0.03em] ${i === 0 ? 'text-white' : 'text-ink-950'}`}>{s.v}</p>
+              <p className={`mt-1.5 text-[12px] leading-snug ${i === 0 ? 'text-signal-100/70' : 'text-ink-500'}`}>{s.t}</p>
+            </div>
+          ))}
+          <p className="col-span-2 text-[11.5px] leading-relaxed text-ink-400">
+            Capacity is not a saving until someone decides what to do with it: more quotes out of the same team, faster replies, or a hire not made. The 30% is a placeholder for that decision, not a forecast.
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 

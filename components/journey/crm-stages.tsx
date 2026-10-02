@@ -19,7 +19,7 @@ export type Decision = 'approve' | 'remove' | 'query';
 export interface Contact { email: string; company: string }
 
 const T = (ms: number) => ({ animationDelay: `${ms}ms` });
-const ENQUIRY_STAGES = ['New', 'Qualifying', 'Engineering', 'Procurement', 'Quote', 'Won'];
+const ENQUIRY_STAGES = ['New', 'Qualifying', 'Engineering', 'Supply', 'Quote', 'Won'];
 const has = (l: SimLine, kind: 'review' | 'supplier') => l.flags.some((f) => f.kind === kind);
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const personOf = (email: string) => email.split('@')[0]!.replace(/[._-]+/g, ' ');
@@ -94,7 +94,7 @@ export function InboxScreen({
     { icon: Users, text: account?.owner ? `Assigned to ${owner}, the account owner` : `Assigned to ${owner}, who takes new leads` },
     ...(rfq.deadlineDays ? [{ icon: Timer, text: `Deadline read from the message: ${rfq.deadlineDays} days` }] : []),
     rfq.aircraft
-      ? { icon: Plane, text: `${aircraftLabel(rfq.aircraft)}${rfq.variant ? ` ${variantTag(rfq.variant)}` : ''} and ${plural(rfq.lines.length, 'part')} recorded` }
+      ? { icon: Plane, text: `${aircraftLabel(rfq.aircraft)}${rfq.variant ? (variantTag(rfq.variant).startsWith('-') ? variantTag(rfq.variant) : ` ${variantTag(rfq.variant)}`) : ''} and ${plural(rfq.lines.length, 'part')} recorded` }
       : { icon: Plane, text: `${plural(rfq.lines.length, 'part')} recorded; no aircraft stated, flagged for ${owner} to confirm` },
     { icon: Mail, text: `Acknowledgement sent to ${contact.email} (simulated)` },
   ];
@@ -356,6 +356,15 @@ export function AccountScreen({
           <Card title="Fleet" icon={Plane}>
             <div className="flex flex-wrap gap-1.5">{account.fleet.map((f) => <Badge key={f}>{f}</Badge>)}</div>
             <p className="mt-3 text-[11.5px] italic leading-snug text-ink-500">“{account.notes}”</p>
+            {rfq.aircraft && !account.fleet.some((f) => f.toUpperCase() === rfq.aircraft!.toUpperCase()) && (
+              <p className="mt-3 flex items-start gap-2 rounded-lg bg-[#fdf6ea] px-3 py-2 text-[11.5px] leading-snug text-ink-700 ring-1 ring-inset ring-caution-500/25">
+                <Sparkles className="mt-0.5 h-3 w-3 shrink-0 text-caution-600" />
+                <span>
+                  <span className="font-semibold text-ink-900">First {aircraftLabel(rfq.aircraft)} enquiry from this account.</span>{' '}
+                  Their fleet on record is {account.fleet.join(' and ')}. A new type, or third-party work? Worth one question before quoting.
+                </span>
+              </p>
+            )}
           </Card>
 
           <Card title="Recent activity" icon={History} pad={false}>
@@ -627,7 +636,7 @@ export function ReviewScreen({
                   return (
                     <li key={l.line} className="flex gap-2">
                       <span className="mono shrink-0 text-signal-700">{l.partNumber}</span>
-                      <span>{c ? `${c.question} The catalogue lists it as ${c.catalogue.toLowerCase()}; you asked for ${c.asked.toLowerCase()}.` : 'Could you confirm the exact application?'}</span>
+                      <span>{c ? `${c.question} Our catalogue lists it as: ${c.catalogue}. You asked for: ${c.asked}.` : 'Could you confirm the exact application?'}</span>
                     </li>
                   );
                 })}
@@ -827,7 +836,7 @@ export function SupplyScreen({
                         >
                           <span className="flex items-center justify-between gap-2 text-[12px] font-medium text-ink-900">
                             {SITES[o.site].name}
-                            <span className={`mono ${over ? 'text-action-600' : 'text-ink-700'}`}>{duration(o.totalDays)}</span>
+                            <span className={`mono ${over ? 'text-action-600' : 'text-ink-700'}`}>{o.totalDays} days</span>
                           </span>
                           <span className="mt-0.5 block text-[10.5px] leading-snug text-ink-500">
                             make {o.makeDays} d, ship {o.freightDays} d · cost {o.costIndex < 1 ? `−${Math.round((1 - o.costIndex) * 100)}%` : 'base'}

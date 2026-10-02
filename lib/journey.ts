@@ -171,7 +171,7 @@ export type DeliveryPlan = 'phased' | 'expedite' | 'realistic';
 
 export const PLANS: Array<{ id: DeliveryPlan; title: string; detail: string }> = [
   { id: 'phased', title: 'Offer a phased delivery', detail: 'Ship what’s ready by the deadline; the late lines follow on their own lead time.' },
-  { id: 'expedite', title: 'Ask Procurement to expedite', detail: 'Procurement asks for an earlier date on the late lines, usually at a cost. The replies are simulated.' },
+  { id: 'expedite', title: 'Ask Supply to expedite', detail: 'The factory, or the supplier for a bought-in line, is asked for an earlier date, usually at a cost. The replies are simulated.' },
   { id: 'realistic', title: 'Quote the dates we can meet', detail: 'Say plainly which lines miss the deadline and let the customer decide. Honest, but this is how lead time loses orders.' },
 ];
 
