@@ -10,6 +10,8 @@ const nextConfig = {
       '/roi', '/architecture', '/ingestion',
     ].map((source) => ({ source, destination: '/', permanent: false }));
   },
+  // No Next.js badge in the corner while the demo is being shown from a dev server.
+  devIndicators: false,
   // The catalogue is read through node:sqlite in server components.
   serverExternalPackages: ['node:sqlite'],
   // The databases are opened by path at runtime, which tracing can't follow;

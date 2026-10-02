@@ -331,7 +331,7 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
             <button
               onClick={onBegin}
               autoFocus
-              className="group inline-flex h-13 items-center gap-2.5 rounded-[3px] bg-action-600 px-7 text-[15px] font-bold text-white shadow-[0_16px_40px_-12px_rgba(162,18,18,0.6)] transition-colors hover:bg-action-500"
+              className="group inline-flex h-13 items-center gap-2.5 rounded-[3px] bg-action-600 px-7 text-[15px] font-bold text-white shadow-[0_16px_40px_-12px_rgba(162,18,18,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-action-400 hover:shadow-[0_22px_48px_-12px_rgba(162,18,18,0.8)] active:translate-y-0"
             >
               Begin <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>

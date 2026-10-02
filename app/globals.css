@@ -47,6 +47,7 @@
   --color-signal-900: #02193a;
 
   /* ---- Field accent red (#A21212, the site's own token), reserved for calls to action */
+  --color-action-400: #c91c1c;
   --color-action-500: #b81717;
   --color-action-600: #a21212;
   --color-action-700: #820e0e;

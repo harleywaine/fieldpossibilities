@@ -156,7 +156,7 @@ export function RequestScreen({
             <button
               onClick={onSubmit}
               disabled={busy || value.trim().length < 3}
-              className="ml-auto inline-flex h-9 items-center gap-2 rounded-[3px] bg-action-600 px-4 text-[13px] font-bold text-white transition-colors hover:bg-action-500 disabled:opacity-40"
+              className="ml-auto inline-flex h-9 items-center gap-2 rounded-[3px] bg-action-600 px-4 text-[13px] font-bold text-white transition-colors hover:bg-action-400 disabled:opacity-40"
             >
               <Search className="h-4 w-4" />
               {busy ? 'Searching the catalogue…' : 'Find the parts'}
@@ -386,7 +386,7 @@ export function PartsScreen({
                 <button
                   onClick={() => setAsking(true)}
                   disabled={!chosen.length}
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[3px] bg-action-600 text-[13px] font-bold text-white transition-colors hover:bg-action-500 disabled:opacity-40"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[3px] bg-action-600 text-[13px] font-bold text-white transition-colors hover:bg-action-400 disabled:opacity-40"
                 >
                   Request a Quote <ArrowRight className="h-4 w-4" />
                 </button>
@@ -418,7 +418,7 @@ export function PartsScreen({
                   <button
                     onClick={onSend}
                     disabled={!validEmail(form.email) || form.company.trim().length < 2}
-                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-action-600 text-[13px] font-medium text-white transition-colors hover:bg-action-500 disabled:opacity-40"
+                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-action-600 text-[13px] font-medium text-white transition-colors hover:bg-action-400 disabled:opacity-40"
                   >
                     <Send className="h-4 w-4" /> Send to Field
                   </button>

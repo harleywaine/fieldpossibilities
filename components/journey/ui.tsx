@@ -66,7 +66,7 @@ export function Button({
   const v = {
     primary: 'bg-signal-600 text-white shadow-sm hover:bg-signal-500',
     success: 'bg-strong-600 text-white shadow-sm hover:bg-strong-500',
-    danger: 'bg-action-600 text-white shadow-sm hover:bg-action-500',
+    danger: 'bg-action-600 text-white shadow-sm hover:bg-action-400',
     secondary: 'bg-white text-ink-700 shadow-[0_1px_2px_rgba(16,24,40,0.05)] ring-1 ring-inset ring-ink-200 hover:bg-ink-25',
     ghost: 'text-ink-600 hover:bg-ink-50',
   }[variant];
