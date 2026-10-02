@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Avatar } from '@/components/journey/ui.tsx';
+import { FieldLogo } from '@/components/journey/brand.tsx';
 
 /**
  * Screens within the screen. Everything the viewer operates sits inside one of
@@ -44,25 +45,20 @@ export function BrowserFrame({ path, basket, children }: { path: string; basket:
           <span className="truncate">field-international · {path}</span>
         </span>
       </Chrome>
-      <div className="hidden bg-signal-900 px-5 py-1.5 text-[10.5px] text-signal-200/80 sm:block sm:px-8">
+      {/* The real site: a slim blue strip, then a white header with the logo and the seven menu items. */}
+      <div className="hidden bg-signal-600 px-5 py-1.5 text-[10.5px] text-white/80 sm:block sm:px-8">
         Aerospace tooling and ground support equipment · worldwide supply
       </div>
-      <header className="flex items-center gap-8 border-b border-ink-100 bg-white px-4 py-3 sm:px-8 sm:py-3.5">
-        <span className="flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-signal-700">
-            <span className="h-2.5 w-2.5 rotate-45 bg-white" />
-          </span>
-          <span className="leading-none">
-            <span className="block text-[14px] font-semibold tracking-tight text-signal-900">Field</span>
-            <span className="block text-[8.5px] tracking-[0.18em] text-ink-400">INTERNATIONAL</span>
-          </span>
-        </span>
-        <nav className="hidden gap-6 text-[12px] font-medium text-ink-600 md:flex">
-          <span>Products</span>
-          <span>Industries</span>
-          <span>Services</span>
-          <span className="text-signal-700">Find a part</span>
+      <header className="flex items-center gap-8 border-b border-ink-100 bg-white px-4 py-2.5 sm:px-8 sm:py-3">
+        <FieldLogo height={38} />
+        <nav className="hidden gap-5 text-[12px] font-medium text-ink-700 md:flex">
           <span>About</span>
+          <span>Products</span>
+          <span>Solutions</span>
+          <span>Tooling</span>
+          <span className="border-b-2 border-action-600 pb-0.5 text-signal-600">Find a part</span>
+          <span>Our Companies</span>
+          <span>Contact</span>
         </nav>
         <span className="ml-auto flex items-center gap-3">
           <Search className="hidden h-4 w-4 text-ink-400 sm:block" />
@@ -111,15 +107,10 @@ export function CrmFrame({
       </Chrome>
       <div className="flex min-h-[560px]">
         {/* ------------------------------------------------------ sidebar */}
-        <aside className="hidden w-[200px] shrink-0 flex-col bg-[#0a1a2f] lg:flex">
-          <div className="flex items-center gap-2.5 border-b border-white/[0.06] px-4 py-3.5">
-            <span className="grid h-7 w-7 place-items-center rounded-md bg-signal-500">
-              <span className="h-2 w-2 rotate-45 bg-white" />
-            </span>
-            <span className="min-w-0 flex-1 leading-tight">
-              <span className="block truncate text-[12px] font-semibold text-white">Field International</span>
-              <span className="block text-[10px] text-signal-200/50">CRM</span>
-            </span>
+        <aside className="hidden w-[200px] shrink-0 flex-col bg-signal-900 lg:flex">
+          <div className="flex items-center gap-2.5 border-b border-white/[0.06] px-4 py-3">
+            <FieldLogo height={34} tone="white" className="opacity-95" />
+            <span className="ml-auto rounded bg-white/10 px-1.5 py-0.5 text-[9.5px] font-semibold tracking-[0.1em] text-signal-200/80">CRM</span>
             <ChevronDown className="h-3.5 w-3.5 text-signal-200/40" />
           </div>
           <nav className="flex-1 space-y-4 px-2.5 py-3.5">

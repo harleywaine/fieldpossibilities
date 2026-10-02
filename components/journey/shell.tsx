@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { STEPS, AI_USES, ESTIMATE_NOTES, formatMinutes, type JourneyStep, type StepMetric } from '@/lib/journey.ts';
 import { Avatar } from '@/components/journey/ui.tsx';
+import { FieldLogo, FieldWordmark, PHOTOS } from '@/components/journey/brand.tsx';
 
 /*
  * The frame around the story: the bar at the top, the narration, the stage the
@@ -28,14 +29,9 @@ export function TopBar({
   return (
     <header className="sticky top-0 z-30 border-b border-ink-100/80 bg-white/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-8">
-        <button onClick={() => go(0)} className="flex items-center gap-2.5 text-left" aria-label="Back to the start">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-signal-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
-            <span className="h-2 w-2 rotate-45 bg-white" />
-          </span>
-          <span className="leading-none">
-            <span className="block text-[13px] font-semibold tracking-tight text-ink-950">Field</span>
-            <span className="block text-[10.5px] text-ink-400">Enquiry simulation</span>
-          </span>
+        <button onClick={() => go(0)} className="flex items-center gap-3 text-left" aria-label="Back to the start">
+          <FieldWordmark className="h-[13px] text-signal-600" />
+          <span className="hidden border-l border-ink-200 pl-3 text-[10.5px] uppercase tracking-[0.14em] text-ink-400 sm:block">AI Opportunity Lab</span>
         </button>
         <span className="ml-auto flex items-center gap-1">
           {current >= 0 && (
@@ -215,7 +211,7 @@ export function Dock({
     <>
     {explain && <EstimatesDialog rows={estimates} onClose={() => setExplain(false)} />}
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto max-w-6xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8 sm:pb-5">
-      <div className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-[#0a1a2f]/[0.97] p-2 text-white shadow-[0_28px_60px_-24px_rgba(4,24,47,0.75)] ring-1 ring-white/10 backdrop-blur-xl sm:gap-5 sm:p-2.5">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-signal-900/[0.97] p-2 text-white shadow-[0_28px_60px_-24px_rgba(2,25,58,0.75)] ring-1 ring-white/10 backdrop-blur-xl sm:gap-5 sm:p-2.5">
         <button
           onClick={onBack}
           disabled={!canBack}
@@ -304,21 +300,21 @@ export interface CatalogueFacts { products: number; withImages: number; withLead
 /** The landing: one full-screen scene, nothing else on it until the viewer begins. */
 export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: CatalogueFacts | null }) {
   return (
-    <section
-      className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#07162a] text-white"
-      style={{
-        backgroundImage:
-          'radial-gradient(55% 65% at 82% 18%, rgba(17,96,173,0.55), transparent 70%), radial-gradient(40% 50% at 5% 100%, rgba(56,189,248,0.12), transparent 70%), linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)',
-        backgroundSize: 'auto, auto, 32px 32px, 32px 32px',
-      }}
-    >
-      <header className="enter relative z-10 mx-auto flex w-full max-w-6xl items-center px-5 pt-6 sm:px-8 sm:pt-8">
-        <span className="flex items-center gap-2.5">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/10 ring-1 ring-inset ring-white/15">
-            <span className="h-2 w-2 rotate-45 bg-white" />
-          </span>
-          <span className="text-[13px] font-semibold tracking-tight">Field</span>
-        </span>
+    <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-signal-900 text-white">
+      {/* Field's own hero photograph: a 777 on approach, under a brand-navy wash that clears the left for the words. */}
+      <img
+        src={PHOTOS.hero777}
+        alt=""
+        aria-hidden
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover object-[70%_40%]"
+        style={{ animation: 'heroDrift 28s ease-in-out infinite alternate' }}
+      />
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(100deg,rgba(2,25,58,0.96)_0%,rgba(2,25,58,0.88)_38%,rgba(3,70,148,0.45)_70%,rgba(2,25,58,0.35)_100%)]" />
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,transparent,rgba(2,25,58,0.9))]" />
+      <header className="enter relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 pt-6 sm:px-8 sm:pt-7">
+        <FieldLogo height={52} tone="white" />
+        <span className="hidden text-[11px] uppercase tracking-[0.16em] text-white/60 sm:block">AI Opportunity Lab</span>
       </header>
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center px-5 sm:px-8">
@@ -338,7 +334,7 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
             <button
               onClick={onBegin}
               autoFocus
-              className="group inline-flex h-13 items-center gap-2.5 rounded-xl bg-white px-6 text-[15px] font-semibold text-[#07162a] shadow-[0_16px_40px_-12px_rgba(125,211,252,0.55)] transition-colors hover:bg-signal-50"
+              className="group inline-flex h-13 items-center gap-2.5 rounded-[3px] bg-action-600 px-7 text-[15px] font-bold text-white shadow-[0_16px_40px_-12px_rgba(162,18,18,0.6)] transition-colors hover:bg-action-500"
             >
               Begin <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
@@ -364,14 +360,6 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
         </div>
       </div>
 
-      {/* two mock-ups, composed: the website in front of the CRM */}
-      <div aria-hidden className="pointer-events-none absolute right-[-6rem] top-1/2 hidden w-[600px] -translate-y-1/2 xl:block" style={{ perspective: '1400px' }}>
-        <div className="drift relative" style={{ transform: 'rotateY(-14deg) rotateX(6deg)' }}>
-          <MiniCrm />
-          <div className="absolute -left-12 top-44 w-[300px]"><MiniSite /></div>
-        </div>
-      </div>
-
       <footer className="enter relative z-10 mx-auto w-full max-w-6xl px-5 pb-7 sm:px-8 sm:pb-9" style={{ animationDelay: '600ms' }}>
         <div className="flex flex-col gap-2 border-t border-white/10 pt-5 text-[12px] text-white/50 sm:flex-row sm:gap-8">
           {[
@@ -387,50 +375,6 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
         </div>
       </footer>
     </section>
-  );
-}
-
-function MiniSite() {
-  return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)] ring-1 ring-black/5">
-      <div className="flex gap-1 bg-[#f3f5f8] px-2.5 py-1.5">{[0, 1, 2].map((i) => <span key={i} className="h-1.5 w-1.5 rounded-full bg-ink-200" />)}</div>
-      <div className="bg-signal-900 px-3.5 py-4">
-        <p className="text-[9px] font-semibold tracking-[0.14em] text-signal-300">FIND A PART</p>
-        <p className="mt-1 text-[12px] font-semibold text-white">Tell us the job.</p>
-        <div className="mt-2 flex items-center gap-1.5 rounded-md bg-white px-2 py-1.5 text-[9px] text-ink-400"><Search className="h-2.5 w-2.5" />737-800 thrust reverser…</div>
-      </div>
-      <div className="space-y-1.5 p-2.5">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="flex items-center gap-2 rounded-md p-1.5 ring-1 ring-ink-100">
-            <span className="h-6 w-6 rounded bg-ink-50" />
-            <span className="flex-1 space-y-1"><span className="block h-1.5 w-3/4 rounded bg-ink-100" /><span className="block h-1.5 w-1/2 rounded bg-ink-50" /></span>
-            <span className="h-3.5 w-9 rounded bg-signal-50" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function MiniCrm() {
-  return (
-    <div className="flex h-[330px] overflow-hidden rounded-xl bg-[#f6f8fb] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)] ring-1 ring-white/10">
-      <div className="w-24 space-y-2 bg-[#0a1a2f] p-2.5">
-        <span className="block h-4 w-4 rounded bg-signal-500" />
-        {[0, 1, 2, 3, 4, 5].map((i) => <span key={i} className={`block h-1.5 rounded ${i === 1 ? 'w-14 bg-white/50' : 'w-12 bg-white/15'}`} />)}
-      </div>
-      <div className="flex-1 space-y-2.5 p-3">
-        <span className="block h-2.5 w-40 rounded bg-ink-200" />
-        <div className="flex gap-0.5">{['bg-signal-500', 'bg-signal-500', 'bg-signal-800', 'bg-ink-100', 'bg-ink-100'].map((c, i) => <span key={i} className={`h-3 flex-1 ${c}`} />)}</div>
-        <div className="grid grid-cols-4 gap-1.5">
-          {[0, 1, 2, 3].map((i) => <span key={i} className="block h-9 rounded-md bg-white ring-1 ring-ink-100" />)}
-        </div>
-        <div className="grid grid-cols-[1fr_100px] gap-1.5">
-          <span className="block h-36 rounded-md bg-white ring-1 ring-ink-100" />
-          <span className="block h-36 rounded-md bg-gradient-to-b from-[#f3f0ff] to-white ring-1 ring-[#ddd5ff]" />
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -457,9 +401,11 @@ export function Results({
   return (
     <div className="space-y-5">
       <section
-        className="enter relative overflow-hidden rounded-[24px] bg-[#07162a] px-6 py-9 text-white sm:rounded-[32px] sm:px-12 sm:py-14"
+        className="enter relative overflow-hidden rounded-[24px] bg-signal-900 px-6 py-9 text-white sm:rounded-[32px] sm:px-12 sm:py-14"
         style={{ backgroundImage: 'radial-gradient(60% 80% at 90% 0%, rgba(17,96,173,0.5), transparent 70%)' }}
       >
+        {/* Field's globe watermark, as on the dark bands of their own site. */}
+        <img src={PHOTOS.watermark} alt="" aria-hidden draggable={false} className="pointer-events-none absolute -right-10 -top-6 w-[520px] opacity-[0.07]" />
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-300">One enquiry, start to finish</p>
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-end">
           <div>
@@ -700,6 +646,15 @@ export function AiUses({ catalogue }: { catalogue: CatalogueFacts | null }) {
   ];
   return (
     <div className="enter mt-8 space-y-4" style={{ animationDelay: '220ms' }}>
+      {/* Field's own photograph: FIL landing-gear trolleys in a customer's hangar. */}
+      <figure className="relative h-44 overflow-hidden rounded-2xl ring-1 ring-ink-100 sm:h-56">
+        <img src={PHOTOS.products} alt="Field International landing-gear trolleys in a maintenance hangar" draggable={false} className="absolute inset-0 h-full w-full object-cover object-[50%_60%]" />
+        <span aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,25,58,0.85)_0%,rgba(2,25,58,0.35)_55%,transparent_100%)]" />
+        <figcaption className="absolute inset-y-0 left-0 flex max-w-md flex-col justify-center px-6 text-white sm:px-8">
+          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-signal-200">The job this is built around</span>
+          <span className="mt-1.5 font-display text-[20px] font-light leading-snug sm:text-[24px]">A customer needs tooling. Nine moments between their request and your factory.</span>
+        </figcaption>
+      </figure>
       <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {AI_USES.map((u, i) => {
           const Icon = USE_ICON[u.step] ?? Sparkles;

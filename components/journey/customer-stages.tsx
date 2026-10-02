@@ -8,6 +8,7 @@ import {
 import { EXAMPLE_REQUESTS, aircraftLabel, duration, variantTag } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import { Badge, Button, Thumb, type Tone } from '@/components/journey/ui.tsx';
+import { PHOTOS } from '@/components/journey/brand.tsx';
 
 const MATCH: Record<SimLine['matchClass'], { text: string; tone: Tone }> = {
   strong: { text: 'Direct match', tone: 'green' },
@@ -26,19 +27,14 @@ export function RequestScreen({
 }) {
   return (
     <div>
-      <section
-        className="relative overflow-hidden bg-signal-900 px-4 pb-10 pt-8 sm:px-10 sm:pb-12 sm:pt-10"
-        style={{
-          backgroundImage:
-            'radial-gradient(ellipse at 80% 0%, rgba(79,133,198,0.35), transparent 60%), linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
-          backgroundSize: 'auto, 28px 28px, 28px 28px',
-        }}
-      >
-        <p className="text-[10.5px] font-semibold tracking-[0.16em] text-signal-300">FIND A PART</p>
-        <h2 className="mt-2 max-w-lg text-[26px] font-semibold leading-tight tracking-tight text-white">
+      {/* Styled as a page on fieldinternational.com: the blue band their section banners use, with the globe watermark. */}
+      <section className="relative overflow-hidden bg-signal-600 px-4 pb-10 pt-8 sm:px-10 sm:pb-12 sm:pt-10">
+        <img src={PHOTOS.watermark} alt="" aria-hidden draggable={false} className="pointer-events-none absolute -right-8 -top-4 w-[460px] opacity-[0.08]" />
+        <p className="relative text-[10.5px] font-semibold tracking-[0.16em] text-signal-200">FIND A PART</p>
+        <h2 className="relative mt-2 max-w-lg text-[27px] font-light leading-tight text-white">
           Tell us the job. We’ll find the tooling.
         </h2>
-        <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-signal-100/70">
+        <p className="relative mt-2 max-w-lg text-[13px] leading-relaxed text-white/75">
           Describe the aircraft and the task in your own words. Part numbers aren’t needed.
         </p>
 
@@ -58,7 +54,7 @@ export function RequestScreen({
             <button
               onClick={onSubmit}
               disabled={busy || value.trim().length < 3}
-              className="ml-auto inline-flex h-9 items-center gap-2 rounded-lg bg-signal-600 px-4 text-[13px] font-medium text-white transition-colors hover:bg-signal-500 disabled:opacity-40"
+              className="ml-auto inline-flex h-9 items-center gap-2 rounded-[3px] bg-action-600 px-4 text-[13px] font-bold text-white transition-colors hover:bg-action-500 disabled:opacity-40"
             >
               <Search className="h-4 w-4" />
               {busy ? 'Searching the catalogue…' : 'Find the parts'}
@@ -269,9 +265,9 @@ export function PartsScreen({
                 <button
                   onClick={() => setAsking(true)}
                   disabled={!chosen.length}
-                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-signal-600 text-[13px] font-medium text-white transition-colors hover:bg-signal-500 disabled:opacity-40"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[3px] bg-action-600 text-[13px] font-bold text-white transition-colors hover:bg-action-500 disabled:opacity-40"
                 >
-                  Request a quote <ArrowRight className="h-4 w-4" />
+                  Request a Quote <ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
                 <div className="step-in space-y-3">

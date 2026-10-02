@@ -1,21 +1,13 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Inter_Tight, IBM_Plex_Mono } from 'next/font/google';
+import { Roboto, IBM_Plex_Mono } from 'next/font/google';
 
-// Interface text in Inter; IBM Plex Mono is load-bearing — part numbers,
-// references and figures are read as data, not prose.
-const inter = Inter({
+// Roboto is Field's own typeface (light for headings, as on fieldinternational.com).
+// IBM Plex Mono is load-bearing: part numbers, references and figures read as data.
+const roboto = Roboto({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-// Headlines only: tighter letterforms hold up at display sizes where Inter goes loose.
-const interTight = Inter_Tight({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-inter-tight',
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-roboto',
   display: 'swap',
 });
 
@@ -35,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={`${inter.variable} ${interTight.variable} ${plexMono.variable}`}>
+    <html lang="en-GB" className={`${roboto.variable} ${plexMono.variable}`}>
       <body className="min-h-screen antialiased">{children}</body>
     </html>
   );

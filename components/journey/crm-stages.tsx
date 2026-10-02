@@ -11,6 +11,7 @@ import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { MIN_MARGIN, gbpExact, marginOf, type LinePrice } from '@/lib/simulation/pricing.ts';
 import { PageHeader } from '@/components/journey/frames.tsx';
+import { FieldLogo, PHOTOS } from '@/components/journey/brand.tsx';
 import {
   Avatar, Badge, Button, Card, Fields, Stat, StagePath, Tabs, Td, Th, Thumb, type Tone,
 } from '@/components/journey/ui.tsx';
@@ -787,19 +788,33 @@ export function SupplyScreen({
         />
       </div>
 
-      <div className="mb-4 grid gap-2 sm:grid-cols-4">
+      <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         {perSite.map((s) => (
-          <div key={s.id} className={`rounded-lg border bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${s.count ? 'border-signal-600/30' : 'border-ink-100'}`}>
-            <p className="flex items-center justify-between gap-2 text-[12.5px] font-semibold text-ink-900">
-              <span className="flex items-center gap-1.5"><Factory className={`h-3.5 w-3.5 ${s.count ? 'text-signal-600' : 'text-ink-300'}`} />{s.name}</span>
-              <span className="text-[11px] font-medium text-ink-400">{s.country}</span>
-            </p>
-            <p className="mt-0.5 text-[11px] leading-snug text-ink-500">{s.note}</p>
-            <p className="mt-2 text-[11.5px] font-medium">
-              {s.count ? <span className="text-signal-700">{plural(s.count, 'line')} planned here</span> : <span className="text-ink-300">nothing planned here</span>}
-            </p>
+          <div key={s.id} className={`overflow-hidden rounded-lg border bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${s.count ? 'border-signal-600/40' : 'border-ink-100'}`}>
+            {/* Field's own photograph of each site. */}
+            <div className="relative h-20">
+              <img src={PHOTOS.sites[s.id]} alt={`Field International, ${s.name}`} draggable={false} className={`absolute inset-0 h-full w-full object-cover ${s.count ? '' : 'grayscale opacity-70'}`} />
+              {s.count > 0 && <span className="absolute left-2 top-2 rounded bg-signal-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">{plural(s.count, 'line')}</span>}
+            </div>
+            <div className="px-3 py-2.5">
+              <p className="flex items-center justify-between gap-2 text-[12.5px] font-semibold text-ink-900">
+                {s.name}
+                <span className="text-[10.5px] font-medium text-ink-400">{s.country}</span>
+              </p>
+              <p className="mt-0.5 text-[10.5px] leading-snug text-ink-500">{s.note}</p>
+            </div>
           </div>
         ))}
+        <div className="overflow-hidden rounded-lg border border-dashed border-ink-200 bg-white">
+          <div className="relative h-20">
+            <img src={PHOTOS.sites.pensacola} alt="Field International USA" draggable={false} className="absolute inset-0 h-full w-full object-cover grayscale opacity-60" />
+            <span className="absolute left-2 top-2 rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-ink-600">Opens 2027</span>
+          </div>
+          <div className="px-3 py-2.5">
+            <p className="flex items-center justify-between gap-2 text-[12.5px] font-semibold text-ink-900">Pensacola<span className="text-[10.5px] font-medium text-ink-400">Florida</span></p>
+            <p className="mt-0.5 text-[10.5px] leading-snug text-ink-500">US headquarters and factory, announced January 2026. Not yet in the plan.</p>
+          </div>
+        </div>
       </div>
 
       <Card title="Source per line" icon={Truck} action="stock, site lead times and costs are simulated" pad={false}>
@@ -1169,13 +1184,10 @@ export function ApprovalScreen({
           <span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[24deg] whitespace-nowrap text-[54px] font-black tracking-[0.12em] text-[#5b3fc4]/[0.07]">
             SYNTHETIC PRICES
           </span>
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-signal-700 pb-4">
-            <span className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded bg-signal-700"><span className="h-2.5 w-2.5 rotate-45 bg-white" /></span>
-              <span className="leading-none">
-                <span className="block text-[15px] font-semibold text-signal-900">Field</span>
-                <span className="block text-[8.5px] tracking-[0.18em] text-ink-400">INTERNATIONAL</span>
-              </span>
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-signal-600 pb-4">
+            <span className="flex flex-col gap-1">
+              <FieldLogo height={46} />
+              <span className="text-[9.5px] leading-tight text-ink-400">18-20 Nuffield Road, Poole, Dorset BH17 0RB · salesuk@fieldinternational.com</span>
             </span>
             <span className="text-right">
               <span className="block text-[18px] font-light tracking-[0.12em] text-ink-900">QUOTATION</span>

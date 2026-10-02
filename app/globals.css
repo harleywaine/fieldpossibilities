@@ -17,10 +17,11 @@
 @custom-variant dark (&:where(.__never-dark, .__never-dark *));
 
 @theme {
-  /* ---- Neutrals: cool-tinted, so they sit under the blue rather than fight it */
+  /* ---- Neutrals: cool-tinted, so they sit under the blue rather than fight it.
+         ink-50 is Field's own page background (#F2F4F7). */
   --color-ink-25:  #fafbfd;
-  --color-ink-50:  #f5f7fa;
-  --color-ink-75:  #eef2f7;
+  --color-ink-50:  #f2f4f7;
+  --color-ink-75:  #eaeef4;
   --color-ink-100: #e4e9f1;
   --color-ink-200: #cfd7e3;
   --color-ink-300: #aab5c7;
@@ -33,7 +34,7 @@
   --color-ink-900: #131820;
   --color-ink-950: #0a0e14;
 
-  /* ---- Field brand blue */
+  /* ---- Field brand blue: #034694 primary and #7EA7D7 secondary are the site's own tokens */
   --color-signal-50:  #eef4fb;
   --color-signal-100: #d3e2f3;
   --color-signal-200: #a9c6e7;
@@ -41,11 +42,11 @@
   --color-signal-400: #4f85c6;
   --color-signal-500: #1160ad;
   --color-signal-600: #034694;
-  --color-signal-700: #00316a;
-  --color-signal-800: #042348;
-  --color-signal-900: #04182f;
+  --color-signal-700: #02356f;
+  --color-signal-800: #02264f;
+  --color-signal-900: #02193a;
 
-  /* ---- Field action red, reserved strictly for calls to action */
+  /* ---- Field accent red (#A21212, the site's own token), reserved for calls to action */
   --color-action-500: #b81717;
   --color-action-600: #a21212;
   --color-action-700: #820e0e;
@@ -56,8 +57,8 @@
   --color-caution-600: #8a5300;
   --color-caution-500: #a8660a;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
-  --font-display: var(--font-inter-tight), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-roboto), Roboto, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-display: var(--font-roboto), Roboto, ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -81,10 +82,10 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Display sizes need negative tracking; body text does not. */
-h1, h2, h3 { color: var(--color-ink-900); letter-spacing: -0.018em; }
-h1 { font-weight: 300; letter-spacing: -0.028em; }
-h2 { font-weight: 400; }
+/* Roboto Light carries the headings, as it does on fieldinternational.com. */
+h1, h2, h3 { color: var(--color-ink-900); letter-spacing: -0.012em; }
+h1 { font-weight: 300; letter-spacing: -0.02em; }
+h2 { font-weight: 300; }
 h3 { font-weight: 500; }
 
 ::selection { background: var(--color-signal-200); color: var(--color-signal-900); }
@@ -152,12 +153,12 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
 }
 .enter { animation: enter .7s cubic-bezier(.2, .7, .2, 1) both; }
 
-/* The cover's mock-ups hang in the air: a slow rise and fall. */
-@keyframes drift {
-  0%, 100% { translate: 0 0; }
-  50%      { translate: 0 -10px; }
+/* The cover photograph breathes: a very slow push-in, barely noticed, never still. */
+@keyframes heroDrift {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to   { transform: scale(1.08) translate3d(-1.5%, -1%, 0); }
 }
-.drift { animation: drift 9s ease-in-out infinite; }
+.drift { animation: heroDrift 28s ease-in-out infinite alternate; }
 
 /* Motion is decoration here; dropping it must leave content visible, which the
    `both` fill mode would otherwise prevent. */

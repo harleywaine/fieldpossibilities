@@ -25,14 +25,9 @@ export default async function UnlockPage({
         className="w-full max-w-sm rounded-2xl bg-white p-7 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.6)]"
       >
         <input type="hidden" name="next" value={safeNext(next)} />
-        <span className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-signal-800">
-            <span className="h-2.5 w-2.5 rotate-45 bg-white" />
-          </span>
-          <span className="leading-none">
-            <span className="block text-[14px] font-semibold tracking-tight text-ink-950">Field</span>
-            <span className="block text-[11px] text-ink-400">AI Opportunity Lab</span>
-          </span>
+        <span className="flex items-center justify-between gap-3">
+          <img src="https://www.fieldinternational.com/wp-content/uploads/2021/03/field-international-logo.svg" alt="Field International" style={{ height: 48, width: 'auto' }} />
+          <span className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400">AI Opportunity Lab</span>
         </span>
 
         <h1 className="mt-7 font-display text-[26px] font-medium leading-tight tracking-[-0.03em] text-ink-950">
