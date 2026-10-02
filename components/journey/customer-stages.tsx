@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight, Check, CheckCircle2, ChevronDown, ClipboardList, ExternalLink, FileSearch,
-  ListChecks, Plane, Plus, Search, Send, Timer, Cog, Package,
+  ListChecks, Plane, Plus, Search, Send, Timer, Cog, Package, Globe, Mail,
 } from 'lucide-react';
 import { EXAMPLE_REQUESTS, DESKS, PLAYABLE, aircraftLabel, duration, variantTag, type Channel, type Region } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
@@ -11,6 +11,13 @@ import type { CrmAccount } from '@/lib/simulation/crm.ts';
 import { SITE_SEARCH_SUMMARY, SITE_SEARCH_TESTS, TESTED_ON, nearestTest } from '@/lib/site-search.ts';
 import { Avatar, Badge, Button, Thumb, type Tone } from '@/components/journey/ui.tsx';
 import { PHOTOS } from '@/components/journey/brand.tsx';
+
+/** Focus the request box on arrival without scrolling the page to it; the step change has just scrolled to the top. */
+function useQuietFocus<T extends HTMLElement>() {
+  const ref = useRef<T>(null);
+  useEffect(() => { ref.current?.focus({ preventScroll: true }); }, []);
+  return ref;
+}
 
 /* --------------------------------------------------------------- 0 persona */
 
@@ -65,6 +72,7 @@ export function EmailCompose({
   value: string; onChange: (v: string) => void; onSend: () => void; busy: boolean; error: string | null;
   from: string; company: string; region: Region; onFrom: (v: string) => void; onCompany: (v: string) => void;
 }) {
+  const box = useQuietFocus<HTMLTextAreaElement>();
   const desk = DESKS[region];
   const subject = value.trim() ? `RFQ: ${value.trim().replace(/\s+/g, ' ').slice(0, 60)}${value.trim().length > 60 ? '…' : ''}` : 'RFQ: tooling';
   const field = 'min-w-0 flex-1 bg-transparent text-ink-800 outline-none placeholder:text-ink-300';
@@ -79,7 +87,7 @@ export function EmailCompose({
       <div className="px-4 py-3 sm:px-6">
         <p className="text-[13px] text-ink-700">Hello,</p>
         <textarea
-          autoFocus
+          ref={box}
           rows={4}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -126,6 +134,7 @@ export function RequestScreen({
   onSubmit: () => void; busy: boolean; error: string | null;
   channel: Channel; onChannel: (c: Channel) => void;
 }) {
+  const box = useQuietFocus<HTMLTextAreaElement>();
   return (
     <div>
       <ChannelTabs channel={channel} onChannel={onChannel} />
@@ -142,7 +151,7 @@ export function RequestScreen({
 
         <div className="mt-6 max-w-2xl rounded-xl bg-white p-2 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.5)]">
           <textarea
-            autoFocus
+            ref={box}
             rows={3}
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -203,17 +212,20 @@ export function RequestScreen({
 /** Website or email: the two ways the same words reach Field. Sits inside the mock-up window. */
 export function ChannelTabs({ channel, onChannel }: { channel: Channel; onChannel: (c: Channel) => void }) {
   return (
-    <div className="flex items-center gap-1 border-b border-ink-100 bg-ink-25 px-3 py-1.5 text-[11.5px]">
-      <span className="mr-1 text-ink-400">Send it</span>
-      {([['web', 'on fieldinternational.com'], ['email', 'by email to a sales desk']] as const).map(([c, label]) => (
-        <button
-          key={c}
-          onClick={() => onChannel(c)}
-          className={`rounded-md px-2.5 py-1 font-medium transition-colors ${channel === c ? 'bg-white text-signal-700 shadow-[0_1px_2px_rgba(16,24,40,0.08)] ring-1 ring-ink-200' : 'text-ink-500 hover:text-ink-800'}`}
-        >
-          {label}
-        </button>
-      ))}
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-ink-100 bg-ink-25 px-3 py-2 text-[12px]">
+      <span className="font-semibold text-ink-700">Send your request</span>
+      <span className="inline-flex rounded-md bg-white p-0.5 ring-1 ring-ink-200" role="group" aria-label="How to send the request">
+        {([['web', Globe, 'Website form'], ['email', Mail, 'Email to a sales desk']] as const).map(([c, Icon, label]) => (
+          <button
+            key={c}
+            onClick={() => onChannel(c)}
+            aria-pressed={channel === c}
+            className={`inline-flex items-center gap-1.5 rounded px-3 py-1 font-medium transition-colors ${channel === c ? 'bg-signal-600 text-white' : 'text-ink-600 hover:bg-ink-50 hover:text-ink-900'}`}
+          >
+            <Icon className="h-3.5 w-3.5" /> {label}
+          </button>
+        ))}
+      </span>
     </div>
   );
 }

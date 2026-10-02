@@ -355,7 +355,12 @@ export function Journey({
       cta: 'Start the enquiry',
     },
     request: {
-      title: picked ? `You are ${picked.name}. What do you need?` : 'You are the customer. What do you need?',
+      title: (
+        <>
+          <span className="font-bold">You are:</span> {picked ? picked.name : 'the customer'}
+          <span className="block font-bold text-signal-600">What do you need?</span>
+        </>
+      ),
       sub: sim.channel === 'email'
         ? `Most requests reach Field as an email to a regional desk. Write it the way you would to any supplier; the system reads it exactly as it would read the website form.`
         : 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
