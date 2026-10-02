@@ -68,6 +68,15 @@
    layered rule, so a bare `h1 { color }` would override `text-white`. */
 @layer base {
 
+/* Tailwind 4's preflight leaves buttons with the default cursor; restore the pointer. */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+label[for],
+select:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   color-scheme: light;
