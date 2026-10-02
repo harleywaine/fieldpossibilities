@@ -9,11 +9,11 @@ known (the public catalogue) and what's assumed (everything inside Field). Every
 visitor operates is a mock-up window, so it reads as a picture of a system.
 
 - **The customer's side.** The visitor picks who to play (four synthetic accounts with
-  different fleets, or someone new) and how to send the request: Field's website, where the
+  different fleets, or someone new) and describes the job on Field's website, where the
   system finds the parts in the real catalogue with the reason for each and a note on what the
-  site's own search returns for the same words today; or an email to one of Field's regional
-  desks (salesuk@, salespte@, salesme@, salesna@), which the system reads and turns into the
-  same enquiry before anyone opens the mailbox.
+  site's own search returns for the same words today. (The email intake, where a message to a
+  regional desk is read and logged before anyone opens the mailbox, is built but not shown on
+  this page; its components are in `customer-stages.tsx` and `frames.tsx`.)
 - **Field's side**, a mock CRM. The enquiry lands already logged, matched to an account and
   assigned. The account screen shows value, win rate, recent jobs, complaints, activity and a
   brief assembled from that customer's own documents. Then come the line check, Engineering

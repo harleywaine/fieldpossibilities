@@ -128,16 +128,14 @@ const MATCH: Record<SimLine['matchClass'], { text: string; tone: Tone }> = {
 /* ------------------------------------------------------------- 1 request */
 
 export function RequestScreen({
-  value, onChange, onSubmit, busy, error, channel, onChannel,
+  value, onChange, onSubmit, busy, error,
 }: {
   value: string; onChange: (v: string) => void;
   onSubmit: () => void; busy: boolean; error: string | null;
-  channel: Channel; onChannel: (c: Channel) => void;
 }) {
   const box = useQuietFocus<HTMLTextAreaElement>();
   return (
     <div>
-      <ChannelTabs channel={channel} onChannel={onChannel} />
       {/* Styled as a page on fieldinternational.com: the blue band their section banners use, with the globe watermark. */}
       <section className="relative overflow-hidden bg-signal-600 px-4 pb-10 pt-8 sm:px-10 sm:pb-12 sm:pt-10">
         <img src={PHOTOS.watermark} alt="" aria-hidden draggable={false} className="pointer-events-none absolute -right-8 -top-4 w-[460px] opacity-[0.08]" />

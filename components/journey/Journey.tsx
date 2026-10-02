@@ -9,10 +9,10 @@ import {
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import { priceLines, marginOf, MIN_MARGIN } from '@/lib/simulation/pricing.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
-import { BrowserFrame, CrmFrame, MailFrame, type CrmModule } from '@/components/journey/frames.tsx';
+import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
 import { duration } from '@/lib/journey.ts';
 import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts } from '@/components/journey/shell.tsx';
-import { RequestScreen, PartsScreen, PersonaBar, EmailCompose, ChannelTabs, type QuoteForm } from '@/components/journey/customer-stages.tsx';
+import { RequestScreen, PartsScreen, PersonaBar, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
   InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplyScreen, PricingScreen, ApprovalScreen, OrderScreen,
   type Decision, type Contact,
@@ -250,30 +250,6 @@ export function Journey({
     research(matched, found);
   };
 
-  /** Email: the system reads the message, so the enquiry lands at Field with the parts already found. */
-  const sendEmail = async () => {
-    const q = sim.request.trim();
-    if (q.length < 3 || busy) return;
-    setBusy(true); setError(null);
-    try {
-      const data = await search(q);
-      const company = sim.form.company.trim() || 'Unnamed sender';
-      const email = sim.form.email.trim() || `procurement@${slug(company)}.example`;
-      const matched = matchAccount(company, accounts);
-      setSim((s) => ({
-        ...s, ...DOWNSTREAM, found: data, excluded: [],
-        rfq: data,
-        contact: { email, company, accountId: matched?.id ?? null },
-      }));
-      research(matched, data);
-      jump('inbox');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'The email could not be read.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const restart = () => {
     setSim((s) => ({ ...EMPTY, form: s.form }));
     go(0);
@@ -361,30 +337,16 @@ export function Journey({
           <span className="block text-signal-600">What do you need?</span>
         </>
       ),
-      sub: sim.channel === 'email'
-        ? `Most requests reach Field as an email to a regional desk. Write it the way you would to any supplier; the system reads it exactly as it would read the website form.`
-        : 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
+      sub: 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
       pre: <PersonaBar accounts={accounts} chosen={sim.persona} onPick={pick} />,
-      frame: sim.channel === 'email' ? (
-        <MailFrame account={picked?.name ?? (sim.form.company || 'you')}>
-          <ChannelTabs channel={sim.channel} onChannel={(channel) => patch({ channel })} />
-          <EmailCompose
-            value={sim.request} onChange={(v) => patch({ request: v })} onSend={sendEmail} busy={busy} error={error}
-            from={sim.form.email} company={sim.form.company} region={region}
-            onFrom={(email) => patch({ form: { ...sim.form, email } })} onCompany={(company) => patch({ form: { ...sim.form, company } })}
-          />
-        </MailFrame>
-      ) : (
+      frame: (
         <BrowserFrame path="find-a-part" basket={basket}>
-          <RequestScreen
-            value={sim.request} onChange={(v) => patch({ request: v })} onSubmit={find} busy={busy} error={error}
-            channel={sim.channel} onChannel={(channel) => patch({ channel })}
-          />
+          <RequestScreen value={sim.request} onChange={(v) => patch({ request: v })} onSubmit={find} busy={busy} error={error} />
         </BrowserFrame>
       ),
       cta: 'Continue with these parts',
       hideContinue: !found,
-      hint: sim.channel === 'email' ? 'Send the email to continue' : 'Search on the website to continue',
+      hint: 'Search on the website to continue',
     },
     parts: {
       title: contact ? 'Your request is on its way to Field.' : 'These are the parts you’ll need.',
