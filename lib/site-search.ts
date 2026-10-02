@@ -2,7 +2,8 @@
  * What fieldinternational.com's own search returns today, measured.
  *
  * Twenty-seven searches a customer might realistically type, run on the live
- * site on 27 September 2026, one at a time, the way a visitor would. The site
+ * site on 27 September 2026 and again on 2 October 2026 with identical
+ * results, one at a time, the way a visitor would. The site
  * runs WordPress's default keyword search: every word must appear in the
  * product title or description, with no stemming, no spelling tolerance and
  * no knowledge of which aircraft a tool is for (that lives in a filter the
@@ -22,7 +23,9 @@ export interface SiteSearchTest {
   finder: 'relevant' | 'weak' | 'wrong aircraft' | 'nothing';
 }
 
-export const TESTED_ON = '27 September 2026';
+export const TESTED_ON = '2 October 2026';
+/** The finder column was assessed when the list was first run. */
+export const FINDER_TESTED_ON = '27 September 2026';
 
 export const SITE_SEARCH_TESTS: SiteSearchTest[] = [
   { query: '777 landing gear', site: 0, finder: 'relevant' },

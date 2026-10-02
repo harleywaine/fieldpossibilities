@@ -13,6 +13,7 @@ import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/fra
 import { duration } from '@/lib/journey.ts';
 import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, PersonaBar, type QuoteForm } from '@/components/journey/customer-stages.tsx';
+import { SiteSearchProof } from '@/components/journey/site-search.tsx';
 import {
   InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplyScreen, PricingScreen, ApprovalScreen, OrderScreen,
   type Decision, type Contact,
@@ -25,7 +26,8 @@ interface SimState {
   channel: Channel;
   request: string;
   found: SimRfq | null;
-  excluded: number[];
+  /** Lines the customer has added to the quote basket. Nothing is added for them. */
+  basket: number[];
   form: QuoteForm;
   contact: (Contact & { accountId: string | null }) | null;
   rfq: SimRfq | null;
@@ -43,10 +45,10 @@ interface SimState {
   risk: string | null;
 }
 
-const STORE = 'field-simulation-v5';
+const STORE = 'field-simulation-v6';
 const EMPTY: SimState = {
   persona: null, channel: 'web',
-  request: '', found: null, excluded: [], form: { email: '', company: '' }, contact: null,
+  request: '', found: null, basket: [], form: { email: '', company: '' }, contact: null,
   rfq: null, brief: null, review: {}, sites: {}, supplierSent: false, prices: {}, pricesConfirmed: false, plan: null, approval: null, risk: null,
 };
 const DOWNSTREAM: Partial<SimState> = {
@@ -227,7 +229,7 @@ export function Journey({
     setBusy(true); setError(null);
     try {
       const data = await search(q);
-      setSim((s) => ({ ...s, ...DOWNSTREAM, found: data, excluded: [] }));
+      setSim((s) => ({ ...s, ...DOWNSTREAM, found: data, basket: [] }));
       jump('parts');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The search failed.');
@@ -240,7 +242,7 @@ export function Journey({
     if (!found) return;
     const matched = matchAccount(sim.form.company, accounts);
     const lines = found.lines
-      .filter((l) => !sim.excluded.includes(l.line))
+      .filter((l) => sim.basket.includes(l.line))
       .map((l, i) => ({ ...l, line: i + 1 }));
     setSim((s) => ({
       ...s, ...DOWNSTREAM,
@@ -275,7 +277,7 @@ export function Journey({
     + (sim.plan ? 1 : 0) + (sim.approval === 'approved' ? 1 : 0) + (sim.risk ? 1 : 0);
   const pendingReview = reviewLines.filter((l) => !sim.review[l.line]).length;
   const you = (id: StepId) => ({ ...PERSONAS[id]!, you: true });
-  const basket = found ? found.lines.length - sim.excluded.length : 0;
+  const basket = sim.basket.length;
   // SYNTHETIC prices, seeded per part; the viewer's own figures override the suggestion.
   const linePrices = useMemo(
     () => priceLines(included, account?.id ?? null, (name) => {
@@ -352,14 +354,15 @@ export function Journey({
       title: contact ? 'Your request is on its way to Field.' : 'These are the parts you’ll need.',
       sub: contact
         ? 'Next, the same enquiry from the other side: inside Field.'
-        : 'Each one comes from Field’s real catalogue, with the reason it was picked. Request a quote when you’re ready.',
+        : 'Each one comes from Field’s real catalogue, with the reason it was picked. Add the ones you want and request a quote.',
+      body: found && !contact ? <SiteSearchProof request={found.request} /> : undefined,
       frame: found && (
         <BrowserFrame path={contact ? 'find-a-part/request-sent' : 'find-a-part/results'} basket={basket}>
           <PartsScreen
             found={found}
-            excluded={sim.excluded}
+            basket={sim.basket}
             onToggle={(line) => setSim((s) => ({
-              ...s, excluded: s.excluded.includes(line) ? s.excluded.filter((x) => x !== line) : [...s.excluded, line],
+              ...s, basket: s.basket.includes(line) ? s.basket.filter((x) => x !== line) : [...s.basket, line],
             }))}
             form={sim.form}
             onForm={(form) => patch({ form })}

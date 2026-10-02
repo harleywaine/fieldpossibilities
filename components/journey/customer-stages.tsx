@@ -8,7 +8,6 @@ import {
 import { EXAMPLE_REQUESTS, DESKS, PLAYABLE, aircraftLabel, duration, variantTag, type Channel, type Region } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount } from '@/lib/simulation/crm.ts';
-import { SITE_SEARCH_SUMMARY, SITE_SEARCH_TESTS, TESTED_ON, nearestTest } from '@/lib/site-search.ts';
 import { Avatar, Badge, Button, Thumb, type Tone } from '@/components/journey/ui.tsx';
 import { PHOTOS } from '@/components/journey/brand.tsx';
 
@@ -244,10 +243,10 @@ const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 export function PartsScreen({
-  found, excluded, onToggle, form, onForm, sent, onSend, onEdit, accountNames, channel = 'web',
+  found, basket, onToggle, form, onForm, sent, onSend, onEdit, accountNames, channel = 'web',
 }: {
   found: SimRfq;
-  excluded: number[];
+  basket: number[];
   onToggle: (line: number) => void;
   form: QuoteForm;
   onForm: (f: QuoteForm) => void;
@@ -259,7 +258,7 @@ export function PartsScreen({
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const [asking, setAsking] = useState(false);
-  const chosen = found.lines.filter((l) => !excluded.includes(l.line));
+  const chosen = found.lines.filter((l) => basket.includes(l.line));
 
   if (sent) return <Sent sent={sent} chosen={chosen} channel={channel} />;
 
@@ -312,10 +311,10 @@ export function PartsScreen({
           )}
           <ul className="space-y-2.5">
             {found.lines.map((l) => {
-              const on = !excluded.includes(l.line);
+              const on = basket.includes(l.line);
               const isOpen = open === l.line;
               return (
-                <li key={l.line} className={`overflow-hidden rounded-xl border bg-white transition-colors ${on ? 'border-ink-200' : 'border-ink-100 opacity-55'}`}>
+                <li key={l.line} className={`overflow-hidden rounded-xl border bg-white transition-all ${on ? 'border-signal-600/60 shadow-[0_8px_20px_-14px_rgba(3,70,148,0.5)]' : 'border-ink-200'}`}>
                   <div className="flex items-start gap-3 p-3 sm:gap-3.5 sm:p-3.5">
                     <Thumb src={l.image} size={52} alt={l.name} />
                     <div className="min-w-0 flex-1">
@@ -334,10 +333,10 @@ export function PartsScreen({
                       disabled={asking}
                       aria-label={on ? 'Remove from basket' : 'Add to basket'}
                       className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[12px] sm:px-3 font-medium transition-colors disabled:cursor-not-allowed ${
-                        on ? 'bg-signal-50 text-signal-700 ring-1 ring-inset ring-signal-600/20' : 'bg-white text-ink-600 ring-1 ring-inset ring-ink-200 hover:bg-ink-25'
+                        on ? 'bg-signal-50 text-signal-700 ring-1 ring-inset ring-signal-600/30 hover:bg-white' : 'bg-signal-600 text-white hover:bg-signal-500'
                       }`}
                     >
-                      {on ? <><Check className="h-3.5 w-3.5" /><span className="hidden sm:inline">In basket</span></> : <><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Add</span></>}
+                      {on ? <><Check className="h-3.5 w-3.5" /><span className="hidden sm:inline">In basket</span></> : <><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline">Add to basket</span></>}
                     </button>
                   </div>
                   <button
@@ -379,6 +378,7 @@ export function PartsScreen({
               </p>
               <span className="text-[11.5px] text-ink-400">{chosen.length} {chosen.length === 1 ? 'part' : 'parts'}</span>
             </div>
+            {!chosen.length && <p className="px-4 py-3 text-[11.5px] text-ink-400">Nothing yet. Add the parts you want quoted.</p>}
             <ul className="max-h-48 divide-y divide-ink-50 overflow-y-auto px-4">
               {chosen.map((l) => (
                 <li key={l.line} className="flex items-center gap-2.5 py-2">
@@ -437,81 +437,9 @@ export function PartsScreen({
               )}
             </div>
           </div>
-
-          <div className="rounded-xl border border-ink-100 bg-ink-25 p-4">
-            <p className="text-[12px] font-semibold text-ink-900">How we found these</p>
-            <ol className="mt-3 space-y-3">
-              <How n={1} title="Read your request">
-                {found.understood.length
-                  ? found.understood.map((u) => (
-                    <span key={u.label} className="block">
-                      <span className="text-ink-400">{u.label.replace(' identified', '')}:</span> {u.value}
-                      {u.note && <span className="block text-caution-600">{u.note}</span>}
-                    </span>
-                  ))
-                  : 'No aircraft or deadline named, so it searched on the description.'}
-              </How>
-              <How n={2} title={`Searched the catalogue in ${found.searchMs} ms`}>
-                {found.searchSteps.map((s) => (
-                  <span key={s.label} className="block"><span className="text-ink-700">{s.label}</span>: {s.detail}</span>
-                ))}
-              </How>
-              <How n={3} title={`Kept the ${found.lines.length} closest of ${found.considered.toLocaleString()} relevant records`}>
-                Direct matches first, then likely ones.
-              </How>
-            </ol>
-          </div>
-
-          <SiteComparison request={found.request} />
         </aside>
       </div>
-    </div>
-  );
-}
 
-/**
- * The same words on fieldinternational.com today. Measured on the live site,
- * not estimated; the nearest tested query is shown when one matches.
- */
-function SiteComparison({ request }: { request: string }) {
-  const [open, setOpen] = useState(false);
-  const near = nearestTest(request);
-  const s = SITE_SEARCH_SUMMARY;
-  return (
-    <div className="rounded-xl border border-ink-100 bg-white p-4">
-      <p className="flex items-center gap-2 text-[12px] font-semibold text-ink-900">
-        <Search className="h-3.5 w-3.5 text-ink-400" /> The site’s own search, today
-      </p>
-      {near ? (
-        <p className="mt-2 text-[11.5px] leading-relaxed text-ink-600">
-          <span className="font-medium text-ink-900">“{near.query}”</span> on fieldinternational.com returns{' '}
-          {near.site === 0
-            ? <span className="font-medium text-action-600">nothing</span>
-            : <span className="font-medium text-ink-900">{near.site.toLocaleString()} {near.site === 1 ? 'result' : 'results'}</span>}
-          {near.siteNote ? ` (${near.siteNote})` : ''}. Measured on the live site, {TESTED_ON}.
-        </p>
-      ) : (
-        <p className="mt-2 text-[11.5px] leading-relaxed text-ink-600">
-          The site’s search box matches words in titles only. It doesn’t know which aircraft a tool is for, and a plural or a British spelling finds nothing.
-        </p>
-      )}
-      <p className="mt-2 text-[11.5px] leading-relaxed text-ink-600">
-        Across {s.total} realistic searches: <span className="font-medium text-action-600">{s.nothing} returned nothing</span>, {s.flood} returned over a hundred results, {s.usable} were usable. This finder found relevant parts for {s.finderRelevant}.
-      </p>
-      <button onClick={() => setOpen((v) => !v)} className="mt-2 text-[11px] font-medium text-signal-600 hover:text-signal-800">
-        {open ? 'Hide the list' : 'See all 27'}
-      </button>
-      {open && (
-        <ul className="mt-2 max-h-56 divide-y divide-ink-50 overflow-y-auto text-[11px]">
-          {SITE_SEARCH_TESTS.map((t) => (
-            <li key={t.query} className="flex items-center gap-2 py-1">
-              <span className="mono min-w-0 flex-1 truncate text-ink-700">{t.query}</span>
-              <span className={`shrink-0 ${t.site === 0 ? 'text-action-600' : 'text-ink-500'}`}>{t.site === 0 ? 'nothing' : t.site.toLocaleString()}</span>
-              <span className={`shrink-0 rounded px-1 ${t.finder === 'relevant' ? 'bg-strong-600/10 text-strong-600' : t.finder === 'nothing' ? 'bg-action-600/10 text-action-600' : 'bg-caution-500/10 text-caution-600'}`}>{t.finder}</span>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
@@ -532,18 +460,6 @@ function Input({
         className="mt-1 h-9 w-full rounded-lg border border-ink-200 px-2.5 text-[12.5px] text-ink-900 outline-none transition-shadow placeholder:text-ink-300 focus:border-signal-500 focus:ring-2 focus:ring-signal-500/15"
       />
     </label>
-  );
-}
-
-function How({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
-  return (
-    <li className="grid grid-cols-[1.25rem_1fr] gap-1.5">
-      <span className="grid h-4 w-4 place-items-center rounded-full bg-signal-100 text-[9.5px] font-semibold text-signal-700">{n}</span>
-      <div>
-        <p className="mb-0.5 text-[11.5px] font-medium text-ink-900">{title}</p>
-        <div className="text-[11px] leading-relaxed text-ink-500">{children}</div>
-      </div>
-    </li>
   );
 }
 
