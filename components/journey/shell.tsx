@@ -8,6 +8,7 @@ import {
 import { STEPS, AI_USES, ESTIMATE_NOTES, formatMinutes, type JourneyStep, type StepMetric } from '@/lib/journey.ts';
 import { Avatar } from '@/components/journey/ui.tsx';
 import { FieldLogo, FieldWordmark, PHOTOS } from '@/components/journey/brand.tsx';
+import { ModuleDialog, type ModuleId } from '@/components/journey/modules.tsx';
 
 /*
  * The frame around the story: the bar at the top, the narration, the stage the
@@ -389,6 +390,7 @@ export function Results({
   onRestart: () => void;
 }) {
   const saved = before - after;
+  const [mock, setMock] = useState<ModuleId | null>(null);
   // Each step's saving at its own assumed yearly volume, so this agrees with the table below.
   const hoursPerYear = Math.round(rows.reduce((a, r) => a + (r.before - r.after) * r.volume, 0) / 60);
   const pct = before ? Math.round((saved / before) * 100) : 0;
@@ -400,6 +402,7 @@ export function Results({
   ];
   return (
     <div className="space-y-5">
+      {mock && <ModuleDialog id={mock} onClose={() => setMock(null)} />}
       <section
         className="enter relative overflow-hidden rounded-[24px] bg-signal-900 px-6 py-9 text-white sm:rounded-[32px] sm:px-12 sm:py-14"
         style={{ backgroundImage: 'radial-gradient(60% 80% at 90% 0%, rgba(17,96,173,0.5), transparent 70%)' }}
@@ -495,9 +498,14 @@ export function Results({
               <span className="mono text-[11px] text-ink-300">{String(i + 1).padStart(2, '0')}</span>
               <p className="mt-2 text-[13.5px] font-semibold leading-snug tracking-tight text-ink-950">{u.title}</p>
               <p className="mt-1.5 flex-1 text-[12.5px] leading-relaxed text-ink-600">{u.does}</p>
-              <p className="mt-3 flex flex-wrap gap-1.5 text-[10.5px]">
+              <p className="mt-3 flex flex-wrap items-center gap-1.5 text-[10.5px]">
                 <span className={`rounded-md px-1.5 py-0.5 font-medium ${u.data === 'public' ? 'bg-strong-600/[0.08] text-strong-600' : 'bg-caution-500/[0.1] text-caution-600'}`}>{u.needs}</span>
                 <span className="rounded-md bg-white px-1.5 py-0.5 font-medium text-ink-500 ring-1 ring-ink-100">{u.who}</span>
+                {u.mock && (
+                  <button onClick={() => setMock(u.mock!)} className="ml-auto inline-flex items-center gap-1 rounded-md bg-signal-600 px-2 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-signal-500">
+                    See the screen <ArrowRight className="h-3 w-3" />
+                  </button>
+                )}
               </p>
             </li>
           ))}
@@ -597,7 +605,7 @@ function Bar({ label, value, pct, cls }: { label: string; value: string; pct: nu
  * extra source of Field's own data it would need, so nobody mistakes a
  * possibility for a finding.
  */
-const NEXT_USES: Array<{ title: string; does: string; needs: string; who: string; data: 'public' | 'internal' }> = [
+const NEXT_USES: Array<{ title: string; does: string; needs: string; who: string; data: 'public' | 'internal'; mock?: ModuleId }> = [
   {
     title: 'The part-finder on fieldinternational.com',
     does: 'Steps 1 and 2 of this journey on the live site. Tested on 27 realistic searches, the site’s current search returned nothing for 12 of them; this found relevant parts for 24.',
@@ -605,23 +613,23 @@ const NEXT_USES: Array<{ title: string; does: string; needs: string; who: string
   },
   {
     title: 'Every RFQ logged, from any inbox',
-    does: 'Enquiries that arrive at salesuk@, salespte@, salesme@, salesin@ or salesna@ become enquiries before anyone opens them: part lists read from PDFs and spreadsheets, account matched, owner assigned, clock started.',
+    does: 'Enquiries that arrive at salesuk@, salespte@, salesme@, salesin@ or salesna@ become enquiries before anyone opens them: part lists read from PDFs and spreadsheets, account matched, owner assigned, clock started. You can send one by email at the start of this journey.',
     needs: 'Microsoft 365 mailboxes', who: 'Sales desks', data: 'internal',
   },
   {
     title: 'Who to call before Pensacola opens',
     does: 'Operators and MROs whose fleets match Field’s catalogue but who aren’t customers, by region, with the news that makes a call timely. First list: the US order book for January 2027.',
-    needs: 'Public fleet data', who: 'Business development', data: 'public',
+    needs: 'Public fleet data', who: 'Business development', data: 'public', mock: 'prospects',
   },
   {
     title: 'Calibration and recertification recall',
     does: 'Every tool Field has calibrated or proof-loaded has a due date. A reminder and a ready quote at 60 and 30 days turns a certificate expiry into a booking instead of a lapse.',
-    needs: 'Calibration records', who: 'Service revenue', data: 'internal',
+    needs: 'Calibration records', who: 'Service revenue', data: 'internal', mock: 'recall',
   },
   {
     title: 'One pipeline across seven companies',
     does: 'Enquiries in, quotes out, value open, response times and late lines for the group on one screen, and a Monday digest written by the system for the board.',
-    needs: 'The enquiry system', who: 'The board', data: 'internal',
+    needs: 'The enquiry system', who: 'The board', data: 'internal', mock: 'pipeline',
   },
   {
     title: 'A customer portal',

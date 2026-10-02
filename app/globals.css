@@ -160,9 +160,13 @@ input[type="range"] { accent-color: var(--color-signal-600); height: 2px; }
 }
 .drift { animation: heroDrift 28s ease-in-out infinite alternate; }
 
+/* Routes on the supply map travel toward the customer. */
+@keyframes routeFlow { to { stroke-dashoffset: -28; } }
+.map-route { animation: routeFlow 1.6s linear infinite; }
+
 /* Motion is decoration here; dropping it must leave content visible, which the
    `both` fill mode would otherwise prevent. */
 @media (prefers-reduced-motion: reduce) {
-  .step-in, .enter, .drift { animation: none !important; }
+  .step-in, .enter, .drift, .map-route { animation: none !important; }
   html { scroll-behavior: auto; }
 }

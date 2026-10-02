@@ -5,10 +5,110 @@ import {
   ArrowRight, Check, CheckCircle2, ChevronDown, ClipboardList, ExternalLink, FileSearch,
   ListChecks, Plane, Plus, Search, Send, Timer, Cog, Package,
 } from 'lucide-react';
-import { EXAMPLE_REQUESTS, aircraftLabel, duration, variantTag } from '@/lib/journey.ts';
+import { EXAMPLE_REQUESTS, DESKS, PLAYABLE, aircraftLabel, duration, variantTag, type Channel, type Region } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
-import { Badge, Button, Thumb, type Tone } from '@/components/journey/ui.tsx';
+import type { CrmAccount } from '@/lib/simulation/crm.ts';
+import { SITE_SEARCH_SUMMARY, SITE_SEARCH_TESTS, TESTED_ON, nearestTest } from '@/lib/site-search.ts';
+import { Avatar, Badge, Button, Thumb, type Tone } from '@/components/journey/ui.tsx';
 import { PHOTOS } from '@/components/journey/brand.tsx';
+
+/* --------------------------------------------------------------- 0 persona */
+
+/** Who the viewer plays. Picking a card sets the company, the address and a request in that fleet's words. */
+export function PersonaBar({
+  accounts, chosen, onPick,
+}: { accounts: CrmAccount[]; chosen: string | null; onPick: (accountId: string | null) => void }) {
+  const cards = PLAYABLE.map((p) => ({ ...p, account: accounts.find((a) => a.id === p.accountId) })).filter((p) => p.account);
+  return (
+    <div className="enter mt-5" style={{ animationDelay: '160ms' }}>
+      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">Play as</p>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        {cards.map((p) => {
+          const a = p.account!;
+          const on = chosen === a.id;
+          return (
+            <button
+              key={a.id}
+              onClick={() => onPick(a.id)}
+              className={`flex items-start gap-2.5 rounded-xl bg-white p-3 text-left ring-1 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-14px_rgba(2,25,58,0.4)] ${on ? 'ring-2 ring-signal-600' : 'ring-ink-100'}`}
+            >
+              <Avatar name={a.name} size={30} square />
+              <span className="min-w-0">
+                <span className="block truncate text-[12.5px] font-semibold text-ink-950">{a.name}</span>
+                <span className="block text-[11px] leading-snug text-ink-500">{p.blurb}</span>
+                <span className="mt-1.5 flex flex-wrap gap-1">{a.fleet.map((f) => <span key={f} className="rounded bg-ink-50 px-1 text-[9.5px] font-medium text-ink-600">{f}</span>)}</span>
+              </span>
+            </button>
+          );
+        })}
+        <button
+          onClick={() => onPick(null)}
+          className={`flex items-start gap-2.5 rounded-xl bg-white p-3 text-left ring-1 transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-14px_rgba(2,25,58,0.4)] ${chosen === null ? 'ring-2 ring-signal-600' : 'ring-ink-100'}`}
+        >
+          <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-lg border border-dashed border-ink-300 text-ink-400">?</span>
+          <span className="min-w-0">
+            <span className="block text-[12.5px] font-semibold text-ink-950">Someone new</span>
+            <span className="block text-[11px] leading-snug text-ink-500">A company Field has never heard of. Type your own request.</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------- 1b email */
+
+/** The same request, sent the way most RFQs actually arrive: an email to a regional desk. */
+export function EmailCompose({
+  value, onChange, onSend, busy, error, from, company, region, onFrom, onCompany,
+}: {
+  value: string; onChange: (v: string) => void; onSend: () => void; busy: boolean; error: string | null;
+  from: string; company: string; region: Region; onFrom: (v: string) => void; onCompany: (v: string) => void;
+}) {
+  const desk = DESKS[region];
+  const subject = value.trim() ? `RFQ: ${value.trim().replace(/\s+/g, ' ').slice(0, 60)}${value.trim().length > 60 ? '…' : ''}` : 'RFQ: tooling';
+  const field = 'min-w-0 flex-1 bg-transparent text-ink-800 outline-none placeholder:text-ink-300';
+  return (
+    <div className="flex h-full flex-col">
+      <div className="border-b border-ink-100 px-4 py-2 text-[12.5px] sm:px-6">
+        <p className="flex gap-3 border-b border-ink-50 py-1.5"><span className="w-16 shrink-0 text-ink-400">From</span><input value={from} onChange={(e) => onFrom(e.target.value)} placeholder="name@your-company.com" aria-label="From" className={field} /></p>
+        <p className="flex gap-3 border-b border-ink-50 py-1.5"><span className="w-16 shrink-0 text-ink-400">Company</span><input value={company} onChange={(e) => onCompany(e.target.value)} placeholder="Your company" aria-label="Company" className={field} /></p>
+        <p className="flex gap-3 border-b border-ink-50 py-1.5"><span className="w-16 shrink-0 text-ink-400">To</span><span className="min-w-0 truncate text-ink-800">{desk.email} <span className="text-ink-400">· {desk.name}</span></span></p>
+        <p className="flex gap-3 py-1.5"><span className="w-16 shrink-0 text-ink-400">Subject</span><span className="min-w-0 truncate text-ink-800">{subject}</span></p>
+      </div>
+      <div className="px-4 py-3 sm:px-6">
+        <p className="text-[13px] text-ink-700">Hello,</p>
+        <textarea
+          autoFocus
+          rows={4}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Describe the aircraft, the task and when you need it, the way you would to any supplier."
+          aria-label="Your request"
+          className="mt-2 w-full resize-none rounded-md bg-transparent px-0 py-1 text-[14px] leading-relaxed text-ink-900 outline-none placeholder:text-ink-300"
+        />
+        <p className="text-[13px] text-ink-700">Please quote with delivery dates. Part list attached.</p>
+        <p className="mt-3 text-[13px] text-ink-700">Regards,<br />Procurement{company ? `, ${company}` : ''}</p>
+        <div className="mt-4 inline-flex items-center gap-2 rounded-md bg-ink-25 px-2.5 py-1.5 text-[11.5px] text-ink-600 ring-1 ring-inset ring-ink-100">
+          <span className="grid h-5 w-5 place-items-center rounded bg-[#1d6f42] text-[9px] font-bold text-white">X</span>
+          Tooling_RFQ_part_list.xlsx
+          <span className="text-[10px] text-ink-400">· synthetic attachment, the request text is what gets read</span>
+        </div>
+        {error && <p className="mt-3 text-[12.5px] text-action-600">{error}</p>}
+      </div>
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-ink-100 px-4 py-3 sm:px-6">
+        <span className="text-[11px] text-ink-400">Mock-up: nothing is sent. The text is read exactly as the website form would read it.</span>
+        <button
+          onClick={onSend}
+          disabled={busy || value.trim().length < 3}
+          className="inline-flex h-9 items-center gap-2 rounded-[3px] bg-signal-600 px-4 text-[13px] font-bold text-white transition-colors hover:bg-signal-500 disabled:opacity-40"
+        >
+          <Send className="h-4 w-4" /> {busy ? 'Sending…' : 'Send'}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const MATCH: Record<SimLine['matchClass'], { text: string; tone: Tone }> = {
   strong: { text: 'Direct match', tone: 'green' },
@@ -20,13 +120,15 @@ const MATCH: Record<SimLine['matchClass'], { text: string; tone: Tone }> = {
 /* ------------------------------------------------------------- 1 request */
 
 export function RequestScreen({
-  value, onChange, onSubmit, busy, error,
+  value, onChange, onSubmit, busy, error, channel, onChannel,
 }: {
   value: string; onChange: (v: string) => void;
   onSubmit: () => void; busy: boolean; error: string | null;
+  channel: Channel; onChannel: (c: Channel) => void;
 }) {
   return (
     <div>
+      <ChannelTabs channel={channel} onChannel={onChannel} />
       {/* Styled as a page on fieldinternational.com: the blue band their section banners use, with the globe watermark. */}
       <section className="relative overflow-hidden bg-signal-600 px-4 pb-10 pt-8 sm:px-10 sm:pb-12 sm:pt-10">
         <img src={PHOTOS.watermark} alt="" aria-hidden draggable={false} className="pointer-events-none absolute -right-8 -top-4 w-[460px] opacity-[0.08]" />
@@ -98,6 +200,24 @@ export function RequestScreen({
   );
 }
 
+/** Website or email: the two ways the same words reach Field. Sits inside the mock-up window. */
+export function ChannelTabs({ channel, onChannel }: { channel: Channel; onChannel: (c: Channel) => void }) {
+  return (
+    <div className="flex items-center gap-1 border-b border-ink-100 bg-ink-25 px-3 py-1.5 text-[11.5px]">
+      <span className="mr-1 text-ink-400">Send it</span>
+      {([['web', 'on fieldinternational.com'], ['email', 'by email to a sales desk']] as const).map(([c, label]) => (
+        <button
+          key={c}
+          onClick={() => onChannel(c)}
+          className={`rounded-md px-2.5 py-1 font-medium transition-colors ${channel === c ? 'bg-white text-signal-700 shadow-[0_1px_2px_rgba(16,24,40,0.08)] ring-1 ring-ink-200' : 'text-ink-500 hover:text-ink-800'}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /* --------------------------------------------------------------- 2 parts */
 
 /** Echo the customer's own terms: "by end of next month", not "within 5.7 weeks". */
@@ -114,7 +234,7 @@ const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 export function PartsScreen({
-  found, excluded, onToggle, form, onForm, sent, onSend, onEdit, accountNames,
+  found, excluded, onToggle, form, onForm, sent, onSend, onEdit, accountNames, channel = 'web',
 }: {
   found: SimRfq;
   excluded: number[];
@@ -125,12 +245,13 @@ export function PartsScreen({
   onSend: () => void;
   onEdit: () => void;
   accountNames: string[];
+  channel?: Channel;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const [asking, setAsking] = useState(false);
   const chosen = found.lines.filter((l) => !excluded.includes(l.line));
 
-  if (sent) return <Sent sent={sent} chosen={chosen} />;
+  if (sent) return <Sent sent={sent} chosen={chosen} channel={channel} />;
 
   const item = found.understood.find((u) => u.label === 'Item identified')?.value;
   const chips: Array<{ icon: typeof Plane; text: string }> = [
@@ -330,8 +451,57 @@ export function PartsScreen({
               </How>
             </ol>
           </div>
+
+          <SiteComparison request={found.request} />
         </aside>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The same words on fieldinternational.com today. Measured on the live site,
+ * not estimated; the nearest tested query is shown when one matches.
+ */
+function SiteComparison({ request }: { request: string }) {
+  const [open, setOpen] = useState(false);
+  const near = nearestTest(request);
+  const s = SITE_SEARCH_SUMMARY;
+  return (
+    <div className="rounded-xl border border-ink-100 bg-white p-4">
+      <p className="flex items-center gap-2 text-[12px] font-semibold text-ink-900">
+        <Search className="h-3.5 w-3.5 text-ink-400" /> The site’s own search, today
+      </p>
+      {near ? (
+        <p className="mt-2 text-[11.5px] leading-relaxed text-ink-600">
+          <span className="font-medium text-ink-900">“{near.query}”</span> on fieldinternational.com returns{' '}
+          {near.site === 0
+            ? <span className="font-medium text-action-600">nothing</span>
+            : <span className="font-medium text-ink-900">{near.site.toLocaleString()} {near.site === 1 ? 'result' : 'results'}</span>}
+          {near.siteNote ? ` (${near.siteNote})` : ''}. Measured on the live site, {TESTED_ON}.
+        </p>
+      ) : (
+        <p className="mt-2 text-[11.5px] leading-relaxed text-ink-600">
+          The site’s search box matches words in titles only. It doesn’t know which aircraft a tool is for, and a plural or a British spelling finds nothing.
+        </p>
+      )}
+      <p className="mt-2 text-[11.5px] leading-relaxed text-ink-600">
+        Across {s.total} realistic searches: <span className="font-medium text-action-600">{s.nothing} returned nothing</span>, {s.flood} returned over a hundred results, {s.usable} were usable. This finder found relevant parts for {s.finderRelevant}.
+      </p>
+      <button onClick={() => setOpen((v) => !v)} className="mt-2 text-[11px] font-medium text-signal-600 hover:text-signal-800">
+        {open ? 'Hide the list' : 'See all 27'}
+      </button>
+      {open && (
+        <ul className="mt-2 max-h-56 divide-y divide-ink-50 overflow-y-auto text-[11px]">
+          {SITE_SEARCH_TESTS.map((t) => (
+            <li key={t.query} className="flex items-center gap-2 py-1">
+              <span className="mono min-w-0 flex-1 truncate text-ink-700">{t.query}</span>
+              <span className={`shrink-0 ${t.site === 0 ? 'text-action-600' : 'text-ink-500'}`}>{t.site === 0 ? 'nothing' : t.site.toLocaleString()}</span>
+              <span className={`shrink-0 rounded px-1 ${t.finder === 'relevant' ? 'bg-strong-600/10 text-strong-600' : t.finder === 'nothing' ? 'bg-action-600/10 text-action-600' : 'bg-caution-500/10 text-caution-600'}`}>{t.finder}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -367,13 +537,17 @@ function How({ n, title, children }: { n: number; title: string; children: React
   );
 }
 
-function Sent({ sent, chosen }: { sent: { email: string; company: string; reference: string }; chosen: SimLine[] }) {
+function Sent({ sent, chosen, channel }: { sent: { email: string; company: string; reference: string }; chosen: SimLine[]; channel: Channel }) {
   return (
     <div className="mx-auto max-w-xl px-5 py-10">
       <div className="text-center">
         <CheckCircle2 className="mx-auto h-10 w-10 text-strong-600" strokeWidth={1.6} />
-        <h2 className="mt-3 text-[20px] font-semibold tracking-tight text-ink-950">Request sent</h2>
-        <p className="mt-1 text-[13px] text-ink-500">Thank you. Field has your request for {chosen.length} {chosen.length === 1 ? 'part' : 'parts'}.</p>
+        <h2 className="mt-3 text-[20px] font-semibold tracking-tight text-ink-950">{channel === 'email' ? 'Email sent' : 'Request sent'}</h2>
+        <p className="mt-1 text-[13px] text-ink-500">
+          {channel === 'email'
+            ? `Your email reached Field’s desk. ${chosen.length} ${chosen.length === 1 ? 'part was' : 'parts were'} read from it and matched to the catalogue.`
+            : `Thank you. Field has your request for ${chosen.length} ${chosen.length === 1 ? 'part' : 'parts'}.`}
+        </p>
       </div>
       <div className="mt-6 overflow-hidden rounded-xl border border-ink-200">
         <dl className="divide-y divide-ink-100 text-[12.5px]">

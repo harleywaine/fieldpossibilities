@@ -3,22 +3,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  STEPS, PERSONAS, SITES, stepIndex, simulatedLeadDays, simulatedExpedite, matchAccount, sourceFor,
-  type StepId, type StepMetric, type DeliveryPlan, type Region, type SiteId,
+  STEPS, PERSONAS, SITES, PLAYABLE, stepIndex, simulatedLeadDays, simulatedExpedite, matchAccount, sourceFor,
+  type StepId, type StepMetric, type DeliveryPlan, type Region, type SiteId, type Channel,
 } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import { priceLines, marginOf, MIN_MARGIN } from '@/lib/simulation/pricing.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
-import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
+import { BrowserFrame, CrmFrame, MailFrame, type CrmModule } from '@/components/journey/frames.tsx';
 import { duration } from '@/lib/journey.ts';
 import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts } from '@/components/journey/shell.tsx';
-import { RequestScreen, PartsScreen, type QuoteForm } from '@/components/journey/customer-stages.tsx';
+import { RequestScreen, PartsScreen, PersonaBar, EmailCompose, ChannelTabs, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
   InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplyScreen, PricingScreen, ApprovalScreen, OrderScreen,
   type Decision, type Contact,
 } from '@/components/journey/crm-stages.tsx';
 
 interface SimState {
+  /** Which synthetic customer the viewer is playing, or null for someone new. */
+  persona: string | null;
+  /** Website form or an email to a regional desk. */
+  channel: Channel;
   request: string;
   found: SimRfq | null;
   excluded: number[];
@@ -39,8 +43,9 @@ interface SimState {
   risk: string | null;
 }
 
-const STORE = 'field-simulation-v4';
+const STORE = 'field-simulation-v5';
 const EMPTY: SimState = {
+  persona: null, channel: 'web',
   request: '', found: null, excluded: [], form: { email: '', company: '' }, contact: null,
   rfq: null, brief: null, review: {}, sites: {}, supplierSent: false, prices: {}, pricesConfirmed: false, plan: null, approval: null, risk: null,
 };
@@ -90,6 +95,23 @@ export function Journey({
   const account = accounts.find((a) => a.id === contact?.accountId) ?? null;
   const customerName = account?.name ?? contact?.company ?? '';
   const owner = account?.owner ?? NEW_LEADS;
+  const picked = accounts.find((a) => a.id === sim.persona) ?? null;
+  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  /** Playing a customer fills in who they are and a request in their fleet's words. */
+  const pick = (accountId: string | null) => {
+    const a = accounts.find((x) => x.id === accountId) ?? null;
+    const example = PLAYABLE.find((p) => p.accountId === accountId)?.request ?? '';
+    setSim((s) => {
+      const keep = s.request.trim() && !PLAYABLE.some((p) => p.request === s.request);
+      return {
+        ...s,
+        persona: accountId,
+        form: a ? { email: `procurement@${slug(a.name)}.example`, company: a.name } : { email: '', company: '' },
+        request: keep ? s.request : example,
+      };
+    });
+  };
 
   const reviewLines = rfq?.lines.filter((l) => l.flags.some((f) => f.kind === 'review')) ?? [];
   const reviewDone = reviewLines.every((l) => sim.review[l.line]);
@@ -98,7 +120,7 @@ export function Journey({
   const supplierLines = included.filter((l) => l.flags.some((f) => f.kind === 'supplier'));
 
   // Where each line comes from: Field's own sites, stock, or a bought-in range.
-  const region: Region = (account?.region as Region | undefined) ?? 'EMEA';
+  const region: Region = ((account ?? picked)?.region as Region | undefined) ?? 'EMEA';
   const sourceOf = useCallback((l: SimLine) => sourceFor(l, region), [region]);
   const boughtIn = included.filter((l) => sourceOf(l).kind === 'bought-in');
   const supplierDone = sim.supplierSent;
@@ -171,21 +193,42 @@ export function Journey({
   }, [loaded, requested, reachable]);
 
   // ---------------------------------------------------------------- actions
+  /** The catalogue search behind both channels. */
+  const search = async (q: string): Promise<SimRfq> => {
+    const res = await fetch('/api/simulate/rfq', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q }),
+    });
+    const data: SimRfq & { error?: string } = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'The search failed.');
+    if (!data.lines.length) throw new Error('Nothing in the catalogue matched that. Try naming the aircraft or the job.');
+    return data;
+  };
+
+  /** The account research runs in the background, so the brief is ready when the account screen is reached. */
+  const research = (matched: CrmAccount | null, data: SimRfq) => {
+    if (!matched) return;
+    const about = [data.aircraft, data.engine, 'tooling'].filter(Boolean).join(' ');
+    fetch('/api/knowledge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: `I've received an enquiry from ${matched.name} for ${about}. Tell me everything I need to know before I respond.` }),
+    }).then((r) => r.json()).then((d) => patch({ brief: d.brief ?? null })).catch(() => {});
+  };
+
+  const jump = (id: StepId) => {
+    window.history.pushState(null, '', `?s=${stepIndex(id)}`);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  /** Website: find the parts, then the customer picks and sends. */
   const find = async () => {
     const q = sim.request.trim();
     if (q.length < 3 || busy) return;
     setBusy(true); setError(null);
     try {
-      const res = await fetch('/api/simulate/rfq', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q }),
-      });
-      const data: SimRfq & { error?: string } = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'The search failed.');
-      if (!data.lines.length) throw new Error('Nothing in the catalogue matched that. Try naming the aircraft or the job.');
+      const data = await search(q);
       setSim((s) => ({ ...s, ...DOWNSTREAM, found: data, excluded: [] }));
-      window.history.pushState(null, '', `?s=${stepIndex('parts')}`);
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      jump('parts');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The search failed.');
     } finally {
@@ -204,13 +247,30 @@ export function Journey({
       rfq: { ...found, lines },
       contact: { email: s.form.email.trim(), company: s.form.company.trim(), accountId: matched?.id ?? null },
     }));
-    // The account research runs in the background, so it's ready when reached.
-    if (matched) {
-      const about = [found.aircraft, found.engine, 'tooling'].filter(Boolean).join(' ');
-      fetch('/api/knowledge', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: `I've received an enquiry from ${matched.name} for ${about}. Tell me everything I need to know before I respond.` }),
-      }).then((r) => r.json()).then((d) => patch({ brief: d.brief ?? null })).catch(() => {});
+    research(matched, found);
+  };
+
+  /** Email: the system reads the message, so the enquiry lands at Field with the parts already found. */
+  const sendEmail = async () => {
+    const q = sim.request.trim();
+    if (q.length < 3 || busy) return;
+    setBusy(true); setError(null);
+    try {
+      const data = await search(q);
+      const company = sim.form.company.trim() || 'Unnamed sender';
+      const email = sim.form.email.trim() || `procurement@${slug(company)}.example`;
+      const matched = matchAccount(company, accounts);
+      setSim((s) => ({
+        ...s, ...DOWNSTREAM, found: data, excluded: [],
+        rfq: data,
+        contact: { email, company, accountId: matched?.id ?? null },
+      }));
+      research(matched, data);
+      jump('inbox');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'The email could not be read.');
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -272,6 +332,8 @@ export function Journey({
 
   type Screen = {
     eyebrow?: string;
+    /** Rendered between the narration and the window. */
+    pre?: React.ReactNode;
     body?: React.ReactNode;
     title: React.ReactNode;
     sub?: React.ReactNode;
@@ -293,16 +355,31 @@ export function Journey({
       cta: 'Start the enquiry',
     },
     request: {
-      title: 'You are the customer. What do you need?',
-      sub: 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
-      frame: (
+      title: picked ? `You are ${picked.name}. What do you need?` : 'You are the customer. What do you need?',
+      sub: sim.channel === 'email'
+        ? `Most requests reach Field as an email to a regional desk. Write it the way you would to any supplier; the system reads it exactly as it would read the website form.`
+        : 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
+      pre: <PersonaBar accounts={accounts} chosen={sim.persona} onPick={pick} />,
+      frame: sim.channel === 'email' ? (
+        <MailFrame account={picked?.name ?? (sim.form.company || 'you')}>
+          <ChannelTabs channel={sim.channel} onChannel={(channel) => patch({ channel })} />
+          <EmailCompose
+            value={sim.request} onChange={(v) => patch({ request: v })} onSend={sendEmail} busy={busy} error={error}
+            from={sim.form.email} company={sim.form.company} region={region}
+            onFrom={(email) => patch({ form: { ...sim.form, email } })} onCompany={(company) => patch({ form: { ...sim.form, company } })}
+          />
+        </MailFrame>
+      ) : (
         <BrowserFrame path="find-a-part" basket={basket}>
-          <RequestScreen value={sim.request} onChange={(v) => patch({ request: v })} onSubmit={find} busy={busy} error={error} />
+          <RequestScreen
+            value={sim.request} onChange={(v) => patch({ request: v })} onSubmit={find} busy={busy} error={error}
+            channel={sim.channel} onChannel={(channel) => patch({ channel })}
+          />
         </BrowserFrame>
       ),
       cta: 'Continue with these parts',
       hideContinue: !found,
-      hint: 'Search on the website to continue',
+      hint: sim.channel === 'email' ? 'Send the email to continue' : 'Search on the website to continue',
     },
     parts: {
       title: contact ? 'Your request is on its way to Field.' : 'These are the parts you’ll need.',
@@ -323,6 +400,7 @@ export function Journey({
             onSend={send}
             onEdit={() => go(stepIndex('request'))}
             accountNames={accounts.map((a) => a.name)}
+            channel={sim.channel}
           />
         </BrowserFrame>
       ),
@@ -331,10 +409,12 @@ export function Journey({
       hint: 'Request a quote on the website to continue',
     },
     inbox: {
-      title: 'The enquiry arrives at Field.',
-      sub: 'Before anyone opens it, the system has logged it, found the account and assigned an owner.',
+      title: sim.channel === 'email' ? 'The email lands in the desk mailbox.' : 'The enquiry arrives at Field.',
+      sub: sim.channel === 'email'
+        ? 'Before anyone opens the mailbox, the system has read it, found the parts, matched the account and routed it to the right desk.'
+        : 'Before anyone opens it, the system has logged it, found the account and assigned an owner.',
       frame: rfq && contact && crm('Enquiries', owner,
-        <InboxScreen rfq={rfq} contact={contact} account={account} inbox={inbox} owner={owner.name} />),
+        <InboxScreen rfq={rfq} contact={contact} account={account} inbox={inbox} owner={owner.name} channel={sim.channel} region={region} />),
     },
     account: {
       title: account ? `${owner.name} opens the account.` : `${owner.name} opens the new lead.`,
@@ -508,6 +588,7 @@ export function Journey({
         {c && (
           <>
             <Narration step={step} index={index} title={c.title} sub={c.sub} persona={c.persona} halt={c.halt} eyebrow={c.eyebrow} />
+            {c.pre}
             {c.frame && <Stage>{c.frame}</Stage>}
             {c.body}
           </>

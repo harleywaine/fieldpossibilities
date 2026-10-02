@@ -1,8 +1,8 @@
 'use client';
 
 import {
-  Bell, Building2, ChevronDown, ChevronRight, CircleHelp, ClipboardList, Factory, FileText,
-  Inbox, LayoutDashboard, Search, Settings, Truck, Wrench, Menu,
+  Bell, Building2, CalendarClock, ChevronDown, ChevronRight, CircleHelp, ClipboardList, Factory, FileText,
+  Globe2, Inbox, LayoutDashboard, Search, Settings, Truck, Wrench, Menu,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Avatar } from '@/components/journey/ui.tsx';
@@ -74,9 +74,31 @@ export function BrowserFrame({ path, basket, children }: { path: string; basket:
   );
 }
 
+/* ------------------------------------------------------------------- mail */
+
+/** The customer's mail client: most RFQs arrive this way, not through a form. */
+export function MailFrame({ account, children }: { account: string; children: React.ReactNode }) {
+  return (
+    <div className={WINDOW}>
+      <Chrome tag="MOCK-UP · CUSTOMER’S MAIL">
+        <span className="text-[11px] font-medium text-ink-500">New message · {account}</span>
+      </Chrome>
+      <div className="flex min-h-[440px]">
+        <aside className="hidden w-[150px] shrink-0 border-r border-ink-100 bg-ink-25 p-3 text-[12px] text-ink-500 md:block">
+          <p className="mb-2 rounded-md bg-signal-600 px-2.5 py-1.5 text-[12px] font-medium text-white">New message</p>
+          {['Inbox', 'Sent', 'Drafts', 'Archive'].map((f, i) => (
+            <p key={f} className={`px-2.5 py-1.5 ${i === 0 ? 'font-medium text-ink-800' : ''}`}>{f}{i === 0 && <span className="ml-1.5 rounded-full bg-ink-100 px-1.5 text-[10px] text-ink-500">12</span>}</p>
+          ))}
+        </aside>
+        <div className="min-w-0 flex-1 bg-white">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------- field */
 
-export type CrmModule = 'Home' | 'Enquiries' | 'Accounts' | 'Quotes' | 'Engineering' | 'Supply' | 'Orders';
+export type CrmModule = 'Home' | 'Enquiries' | 'Accounts' | 'Quotes' | 'Prospects' | 'Engineering' | 'Supply' | 'Orders' | 'Service';
 
 const NAV: Array<{ group: string; items: Array<{ id: CrmModule; icon: LucideIcon }> }> = [
   { group: 'Sales', items: [
@@ -84,11 +106,13 @@ const NAV: Array<{ group: string; items: Array<{ id: CrmModule; icon: LucideIcon
     { id: 'Enquiries', icon: Inbox },
     { id: 'Accounts', icon: Building2 },
     { id: 'Quotes', icon: FileText },
+    { id: 'Prospects', icon: Globe2 },
   ] },
   { group: 'Operations', items: [
     { id: 'Engineering', icon: Wrench },
     { id: 'Supply', icon: Truck },
     { id: 'Orders', icon: Factory },
+    { id: 'Service', icon: CalendarClock },
   ] },
 ];
 

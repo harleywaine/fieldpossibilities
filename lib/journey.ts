@@ -183,9 +183,35 @@ export function simulatedExpedite(partNumber: string | null): { accepted: boolea
   return { accepted: u < 0.6, surchargePct: 6 + Math.round(u * 6) };
 }
 
-/* ------------------------------------------------------------------ supply */
+/* ---------------------------------------------------------- channel and desks */
+
+/** How the enquiry reaches Field: the website's part-finder, or an email to a regional desk. */
+export type Channel = 'web' | 'email';
 
 export type Region = 'EMEA' | 'APAC' | 'MEA' | 'AMER' | 'LATAM';
+
+/** Field's regional sales desks, as listed on fieldinternational.com/contact. */
+export const DESKS: Record<Region, { email: string; name: string; office: string }> = {
+  EMEA: { email: 'salesuk@fieldinternational.com', name: 'UK & Western Europe desk', office: 'Poole' },
+  APAC: { email: 'salespte@fieldinternational.com', name: 'Asia Pacific desk', office: 'Singapore' },
+  MEA: { email: 'salesme@fieldinternational.com', name: 'Middle East desk', office: 'Abu Dhabi' },
+  AMER: { email: 'salesna@fieldinternational.com', name: 'North America desk', office: 'Clearwater, Florida' },
+  LATAM: { email: 'salespte@fieldinternational.com', name: 'Central & South America desk', office: 'Singapore' },
+};
+
+/**
+ * Customers the viewer can play. Synthetic accounts, each with a request in
+ * the words its fleet would use, so the first screen already feels like a
+ * particular customer rather than a text box.
+ */
+export const PLAYABLE: Array<{ accountId: string; blurb: string; request: string }> = [
+  { accountId: 'CUST-002', blurb: 'Narrowbody line maintenance in Copenhagen', request: 'We operate 737-800s out of Copenhagen and need handling equipment for a horizontal stabilizer change, within 8 weeks.' },
+  { accountId: 'CUST-001', blurb: 'Widebody heavy maintenance in Singapore', request: "We're maintaining Boeing 787-9 aircraft and need tooling for GEnx engine thrust reverser maintenance. We need delivery within 10 weeks." },
+  { accountId: 'CUST-003', blurb: 'Widebody base checks in Dubai', request: 'Our Dubai base check on a 777-300ER needs main landing gear removal and installation equipment and axle jacks, within six weeks.' },
+  { accountId: 'CUST-008', blurb: 'A newer, price-sensitive MRO in Canada', request: 'Engine change tooling for a 767-300 with CF6-80C2 engines: slings and bootstrap equipment, needed by end of next month.' },
+];
+
+/* ------------------------------------------------------------------ supply */
 export type SiteId = 'poole' | 'seletar' | 'jiaxing' | 'chennai';
 
 /**

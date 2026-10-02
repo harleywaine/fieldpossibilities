@@ -8,10 +8,12 @@ nine ways AI could be used at Field, each tied to the step where it appears, and
 known (the public catalogue) and what's assumed (everything inside Field). Every screen the
 visitor operates is a mock-up window, so it reads as a picture of a system.
 
-- **The customer's side**, a mock of Field's website. The visitor describes the job, and the
-  system finds the parts in Field's real catalogue, with the reason for each part and how the
-  search worked. They untick anything they don't need, request a quote with an email and
-  company, and send it.
+- **The customer's side.** The visitor picks who to play (four synthetic accounts with
+  different fleets, or someone new) and how to send the request: Field's website, where the
+  system finds the parts in the real catalogue with the reason for each and a note on what the
+  site's own search returns for the same words today; or an email to one of Field's regional
+  desks (salesuk@, salespte@, salesme@, salesna@), which the system reads and turns into the
+  same enquiry before anyone opens the mailbox.
 - **Field's side**, a mock CRM. The enquiry lands already logged, matched to an account and
   assigned. The account screen shows value, win rate, recent jobs, complaints, activity and a
   brief assembled from that customer's own documents. Then come the line check, Engineering
@@ -25,6 +27,15 @@ A company name matching one of the eight synthetic accounts brings up that accou
 any other name becomes a new lead. The email and company stay in the browser tab. Every step has
 its own URL (`?s=0`–`?s=12`), the progress bar won't skip an undecided step, and a time bar adds
 up people's time, today versus with AI.
+
+The end of the journey carries three more screens behind "see the screen": a group pipeline
+across the seven companies, a calibration and recertification recall register, and a prospect
+list for the Pensacola opening. Every figure on them is synthetic.
+
+The look is Field's own: the logo and photographs are loaded from fieldinternational.com (as the
+catalogue images are), the type is Roboto, and the colours are the site's design tokens (#034694,
+#7EA7D7, #A21212, #F2F4F7). Nothing of Field's is copied into the repository except a 9 KB PNG
+fallback for the logo.
 
 Retired addresses from earlier versions (`/demos`, `/explore`, `/search`, …) redirect to the
 journey rather than 404.

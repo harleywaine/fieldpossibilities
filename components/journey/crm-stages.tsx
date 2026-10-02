@@ -6,7 +6,7 @@ import {
   ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle, ExternalLink, PoundSterling,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { PLANS, SITES, aircraftLabel, duration, gbp, shortDate, variantTag, type DeliveryPlan, type Region, type SiteId, type Source } from '@/lib/journey.ts';
+import { DESKS, PLANS, SITES, aircraftLabel, duration, gbp, shortDate, variantTag, type Channel, type DeliveryPlan, type Region, type SiteId, type Source } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { MIN_MARGIN, gbpExact, marginOf, type LinePrice } from '@/lib/simulation/pricing.ts';
@@ -55,15 +55,15 @@ function Rail({ children }: { children: React.ReactNode }) {
 
 /** Enquiry record header: shared by the new-enquiry and line-check pages. */
 function EnquiryHeader({
-  rfq, customer, owner, stage, tab, isNew,
-}: { rfq: SimRfq; customer: string; owner: string; stage: number; tab: string; isNew?: boolean }) {
+  rfq, customer, owner, stage, tab, isNew, source = 'Website',
+}: { rfq: SimRfq; customer: string; owner: string; stage: number; tab: string; isNew?: boolean; source?: string }) {
   return (
     <>
       <PageHeader
         crumbs={['Enquiries', 'Open', rfq.reference]}
         icon={Inbox}
         title={`${rfq.reference} · ${customer}`}
-        badges={<>{isNew && <Badge tone="red" dot>New</Badge>}<Badge tone="violet">Website</Badge></>}
+        badges={<>{isNew && <Badge tone="red" dot>New</Badge>}<Badge tone="violet">{source}</Badge></>}
         meta={[
           <><Clock className="h-3.5 w-3.5" /> Received just now</>,
           <><Avatar name={owner} size={18} /> {owner}</>,
@@ -82,16 +82,23 @@ function EnquiryHeader({
 /* -------------------------------------------------------------- 1 enquiry */
 
 export function InboxScreen({
-  rfq, contact, account, inbox, owner,
+  rfq, contact, account, inbox, owner, channel = 'web', region = 'EMEA',
 }: {
   rfq: SimRfq; contact: Contact; account: CrmAccount | null; inbox: CrmInboxItem[]; owner: string;
+  channel?: Channel; region?: Region;
 }) {
   const customer = account?.name ?? contact.company;
+  const desk = DESKS[region];
+  const byEmail = channel === 'email';
   const auto: Array<{ icon: LucideIcon; text: string }> = [
-    { icon: FileText, text: `Enquiry ${rfq.reference} created from the website request` },
+    byEmail
+      ? { icon: Mail, text: `Email read in the ${desk.name} mailbox (${desk.email}) and recognised as a request for quotation` }
+      : { icon: FileText, text: `Enquiry ${rfq.reference} created from the website request` },
+    ...(byEmail ? [{ icon: FileText, text: `Enquiry ${rfq.reference} created; ${plural(rfq.lines.length, 'part')} read from the message and matched to the catalogue` }] : []),
     account
       ? { icon: Building2, text: `Matched to the account ${account.name}` }
       : { icon: UserPlus, text: `No account for ${contact.company}; opened a new lead` },
+    { icon: MapPin, text: `Routed to the ${desk.name}, ${desk.office}` },
     { icon: Users, text: account?.owner ? `Assigned to ${owner}, the account owner` : `Assigned to ${owner}, who takes new leads` },
     ...(rfq.deadlineDays ? [{ icon: Timer, text: `Deadline read from the message: ${rfq.deadlineDays} days` }] : []),
     rfq.aircraft
@@ -101,10 +108,10 @@ export function InboxScreen({
   ];
   return (
     <div>
-      <EnquiryHeader rfq={rfq} customer={customer} owner={owner} stage={0} tab="Overview" isNew />
+      <EnquiryHeader rfq={rfq} customer={customer} owner={owner} stage={0} tab="Overview" isNew source={byEmail ? 'Email' : 'Website'} />
       <Grid>
         <div className="min-w-0 space-y-4">
-          <Card title="Customer request" icon={MessageSquare} action="via Find a part">
+          <Card title="Customer request" icon={byEmail ? Mail : MessageSquare} action={byEmail ? `email to ${desk.email}` : 'via Find a part'}>
             <div className="flex items-start gap-3">
               <Avatar name={personOf(contact.email)} size={30} />
               <div className="min-w-0 flex-1">
@@ -112,8 +119,16 @@ export function InboxScreen({
                   <span className="font-medium text-ink-900">{contact.email}</span>
                   <span className="text-ink-400"> · {contact.company}</span>
                 </p>
+                {byEmail && (
+                  <p className="mt-1 text-[11.5px] text-ink-500">
+                    <span className="text-ink-400">Subject </span>RFQ: {rfq.request.replace(/\s+/g, ' ').slice(0, 60)}{rfq.request.length > 60 ? '…' : ''}
+                    <span className="ml-2 rounded bg-ink-50 px-1.5 py-0.5 text-[10px] text-ink-500 ring-1 ring-ink-100">Tooling_RFQ_part_list.xlsx</span>
+                  </p>
+                )}
                 <p className="mt-2 rounded-lg rounded-tl-none bg-ink-25 px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-800 ring-1 ring-inset ring-ink-100">
+                  {byEmail && <span className="block text-ink-500">Hello,</span>}
                   {rfq.request}
+                  {byEmail && <span className="block text-ink-500">Please quote with delivery dates. Part list attached.</span>}
                 </p>
               </div>
             </div>
@@ -139,7 +154,8 @@ export function InboxScreen({
               ['Account', account ? <span className="font-medium text-signal-700">{account.name}</span> : <Badge tone="amber">New lead</Badge>],
               ['Contact', <span className="block truncate" title={contact.email}>{contact.email}</span>],
               ['Owner', <span className="flex items-center gap-1.5"><Avatar name={owner} size={18} />{owner}</span>],
-              ['Source', 'Website · Find a part'],
+              ['Source', byEmail ? `Email · ${desk.email}` : 'Website · Find a part'],
+              ['Desk', `${desk.name}, ${desk.office}`],
               ['Aircraft', aircraftLabel(rfq.aircraft) ?? 'Not stated'],
               ['Needed within', rfq.deadlineDays ? duration(rfq.deadlineDays) : 'Not stated'],
             ]} />
@@ -722,6 +738,74 @@ function Compare({ label, value, muted }: { label: string; value: string; muted?
 
 /* --------------------------------------------------------------- 5 supply */
 
+/** Where things are, roughly, for the strip map. */
+const GEO: Record<SiteId | 'pensacola' | 'abuDhabi', { lon: number; lat: number; label: string; muted?: string }> = {
+  poole: { lon: -2.0, lat: 50.7, label: 'Poole' },
+  seletar: { lon: 103.9, lat: 1.4, label: 'Seletar' },
+  jiaxing: { lon: 120.8, lat: 30.8, label: 'Jiaxing' },
+  chennai: { lon: 80.3, lat: 13.1, label: 'Chennai' },
+  pensacola: { lon: -87.2, lat: 30.4, label: 'Pensacola', muted: 'opens 2027' },
+  abuDhabi: { lon: 54.4, lat: 24.5, label: 'Abu Dhabi', muted: 'sales and service' },
+};
+const CUSTOMER_GEO: Record<Region, { lon: number; lat: number; label: string }> = {
+  EMEA: { lon: 12.6, lat: 55.7, label: 'Customer, Northern Europe' },
+  APAC: { lon: 151.2, lat: -33.9, label: 'Customer, Asia Pacific' },
+  MEA: { lon: 55.3, lat: 25.3, label: 'Customer, Middle East' },
+  AMER: { lon: -79.4, lat: 43.7, label: 'Customer, North America' },
+  LATAM: { lon: -70.7, lat: -33.4, label: 'Customer, South America' },
+};
+
+/**
+ * A strip of the world with Field's sites and the customer on it, and a line
+ * for every site the plan uses. Drawn, not photographed: the graticule is the
+ * logo's globe laid flat.
+ */
+function SupplyMap({ region, planned }: { region: Region; planned: Array<{ site: SiteId; count: number; days: number }> }) {
+  const W = 1000; const H = 300;
+  const x = (lon: number) => ((lon + 180) / 360) * W;
+  const y = (lat: number) => ((70 - lat) / 115) * H;
+  const customer = CUSTOMER_GEO[region];
+  const cx = x(customer.lon); const cy = y(customer.lat);
+  const curve = (sx: number, sy: number) => `M${sx},${sy} Q${(sx + cx) / 2},${Math.min(sy, cy) - 60} ${cx},${cy}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Where the lines are made and where they go" className="h-auto w-full">
+      <defs>
+        <linearGradient id="mapfade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#02193a" /><stop offset="1" stopColor="#02356f" /></linearGradient>
+      </defs>
+      <rect width={W} height={H} rx="12" fill="url(#mapfade)" />
+      {Array.from({ length: 11 }, (_, i) => -150 + i * 30).map((lon) => <line key={lon} x1={x(lon)} x2={x(lon)} y1={0} y2={H} stroke="white" strokeOpacity="0.07" />)}
+      {[60, 40, 20, 0, -20, -40].map((lat) => <line key={lat} x1={0} x2={W} y1={y(lat)} y2={y(lat)} stroke="white" strokeOpacity={lat === 0 ? 0.14 : 0.07} />)}
+      {planned.map((p) => {
+        const g = GEO[p.site];
+        return (
+          <g key={p.site}>
+            <path d={curve(x(g.lon), y(g.lat))} fill="none" stroke="#7EA7D7" strokeOpacity="0.9" strokeWidth={1.5 + Math.min(p.count, 4)} strokeLinecap="round" strokeDasharray="6 8" className="map-route" />
+          </g>
+        );
+      })}
+      {(Object.keys(GEO) as Array<keyof typeof GEO>).map((id) => {
+        const g = GEO[id];
+        const p = planned.find((q) => q.site === id);
+        const on = Boolean(p);
+        return (
+          <g key={id} transform={`translate(${x(g.lon)},${y(g.lat)})`}>
+            {on && <circle r="14" fill="#7EA7D7" fillOpacity="0.25" />}
+            <circle r={on ? 6 : 4} fill={on ? '#ffffff' : g.muted ? '#7EA7D7' : '#a9c6e7'} fillOpacity={g.muted ? 0.5 : 1} />
+            <text y={on ? -20 : -12} textAnchor="middle" fontSize="13" fontWeight={on ? 600 : 400} fill="white" fillOpacity={on ? 1 : 0.7}>{g.label}</text>
+            {on && <text y={32} textAnchor="middle" fontSize="12" fill="#cfe0f5">{p!.count} {p!.count === 1 ? 'line' : 'lines'} · {p!.days} days</text>}
+            {!on && g.muted && <text y={-12 + 0} dy="26" textAnchor="middle" fontSize="11" fill="white" fillOpacity="0.45">{g.muted}</text>}
+          </g>
+        );
+      })}
+      <g transform={`translate(${cx},${cy})`}>
+        <circle r="16" fill="#A21212" fillOpacity="0.3"><animate attributeName="r" values="12;20;12" dur="2.4s" repeatCount="indefinite" /></circle>
+        <circle r="6" fill="#A21212" stroke="white" strokeWidth="2" />
+        <text y={-18} textAnchor="middle" fontSize="13" fontWeight={600} fill="white">{customer.label}</text>
+      </g>
+    </svg>
+  );
+}
+
 const SOURCE_BADGE: Record<Source['kind'], { tone: Tone; text: string }> = {
   make: { tone: 'blue', text: 'Made by Field' },
   stock: { tone: 'green', text: 'Ex-stock' },
@@ -785,6 +869,16 @@ export function SupplyScreen({
           value={latest !== null ? duration(latest) : '–'}
           sub={!complete ? 'awaiting a supplier reply' : deadline ? (latest! > deadline ? `after the ${duration(deadline)} asked` : 'inside the deadline') : 'no deadline stated'}
           tone={complete && deadline ? (latest! > deadline ? 'bad' : 'good') : undefined}
+        />
+      </div>
+
+      <div className="mb-4 overflow-hidden rounded-lg ring-1 ring-ink-100">
+        <SupplyMap
+          region={region}
+          planned={perSite.filter((s) => s.count).map((s) => ({
+            site: s.id, count: s.count,
+            days: Math.max(...lines.filter((l) => chosen(l) === s.id).map((l) => daysOf(l) ?? 0)),
+          }))}
         />
       </div>
 
