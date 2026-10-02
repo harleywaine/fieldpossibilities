@@ -186,7 +186,7 @@ export function extractRequirement(query: string, now = new Date()): Requirement
     .map((a) => a.canonical);
 
   const itemsNamed = ITEM_TYPES
-    .filter((i) => i.patterns.some((p) => p.test(searchText)))
+    .filter((i) => (i.request ?? i.patterns).some((p) => p.test(searchText)))
     .map((i) => i.canonical);
   // "wing stand" is the requirement; the bare "stand" inside it is not a second one.
   const itemTypes = itemsNamed.filter((t) => !itemsNamed.some((o) => o !== t && o.endsWith(` ${t}`)));

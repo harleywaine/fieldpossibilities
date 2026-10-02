@@ -8,6 +8,8 @@
  */
 
 export interface LexEntry {
+  /** Patterns that identify the item in a customer's request, when narrower than the catalogue patterns. */
+  request?: RegExp[];
   canonical: string;
   patterns: RegExp[];
 }
@@ -128,6 +130,10 @@ export const ITEM_TYPES: LexEntry[] = [
   { canonical: 'engine stand', patterns: [/\bENGINE\s+(?:TRANSPORT(?:ATION)?\s+|SHIPPING\s+|MAINTENANCE\s+)?STANDS?\b/i] },
   { canonical: 'tail stand', patterns: [/\bTAIL\s+(?:STANDS?|SUPPORTS?)\b/i] },
   { canonical: 'stand', patterns: [/\bSTANDS?\b/i] },
+  { canonical: 'removal and installation equipment', patterns: [/\bREMOVAL\s*(?:AND|&|\/)\s*INSTALLATION\b|\bINSTALLATION\s*(?:AND|&|\/)\s*REMOVAL\b|\bR\s?\/\s?I\b/i] },
+  { canonical: 'bootstrap', patterns: [/\bBOOT\s?STRAP(?:S|PING)?\b/i] },
+  // Equipment that moves a component: a request for it is not met by a gauge or a test tool.
+  { canonical: 'handling equipment', request: [/\bHANDLING\b/i], patterns: [/\bHANDLING\b|\bSLINGS?\b|\bHOISTS?\b|\bDOLL(?:Y|IES)\b|\bTROLLEYS?\b|\bCRADLES?\b|\bLIFTING\b|\bALIGNMENT\b/i] },
   { canonical: 'jack', patterns: [/\bJACK(?:S|ING)?\b/i] },
   { canonical: 'sling', patterns: [/\bSLINGS?\b/i] },
   { canonical: 'hoist', patterns: [/\bHOISTS?\b/i] },

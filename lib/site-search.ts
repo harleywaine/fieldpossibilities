@@ -80,3 +80,11 @@ export function nearestTest(request: string): SiteSearchTest | null {
   }
   return best?.test ?? null;
 }
+
+/**
+ * Searches that should plainly work: a customer would type them, the parts
+ * are in the catalogue (the finder returns them, each linking to its own page
+ * on the site), and the site's search box returns nothing. The finder's
+ * answer is fetched live on the page, not stored here.
+ */
+export const SHOULD_WORK_QUERIES = ['777 landing gear', '787 thrust reverser', 'axle jack 747', 'slings', 'stabiliser', 'tyre inflation'] as const;
