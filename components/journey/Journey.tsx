@@ -355,7 +355,7 @@ export function Journey({
       sub: contact
         ? 'Next, the same enquiry from the other side: inside Field.'
         : 'Each one comes from Field’s real catalogue, with the reason it was picked. Add the ones you want and request a quote.',
-      body: found && !contact ? <SiteSearchProof request={found.request} /> : undefined,
+      body: found && !contact ? <SiteSearchProof /> : undefined,
       frame: found && (
         <BrowserFrame path={contact ? 'find-a-part/request-sent' : 'find-a-part/results'} basket={basket}>
           <PartsScreen
