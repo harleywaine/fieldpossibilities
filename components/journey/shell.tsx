@@ -314,16 +314,12 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
       <div aria-hidden className="absolute inset-0 bg-[linear-gradient(100deg,rgba(2,25,58,0.96)_0%,rgba(2,25,58,0.88)_38%,rgba(3,70,148,0.45)_70%,rgba(2,25,58,0.35)_100%)]" />
       <div aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,transparent,rgba(2,25,58,0.9))]" />
       <header className="enter relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 pt-6 sm:px-8 sm:pt-7">
-        <FieldLogo height={52} tone="white" />
-        <span className="hidden text-[11px] uppercase tracking-[0.16em] text-white/60 sm:block">AI Opportunity Lab</span>
+        <FieldLogo tone="white" className="h-[64px] sm:h-[92px]" />
       </header>
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center px-5 sm:px-8">
         <div className="max-w-[36rem] py-14">
-          <p className="enter inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1 text-[11.5px] text-signal-100/80 ring-1 ring-inset ring-white/10" style={{ animationDelay: '100ms' }}>
-            <span className="h-1.5 w-1.5 rounded-full bg-[#7dd3fc]" /> Field International · AI Opportunity Lab
-          </p>
-          <h1 className="enter mt-6 font-display text-[42px] font-light leading-[1.02] tracking-[-0.025em] text-white sm:text-[68px]" style={{ animationDelay: '200ms' }}>
+          <h1 className="enter font-display text-[42px] font-light leading-[1.02] tracking-[-0.025em] text-white sm:text-[68px]" style={{ animationDelay: '200ms' }}>
             Follow one enquiry from the customer to the factory.
           </h1>
           <p className="enter mt-6 max-w-[32rem] text-[16px] leading-relaxed text-signal-100/70 sm:text-[18px]" style={{ animationDelay: '320ms' }}>
@@ -339,25 +335,7 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
             >
               Begin <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </button>
-            <span className="flex flex-col gap-1.5 text-[12.5px] text-signal-100/55 sm:flex-row sm:gap-4">
-              <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> About five minutes</span>
-              <span className="flex items-center gap-1.5"><UserRound className="h-3.5 w-3.5" /> Up to six points where you decide</span>
-            </span>
           </div>
-          {/* Field, as the public record has it. Nothing here is assumed. */}
-          <dl className="enter mt-10 grid max-w-[34rem] grid-cols-2 gap-x-6 gap-y-3 border-t border-white/10 pt-5 text-[12px] sm:grid-cols-4" style={{ animationDelay: '540ms' }}>
-            {[
-              ['Since 1995', 'Poole, Dorset'],
-              ['Boeing licensed', 'tooling and GSE'],
-              ['7 companies', 'UK, Singapore, China, India, UAE, USA'],
-              [catalogue ? `${catalogue.aircraftModels} aircraft models` : '27 aircraft models', 'in the public catalogue'],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <dt className="font-semibold text-white/90">{k}</dt>
-                <dd className="text-signal-100/50">{v}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </div>
 

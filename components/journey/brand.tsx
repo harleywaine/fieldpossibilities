@@ -52,7 +52,7 @@ export const PHOTOS = {
  * The full logo: globe over the wordmark. Best at 40px tall and up, where the
  * wordmark stays legible. `tone="white"` for dark grounds.
  */
-export function FieldLogo({ height = 44, tone = 'blue', className = '' }: { height?: number; tone?: 'blue' | 'white'; className?: string }) {
+export function FieldLogo({ height, tone = 'blue', className = '' }: { height?: number; tone?: 'blue' | 'white'; className?: string }) {
   const [src, setSrc] = useState<string>(LOGO_SVG);
   return (
     <img
@@ -61,7 +61,7 @@ export function FieldLogo({ height = 44, tone = 'blue', className = '' }: { heig
       alt="Field International"
       draggable={false}
       style={{ height, width: 'auto', filter: tone === 'white' ? 'brightness(0) invert(1)' : undefined }}
-      className={`block select-none ${className}`}
+      className={`block w-auto select-none ${className}`}
     />
   );
 }
