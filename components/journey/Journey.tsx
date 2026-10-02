@@ -357,8 +357,8 @@ export function Journey({
     request: {
       title: (
         <>
-          <span className="font-bold">You are:</span> {picked ? picked.name : 'the customer'}
-          <span className="block font-bold text-signal-600">What do you need?</span>
+          You are: <span className="font-bold">{picked ? picked.name : 'the customer'}</span>
+          <span className="block text-signal-600">What do you need?</span>
         </>
       ),
       sub: sim.channel === 'email'
