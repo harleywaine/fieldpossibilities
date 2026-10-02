@@ -14,9 +14,12 @@ visitor operates is a mock-up window, so it reads as a picture of a system.
   company, and send it.
 - **Field's side**, a mock CRM. The enquiry lands already logged, matched to an account and
   assigned. The account screen shows value, win rate, recent jobs, complaints, activity and a
-  brief assembled from internal documents. Then come the line check, Engineering, Procurement,
-  pricing, quote sign-off and the order. At each decision the visitor is signed in as the person
-  who would make it, and the journey stops until they decide.
+  brief assembled from that customer's own documents. Then come the line check, Engineering
+  (where "Ask customer" drafts the question), Supply (a source per line from Field's four
+  factories, ex-stock items and bought-in ranges, simulated), pricing, quote sign-off (where
+  lines that miss the deadline are settled: phased, expedited or quoted honestly) and the order,
+  which shows the consequence of that choice. At each decision the visitor is signed in as the
+  person who would make it, and the journey stops until they decide.
 
 A company name matching one of the eight synthetic accounts brings up that account's history;
 any other name becomes a new lead. The email and company stay in the browser tab. Every step has
@@ -113,11 +116,16 @@ and a TF-IDF vector index built from the catalogue are fused, and ranked with ex
 Enforced in code, not left to wording:
 
 - **Absent fields stay empty** and are shown as not published, never inferred.
-- **Model-level fit is never promoted to variant level.** A request for a 787-9 matches records
-  listed for the 787, and the gap becomes an Engineering question: "Does it fit the Boeing 787-9?"
+- **Variant fit comes from the record's own applicability line, never from the model.** Most
+  descriptions carry one ("737-600, 700, 800, 900", "B787"). A 737-800 request is settled by the
+  first; a 737 MAX request is contradicted by a Classic-only line and the record is demoted; a
+  787-9 request against "B787" becomes an Engineering question: "Does it fit the Boeing 787-9?"
+  Lettered variants (777-300ER, 747-8F, 737 MAX 8) are read as written.
+- **Tooling for another aircraft is never a likely match.** It can be shown as an alternative,
+  flagged for Engineering, but an A321 request does not get 737 parts as likely fits.
 - **An engine is only read from source text.** A record that names no engine can't be a strong
   match for an engine-specific request.
-- **Lead time is reported, never promised.** Where it's unpublished, Procurement is asked.
+- **Lead time is reported, never promised.** Where it's unpublished, the supply step plans it: a Field site, stock, or a supplier request for bought-in ranges.
 - **No confidence percentages** — Direct match, Likely match, Alternative.
 
 ## Project layout
