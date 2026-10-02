@@ -120,7 +120,7 @@ export function Narration({
             <Sparkles className="h-3 w-3 text-signal-500" /> {eyebrow}
           </p>
         )}
-        <h1 className="enter mt-3 max-w-3xl font-display text-[29px] font-medium sm:mt-4 leading-[1.06] tracking-[-0.035em] text-ink-950 sm:text-[44px]" style={{ animationDelay: '80ms' }}>
+        <h1 className="enter mt-3 max-w-3xl font-display text-[29px] font-light sm:mt-4 leading-[1.08] tracking-[-0.02em] text-ink-950 sm:text-[44px]" style={{ animationDelay: '80ms' }}>
           {title}
         </h1>
         {sub && (
@@ -323,7 +323,7 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
           <p className="enter inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1 text-[11.5px] text-signal-100/80 ring-1 ring-inset ring-white/10" style={{ animationDelay: '100ms' }}>
             <span className="h-1.5 w-1.5 rounded-full bg-[#7dd3fc]" /> Field International · AI Opportunity Lab
           </p>
-          <h1 className="enter mt-6 font-display text-[42px] font-medium leading-[1.0] tracking-[-0.045em] text-white sm:text-[68px]" style={{ animationDelay: '200ms' }}>
+          <h1 className="enter mt-6 font-display text-[42px] font-light leading-[1.02] tracking-[-0.025em] text-white sm:text-[68px]" style={{ animationDelay: '200ms' }}>
             Follow one enquiry from the customer to the factory.
           </h1>
           <p className="enter mt-6 max-w-[32rem] text-[16px] leading-relaxed text-signal-100/70 sm:text-[18px]" style={{ animationDelay: '320ms' }}>
