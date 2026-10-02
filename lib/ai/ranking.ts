@@ -9,6 +9,7 @@
 import type { Product, EvidenceItem, MatchClass, ScoredProduct } from '../catalogue/types.ts';
 import type { Requirement } from './requirement.ts';
 import { APPLICATIONS, ITEM_TYPES } from '../catalogue/lexicon.ts';
+import { parseApplicability, variantFit } from '../catalogue/variants.ts';
 
 export interface RankingWeights {
   aircraft: number;
@@ -164,14 +165,23 @@ export function rankProduct(input: RankInput): ScoredProduct {
     evidence.push({ label: 'Part number', value: p.partNumber, source: 'catalogue-record' });
   }
 
+  // ---- Variant: the description's own applicability line, where it has one ----
+  const fit = req.aircraftVariantRequested && ac.score === 1
+    ? variantFit(parseApplicability(p.description), ac.matched ?? req.aircraftModels[0]!, req.aircraftVariantRequested)
+    : null;
+
   // ---- Gaps: what the requirement asked for that the source cannot confirm ----
   const gaps: string[] = [];
   if (req.aircraftVariantRequested && ac.score === 1) {
     const variantLabel = `${(ac.matched ?? '').split(' ').pop() ?? ''}-${req.aircraftVariantRequested}`;
-    gaps.push(
-      `Catalogue lists applicability as ${ac.matched}. It does not state whether this covers the ` +
-      `${variantLabel} variant specifically.`,
-    );
+    if (fit === 'unstated') {
+      gaps.push(
+        `Catalogue lists applicability as ${ac.matched}. It does not state whether this covers the ` +
+        `${variantLabel} variant specifically.`,
+      );
+    } else if (fit === 'contradicted') {
+      gaps.push(`The catalogue's applicability line does not include the ${variantLabel}.`);
+    }
   }
   if (req.engines.length && !p.engine && eng.score === 0) {
     gaps.push(`No engine is named in this product's catalogue entry, so ${req.engines[0]} compatibility is not established.`);
@@ -186,7 +196,15 @@ export function rankProduct(input: RankInput): ScoredProduct {
   return {
     product: p,
     score,
-    matchClass: classify(score, { ac: ac.score, app: app.score, eng: eng.score, item: itemMatch(p, req), req }),
+    matchClass: classify(score, {
+      ac: ac.score, app: app.score, eng: eng.score, item: itemMatch(p, req), req,
+      // A record that names an aircraft the request didn't ask for contradicts
+      // the request; one that names no aircraft merely fails to confirm it.
+      aircraftContradicted: req.aircraftModels.length > 0 && ac.score === 0 && Boolean(p.aircraftModel),
+      // A 737 Classic tool is not a strong match for a 737 MAX request, however
+      // well the task fits; the description said which variants it is for.
+      variantContradicted: fit === 'contradicted',
+    }),
     evidence,
     gaps,
     breakdown: {
@@ -203,9 +221,9 @@ export function rankProduct(input: RankInput): ScoredProduct {
  */
 function classify(
   score: number,
-  ctx: { ac: number; app: number; eng: number; item: boolean; req: Requirement },
+  ctx: { ac: number; app: number; eng: number; item: boolean; req: Requirement; aircraftContradicted: boolean; variantContradicted: boolean },
 ): MatchClass {
-  const { ac, app, eng, item, req } = ctx;
+  const { ac, app, eng, item, req, aircraftContradicted, variantContradicted } = ctx;
   const needsAircraft = req.aircraftModels.length > 0;
   const needsApp = req.applications.length > 0 || req.maintenanceCategories.length > 0;
   const needsEngine = req.engines.length > 0;
@@ -216,9 +234,12 @@ function classify(
   // engine fit from aircraft model is exactly the overclaim the brief forbids.
   const engineEstablished = !needsEngine || eng >= 1;
 
-  if (aircraftEstablished && applicationEstablished && engineEstablished && item && score >= 0.6) {
+  if (aircraftEstablished && applicationEstablished && engineEstablished && item && score >= 0.6 && !variantContradicted) {
     return 'strong';
   }
+  // Tooling for a different aircraft is never a likely match, however well the
+  // task fits: a 737 fan-cowl sling is not a likely answer to an A321 request.
+  if (aircraftContradicted) return score >= 0.2 ? 'alternative' : 'none';
   if (score >= 0.45 && (aircraftEstablished || applicationEstablished)) return 'potential';
   if (score >= 0.2) return 'alternative';
   return 'none';

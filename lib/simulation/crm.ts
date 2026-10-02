@@ -69,9 +69,9 @@ export interface CrmInboxItem {
  */
 const CASES: Record<string, CrmCase[]> = {
   'CUST-001': [
-    { id: 'CS-2291', opened: '2026-08-20', kind: 'Query', status: 'Open', subject: 'Hold open equipment — which revision is current?', detail: 'Customer quotes a later revision than the one supplied under QT-09841. Engineering to confirm.' },
+    { id: 'CS-2291', opened: '2026-08-20', kind: 'Query', status: 'Open', subject: 'Hold open equipment: which revision is current?', detail: 'Customer quotes a later revision than the one supplied under QT-09841. Engineering to confirm.' },
     { id: 'CS-2107', opened: '2025-09-02', kind: 'Query', status: 'Resolved', subject: 'Certificate of conformity missing from a delivery', detail: 'Sling equipment arrived without its certificate. Copy sent the same day.' },
-    { id: 'CS-1864', opened: '2024-12-09', kind: 'Complaint', status: 'Resolved', subject: 'Quoted lead time too long — 777 landing gear tooling', detail: 'RFQ-09102 lost on delivery. Customer told the account owner lead time decides their orders.' },
+    { id: 'CS-1864', opened: '2024-12-09', kind: 'Complaint', status: 'Resolved', subject: 'Quoted lead time too long on 777 landing gear tooling', detail: 'RFQ-09102 lost on delivery. Customer told the account owner lead time decides their orders.' },
   ],
   'CUST-002': [
     { id: 'CS-2052', opened: '2025-11-18', kind: 'Complaint', status: 'Resolved', subject: 'Proof-load certificate out of date on arrival', detail: 'Sling re-certified by Lakeside Calibration and returned in nine days.' },

@@ -326,70 +326,70 @@
     {
      "line": 1,
      "requestedPart": "K78002-70",
-     "description": "Thrust reverser tooling — K78002-70",
+     "description": "Thrust reverser tooling, K78002-70",
      "quantity": 2,
      "notes": null
     },
     {
      "line": 2,
      "requestedPart": "K10009-1",
-     "description": "Thrust reverser tooling — K10009-1",
+     "description": "Thrust reverser tooling, K10009-1",
      "quantity": 1,
      "notes": null
     },
     {
      "line": 3,
      "requestedPart": "K10009-5",
-     "description": "Thrust reverser tooling — K10009-5",
+     "description": "Thrust reverser tooling, K10009-5",
      "quantity": 1,
      "notes": null
     },
     {
      "line": 4,
      "requestedPart": "K78012-1",
-     "description": "Thrust reverser tooling — K78012-1",
+     "description": "Thrust reverser tooling, K78012-1",
      "quantity": 2,
      "notes": null
     },
     {
      "line": 5,
      "requestedPart": "K78012-63",
-     "description": "Thrust reverser tooling — K78012-63",
+     "description": "Thrust reverser tooling, K78012-63",
      "quantity": 1,
      "notes": null
     },
     {
      "line": 6,
      "requestedPart": "K78001-49",
-     "description": "Thrust reverser tooling — K78001-49",
+     "description": "Thrust reverser tooling, K78001-49",
      "quantity": 1,
      "notes": null
     },
     {
      "line": 7,
      "requestedPart": "K78008-1",
-     "description": "Thrust reverser tooling — K78008-1",
+     "description": "Thrust reverser tooling, K78008-1",
      "quantity": 2,
      "notes": null
     },
     {
      "line": 8,
      "requestedPart": "K10007-1",
-     "description": "Thrust reverser tooling — K10007-1",
+     "description": "Thrust reverser tooling, K10007-1",
      "quantity": 1,
      "notes": null
     },
     {
      "line": 9,
      "requestedPart": "K10008-14",
-     "description": "Thrust reverser tooling — K10008-14",
+     "description": "Thrust reverser tooling, K10008-14",
      "quantity": 1,
      "notes": null
     },
     {
      "line": 10,
      "requestedPart": "K71008-37",
-     "description": "Thrust reverser tooling — K71008-37",
+     "description": "Thrust reverser tooling, K71008-37",
      "quantity": 2,
      "notes": null
     },
@@ -403,7 +403,7 @@
     {
      "line": 12,
      "requestedPart": "K71010-1",
-     "description": "Stand assembly — storage, inlet assembly",
+     "description": "Stand assembly, storage, inlet assembly",
      "quantity": 1,
      "notes": null
     },
@@ -417,14 +417,14 @@
     {
      "line": 14,
      "requestedPart": "K10008-14",
-     "description": "Protective plug equipment — engine exhaust, GE GEnx",
+     "description": "Protective plug equipment, engine exhaust, GE GEnx",
      "quantity": 1,
      "notes": null
     },
     {
      "line": 15,
      "requestedPart": "K78011-1",
-     "description": "Hold open equipment — Trent 1000 thrust reverser",
+     "description": "Hold open equipment, Trent 1000 thrust reverser",
      "quantity": 1,
      "notes": "Engine variant differs from the rest of this request."
     },
@@ -438,7 +438,7 @@
     {
      "line": 17,
      "requestedPart": "K78002-70",
-     "description": "Sling equipment — thrust reverser sleeve, GEnx",
+     "description": "Sling equipment, thrust reverser sleeve, GEnx",
      "quantity": 1,
      "notes": "Repeat of item supplied under QT-09841."
     }
@@ -497,7 +497,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2026-06-13T00:00:00.000Z",
    "aircraft": "Boeing 767",
-   "engine": "CF6",
+   "engine": "PW4000",
    "application": "Stabilizers",
    "programme": "Heavy maintenance",
    "requiredDeliveryWeeks": null,
@@ -1050,7 +1050,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2025-10-23T00:00:00.000Z",
    "aircraft": "Airbus A320",
-   "engine": "GE90",
+   "engine": "V2500",
    "application": "Stabilizers",
    "programme": "Component overhaul",
    "requiredDeliveryWeeks": 20,
@@ -1229,7 +1229,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2026-07-18T00:00:00.000Z",
    "aircraft": "Boeing 737",
-   "engine": "Trent 1000",
+   "engine": "CFM56",
    "application": "Fuel",
    "programme": "Heavy maintenance",
    "requiredDeliveryWeeks": 15,
@@ -1287,7 +1287,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2025-12-15T00:00:00.000Z",
    "aircraft": "Boeing 737",
-   "engine": "GE90",
+   "engine": "LEAP-1B",
    "application": "Stabilizers",
    "programme": "Line maintenance",
    "requiredDeliveryWeeks": 6,
@@ -1396,7 +1396,7 @@
    "ownerId": "EMP-003",
    "receivedAt": "2026-07-15T00:00:00.000Z",
    "aircraft": "Boeing 787",
-   "engine": "Trent 1000",
+   "engine": "GEnx",
    "application": "Flight controls",
    "programme": "Base check",
    "requiredDeliveryWeeks": 15,
@@ -2014,7 +2014,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2026-07-08T00:00:00.000Z",
    "aircraft": "Boeing 737",
-   "engine": "CF6",
+   "engine": "LEAP-1B",
    "application": "Flight controls",
    "programme": "Heavy maintenance",
    "requiredDeliveryWeeks": null,
@@ -2165,7 +2165,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2025-08-02T00:00:00.000Z",
    "aircraft": "Boeing 747",
-   "engine": "CF6",
+   "engine": "RB211",
    "application": "Thrust reverser",
    "programme": "Component overhaul",
    "requiredDeliveryWeeks": 9,
@@ -2265,7 +2265,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2024-07-30T00:00:00.000Z",
    "aircraft": "Boeing 737",
-   "engine": "Trent 1000",
+   "engine": "CFM56",
    "application": "Doors",
    "programme": "Line maintenance",
    "requiredDeliveryWeeks": 9,
@@ -2578,7 +2578,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2026-04-07T00:00:00.000Z",
    "aircraft": "Boeing 737",
-   "engine": "GE90",
+   "engine": "LEAP-1B",
    "application": "Fuel",
    "programme": "Fleet induction",
    "requiredDeliveryWeeks": 20,
@@ -2817,7 +2817,7 @@
    "ownerId": "EMP-003",
    "receivedAt": "2026-01-02T00:00:00.000Z",
    "aircraft": "Boeing 737",
-   "engine": "Trent 1000",
+   "engine": "CFM56",
    "application": "Doors",
    "programme": "Heavy maintenance",
    "requiredDeliveryWeeks": 7,
@@ -2891,7 +2891,7 @@
    "ownerId": "EMP-004",
    "receivedAt": "2024-06-07T00:00:00.000Z",
    "aircraft": "Boeing 767",
-   "engine": "GEnx",
+   "engine": "CF6",
    "application": "Thrust reverser",
    "programme": "Base check",
    "requiredDeliveryWeeks": 16,
@@ -3562,7 +3562,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-10482",
-   "title": "RFQ-10482 — Singapore Aero MRO 787 GEnx thrust reverser tooling",
+   "title": "RFQ-10482: Singapore Aero MRO 787 GEnx thrust reverser tooling",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -3593,12 +3593,12 @@
    ],
    "supplierId": null,
    "path": "rfqs/rfq-10482.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-10482\n\nCustomer: Singapore Aero MRO (Singapore)\nAccount owner: James Carter, Technical Sales Manager\nReceived: 2026-09-01\nAircraft: Boeing 787\nEngine: GEnx\nApplication: Thrust reverser\nProgramme: Heavy maintenance\nRequired delivery: 10 weeks\nLine items: 17\n\nCustomer is preparing a heavy maintenance programme and requires pricing and\navailability for the tooling listed. Delivery is required within 10 weeks of order.\n\nREQUESTED ITEMS\n\n01. K78002-70  qty 2  Thrust reverser tooling — K78002-70\n02. K10009-1  qty 1  Thrust reverser tooling — K10009-1\n03. K10009-5  qty 1  Thrust reverser tooling — K10009-5\n04. K78012-1  qty 2  Thrust reverser tooling — K78012-1\n05. K78012-63  qty 1  Thrust reverser tooling — K78012-63\n06. K78001-49  qty 1  Thrust reverser tooling — K78001-49\n07. K78008-1  qty 2  Thrust reverser tooling — K78008-1\n08. K10007-1  qty 1  Thrust reverser tooling — K10007-1\n09. K10008-14  qty 1  Thrust reverser tooling — K10008-14\n10. K71008-37  qty 2  Thrust reverser tooling — K71008-37\n11. K78012-63  qty 1  Hold open equipment, GEnx-1B thrust reverser  [Customer references a different revision to our last supply.]\n12. K71010-1  qty 1  Stand assembly — storage, inlet assembly\n13. K71001-17  qty 2  Aft hold open assembly\n14. K10008-14  qty 1  Protective plug equipment — engine exhaust, GE GEnx\n15. K78011-1  qty 1  Hold open equipment — Trent 1000 thrust reverser  [Engine variant differs from the rest of this request.]\n16. TR-GENX-SPR-114  qty 1  Thrust reverser spreader bar, customer part reference  [Customer-specific reference — no Field catalogue equivalent supplied.]\n17. K78002-70  qty 1  Sling equipment — thrust reverser sleeve, GEnx  [Repeat of item supplied under QT-09841.]"
+   "body": "REQUEST FOR QUOTATION RFQ-10482\n\nCustomer: Singapore Aero MRO (Singapore)\nAccount owner: James Carter, Technical Sales Manager\nReceived: 2026-09-01\nAircraft: Boeing 787\nEngine: GEnx\nApplication: Thrust reverser\nProgramme: Heavy maintenance\nRequired delivery: 10 weeks\nLine items: 17\n\nCustomer is preparing a heavy maintenance programme and requires pricing and\navailability for the tooling listed. Delivery is required within 10 weeks of order.\n\nREQUESTED ITEMS\n\n01. K78002-70  qty 2  Thrust reverser tooling, K78002-70\n02. K10009-1  qty 1  Thrust reverser tooling, K10009-1\n03. K10009-5  qty 1  Thrust reverser tooling, K10009-5\n04. K78012-1  qty 2  Thrust reverser tooling, K78012-1\n05. K78012-63  qty 1  Thrust reverser tooling, K78012-63\n06. K78001-49  qty 1  Thrust reverser tooling, K78001-49\n07. K78008-1  qty 2  Thrust reverser tooling, K78008-1\n08. K10007-1  qty 1  Thrust reverser tooling, K10007-1\n09. K10008-14  qty 1  Thrust reverser tooling, K10008-14\n10. K71008-37  qty 2  Thrust reverser tooling, K71008-37\n11. K78012-63  qty 1  Hold open equipment, GEnx-1B thrust reverser  [Customer references a different revision to our last supply.]\n12. K71010-1  qty 1  Stand assembly, storage, inlet assembly\n13. K71001-17  qty 2  Aft hold open assembly\n14. K10008-14  qty 1  Protective plug equipment, engine exhaust, GE GEnx\n15. K78011-1  qty 1  Hold open equipment, Trent 1000 thrust reverser  [Engine variant differs from the rest of this request.]\n16. TR-GENX-SPR-114  qty 1  Thrust reverser spreader bar, customer part reference  [Customer-specific reference — no Field catalogue equivalent supplied.]\n17. K78002-70  qty 1  Sling equipment, thrust reverser sleeve, GEnx  [Repeat of item supplied under QT-09841.]"
   },
   {
    "status": "current",
    "documentId": "DOC-RFQ-09841",
-   "title": "RFQ-09841 — Singapore Aero MRO",
+   "title": "RFQ-09841: Singapore Aero MRO",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -3619,7 +3619,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-10271",
-   "title": "RFQ-10271 — Singapore Aero MRO",
+   "title": "RFQ-10271: Singapore Aero MRO",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -3640,7 +3640,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-09102",
-   "title": "RFQ-09102 — Singapore Aero MRO",
+   "title": "RFQ-09102: Singapore Aero MRO",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -3658,7 +3658,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-09841",
-   "title": "QT-09841 — quotation, Singapore Aero MRO 787 GEnx tooling",
+   "title": "QT-09841: quotation, Singapore Aero MRO 787 GEnx tooling",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -3680,7 +3680,7 @@
   {
    "status": "superseded",
    "documentId": "DOC-SUP-002-NOTE",
-   "title": "Meridian Aerospace Tooling — GEnx tooling lead times (internal note)",
+   "title": "Meridian Aerospace Tooling: GEnx tooling lead times (internal note)",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -3698,12 +3698,12 @@
    "path": "suppliers/meridian-genx-lead-times.docx",
    "staleMonths": 14,
    "conflictsWith": "DOC-SUP-002-EMAIL",
-   "body": "INTERNAL NOTE — Meridian Aerospace Tooling\n\nPrepared by: Robert Ellis, Supplier Manager\nDate: 2025-07-05\n\nWorking assumption for GEnx thrust reverser tooling:\n  Standard lead time: 12 weeks from order\n  Expedite: not offered\n\nThis figure should be used for quotation purposes until reviewed."
+   "body": "INTERNAL NOTE: Meridian Aerospace Tooling\n\nPrepared by: Robert Ellis, Supplier Manager\nDate: 2025-07-05\n\nWorking assumption for GEnx thrust reverser tooling:\n  Standard lead time: 12 weeks from order\n  Expedite: not offered\n\nThis figure should be used for quotation purposes until reviewed."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-002-EMAIL",
-   "title": "Meridian Aerospace Tooling — updated capacity and lead times",
+   "title": "Meridian Aerospace Tooling: updated capacity and lead times",
    "documentType": "email",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -3726,7 +3726,7 @@
   {
    "status": "current",
    "documentId": "DOC-ENG-787-VARIANT",
-   "title": "787 GEnx tooling — variant applicability note",
+   "title": "787 GEnx tooling: variant applicability note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -3748,7 +3748,7 @@
   {
    "status": "current",
    "documentId": "DOC-HIST-CUST-001",
-   "title": "Singapore Aero MRO — account history and commercial notes",
+   "title": "Singapore Aero MRO: account history and commercial notes",
    "documentType": "account-history",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -3761,12 +3761,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/singapore-aero-mro-history.docx",
-   "body": "ACCOUNT HISTORY — Singapore Aero MRO\n\nAccount owner: James Carter, Technical Sales Manager\nCustomer since: 2019\n\nENQUIRY HISTORY\n  RFQ-09102  Boeing 777 landing gear tooling  — lost on delivery\n  RFQ-09841  Boeing 787 GEnx thrust reverser  — won, quoted QT-09841\n  RFQ-10271  Follow-on protective equipment    — quoted, no decision\n  RFQ-10482  Boeing 787 GEnx thrust reverser  — open\n\nCOMMERCIAL NOTES\n  Delivery lead time is the recurring point of friction on this account.\n  RFQ-09102 was lost specifically because the quoted lead time exceeded the\n  customer's maintenance slot. On RFQ-09841 the customer stated an 8-week\n  requirement and we quoted 12 weeks; the order was only secured after\n  agreeing a phased delivery.\n\n  Any response to a new enquiry should establish current supplier lead times\n  before a delivery position is offered."
+   "body": "ACCOUNT HISTORY — Singapore Aero MRO\n\nAccount owner: James Carter, Technical Sales Manager\nCustomer since: 2019\n\nENQUIRY HISTORY\n  RFQ-09102  Boeing 777 landing gear tooling : lost on delivery\n  RFQ-09841  Boeing 787 GEnx thrust reverser : won, quoted QT-09841\n  RFQ-10271  Follow-on protective equipment   : quoted, no decision\n  RFQ-10482  Boeing 787 GEnx thrust reverser : open\n\nCOMMERCIAL NOTES\n  Delivery lead time is the recurring point of friction on this account.\n  RFQ-09102 was lost specifically because the quoted lead time exceeded the\n  customer's maintenance slot. On RFQ-09841 the customer stated an 8-week\n  requirement and we quoted 12 weeks; the order was only secured after\n  agreeing a phased delivery.\n\n  Any response to a new enquiry should establish current supplier lead times\n  before a delivery position is offered."
   },
   {
    "status": "current",
    "documentId": "DOC-EMAIL-CUST-001",
-   "title": "Singapore Aero MRO — enquiry thread (RFQ-10482)",
+   "title": "Singapore Aero MRO: enquiry thread (RFQ-10482)",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -3786,7 +3786,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-SALES-SEP",
-   "title": "Sales pipeline meeting — September",
+   "title": "Sales pipeline meeting: September",
    "documentType": "meeting-notes",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -3804,7 +3804,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9111",
-   "title": "RFQ-9111 — Cascade Aerospace Support (Boeing 767)",
+   "title": "RFQ-9111: Cascade Aerospace Support (Boeing 767)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -3817,12 +3817,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9111.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9111\n\nCustomer: Cascade Aerospace Support (Canada)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-06-13\nAircraft: Boeing 767\nEngine: CF6\nApplication: Stabilizers\nProgramme: Heavy maintenance\nRequired delivery: not stated\nLine items: 14\n\nCascade Aerospace Support requested 14 stabilizers tooling items for Boeing 767 fleet induction."
+   "body": "REQUEST FOR QUOTATION RFQ-9111\n\nCustomer: Cascade Aerospace Support (Canada)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-06-13\nAircraft: Boeing 767\nEngine: PW4000\nApplication: Stabilizers\nProgramme: Heavy maintenance\nRequired delivery: not stated\nLine items: 14\n\nCascade Aerospace Support requested 14 stabilizers tooling items for Boeing 767 fleet induction."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9111",
-   "title": "QT-9111 — quotation for Cascade Aerospace Support",
+   "title": "QT-9111: quotation for Cascade Aerospace Support",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -3840,7 +3840,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9133",
-   "title": "RFQ-9133 — Atlantic Cargo Air (Boeing 767)",
+   "title": "RFQ-9133: Atlantic Cargo Air (Boeing 767)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -3858,7 +3858,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9157",
-   "title": "RFQ-9157 — Andes Regional Airlines (Boeing 737)",
+   "title": "RFQ-9157: Andes Regional Airlines (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -3876,7 +3876,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9157",
-   "title": "QT-9157 — quotation for Andes Regional Airlines",
+   "title": "QT-9157: quotation for Andes Regional Airlines",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -3894,7 +3894,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9174",
-   "title": "RFQ-9174 — Atlantic Cargo Air (Boeing 767)",
+   "title": "RFQ-9174: Atlantic Cargo Air (Boeing 767)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -3912,7 +3912,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9174",
-   "title": "QT-9174 — quotation for Atlantic Cargo Air",
+   "title": "QT-9174: quotation for Atlantic Cargo Air",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -3930,7 +3930,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9184",
-   "title": "RFQ-9184 — Pacific Line Maintenance (Boeing 737)",
+   "title": "RFQ-9184: Pacific Line Maintenance (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -3948,7 +3948,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9184",
-   "title": "QT-9184 — quotation for Pacific Line Maintenance",
+   "title": "QT-9184: quotation for Pacific Line Maintenance",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -3966,7 +3966,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9205",
-   "title": "RFQ-9205 — Nordic Wings Technic (Airbus A320)",
+   "title": "RFQ-9205: Nordic Wings Technic (Airbus A320)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -3984,7 +3984,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9205",
-   "title": "QT-9205 — quotation for Nordic Wings Technic",
+   "title": "QT-9205: quotation for Nordic Wings Technic",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4002,7 +4002,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9218",
-   "title": "RFQ-9218 — Rhein Aviation Technik (Boeing 777)",
+   "title": "RFQ-9218: Rhein Aviation Technik (Boeing 777)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -4020,7 +4020,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9218",
-   "title": "QT-9218 — quotation for Rhein Aviation Technik",
+   "title": "QT-9218: quotation for Rhein Aviation Technik",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4038,7 +4038,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9234",
-   "title": "RFQ-9234 — Nordic Wings Technic (Airbus A320)",
+   "title": "RFQ-9234: Nordic Wings Technic (Airbus A320)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4051,12 +4051,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9234.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9234\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2025-10-23\nAircraft: Airbus A320\nEngine: GE90\nApplication: Stabilizers\nProgramme: Component overhaul\nRequired delivery: 20 weeks\nLine items: 9\n\nNordic Wings Technic requested 9 stabilizers tooling items for Airbus A320 base check."
+   "body": "REQUEST FOR QUOTATION RFQ-9234\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2025-10-23\nAircraft: Airbus A320\nEngine: V2500\nApplication: Stabilizers\nProgramme: Component overhaul\nRequired delivery: 20 weeks\nLine items: 9\n\nNordic Wings Technic requested 9 stabilizers tooling items for Airbus A320 base check."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9234",
-   "title": "QT-9234 — quotation for Nordic Wings Technic",
+   "title": "QT-9234: quotation for Nordic Wings Technic",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4074,7 +4074,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9240",
-   "title": "RFQ-9240 — Atlantic Cargo Air (Boeing 747)",
+   "title": "RFQ-9240: Atlantic Cargo Air (Boeing 747)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4092,7 +4092,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9261",
-   "title": "RFQ-9261 — Nordic Wings Technic (Boeing 737)",
+   "title": "RFQ-9261: Nordic Wings Technic (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4105,12 +4105,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9261.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9261\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-07-18\nAircraft: Boeing 737\nEngine: Trent 1000\nApplication: Fuel\nProgramme: Heavy maintenance\nRequired delivery: 15 weeks\nLine items: 6\n\nNordic Wings Technic requested 6 fuel tooling items for Boeing 737 line maintenance."
+   "body": "REQUEST FOR QUOTATION RFQ-9261\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-07-18\nAircraft: Boeing 737\nEngine: CFM56\nApplication: Fuel\nProgramme: Heavy maintenance\nRequired delivery: 15 weeks\nLine items: 6\n\nNordic Wings Technic requested 6 fuel tooling items for Boeing 737 line maintenance."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9261",
-   "title": "QT-9261 — quotation for Nordic Wings Technic",
+   "title": "QT-9261: quotation for Nordic Wings Technic",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4128,7 +4128,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9273",
-   "title": "RFQ-9273 — Nordic Wings Technic (Boeing 737)",
+   "title": "RFQ-9273: Nordic Wings Technic (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4141,12 +4141,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9273.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9273\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2025-12-15\nAircraft: Boeing 737\nEngine: GE90\nApplication: Stabilizers\nProgramme: Line maintenance\nRequired delivery: 6 weeks\nLine items: 8\n\nNordic Wings Technic requested 8 stabilizers tooling items for Boeing 737 line maintenance."
+   "body": "REQUEST FOR QUOTATION RFQ-9273\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2025-12-15\nAircraft: Boeing 737\nEngine: LEAP-1B\nApplication: Stabilizers\nProgramme: Line maintenance\nRequired delivery: 6 weeks\nLine items: 8\n\nNordic Wings Technic requested 8 stabilizers tooling items for Boeing 737 line maintenance."
   },
   {
    "status": "current",
    "documentId": "DOC-RFQ-9284",
-   "title": "RFQ-9284 — Nordic Wings Technic (Airbus A320)",
+   "title": "RFQ-9284: Nordic Wings Technic (Airbus A320)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4164,7 +4164,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9284",
-   "title": "QT-9284 — quotation for Nordic Wings Technic",
+   "title": "QT-9284: quotation for Nordic Wings Technic",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4182,7 +4182,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9302",
-   "title": "RFQ-9302 — Pacific Line Maintenance (Boeing 787)",
+   "title": "RFQ-9302: Pacific Line Maintenance (Boeing 787)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4195,12 +4195,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9302.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9302\n\nCustomer: Pacific Line Maintenance (Australia)\nAccount owner: James Carter, Technical Sales Manager\nReceived: 2026-07-15\nAircraft: Boeing 787\nEngine: Trent 1000\nApplication: Flight controls\nProgramme: Base check\nRequired delivery: 15 weeks\nLine items: 13\n\nPacific Line Maintenance requested 13 flight controls tooling items for Boeing 787 line maintenance."
+   "body": "REQUEST FOR QUOTATION RFQ-9302\n\nCustomer: Pacific Line Maintenance (Australia)\nAccount owner: James Carter, Technical Sales Manager\nReceived: 2026-07-15\nAircraft: Boeing 787\nEngine: GEnx\nApplication: Flight controls\nProgramme: Base check\nRequired delivery: 15 weeks\nLine items: 13\n\nPacific Line Maintenance requested 13 flight controls tooling items for Boeing 787 line maintenance."
   },
   {
    "status": "current",
    "documentId": "DOC-RFQ-9310",
-   "title": "RFQ-9310 — Andes Regional Airlines (Boeing 737)",
+   "title": "RFQ-9310: Andes Regional Airlines (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4218,7 +4218,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9310",
-   "title": "QT-9310 — quotation for Andes Regional Airlines",
+   "title": "QT-9310: quotation for Andes Regional Airlines",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4236,7 +4236,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9326",
-   "title": "RFQ-9326 — Cascade Aerospace Support (Boeing 737)",
+   "title": "RFQ-9326: Cascade Aerospace Support (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4254,7 +4254,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9350",
-   "title": "RFQ-9350 — Pacific Line Maintenance (Boeing 737)",
+   "title": "RFQ-9350: Pacific Line Maintenance (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4272,7 +4272,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9350",
-   "title": "QT-9350 — quotation for Pacific Line Maintenance",
+   "title": "QT-9350: quotation for Pacific Line Maintenance",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4290,7 +4290,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9355",
-   "title": "RFQ-9355 — Rhein Aviation Technik (Boeing 777)",
+   "title": "RFQ-9355: Rhein Aviation Technik (Boeing 777)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -4308,7 +4308,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9355",
-   "title": "QT-9355 — quotation for Rhein Aviation Technik",
+   "title": "QT-9355: quotation for Rhein Aviation Technik",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4326,7 +4326,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9377",
-   "title": "RFQ-9377 — Andes Regional Airlines (Boeing 737)",
+   "title": "RFQ-9377: Andes Regional Airlines (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4344,7 +4344,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9377",
-   "title": "QT-9377 — quotation for Andes Regional Airlines",
+   "title": "QT-9377: quotation for Andes Regional Airlines",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4362,7 +4362,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9383",
-   "title": "RFQ-9383 — Gulf Technical Services (Boeing 787)",
+   "title": "RFQ-9383: Gulf Technical Services (Boeing 787)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4380,7 +4380,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9383",
-   "title": "QT-9383 — quotation for Gulf Technical Services",
+   "title": "QT-9383: quotation for Gulf Technical Services",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4398,7 +4398,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9401",
-   "title": "RFQ-9401 — Cascade Aerospace Support (Boeing 737)",
+   "title": "RFQ-9401: Cascade Aerospace Support (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4416,7 +4416,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9401",
-   "title": "QT-9401 — quotation for Cascade Aerospace Support",
+   "title": "QT-9401: quotation for Cascade Aerospace Support",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4434,7 +4434,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9405",
-   "title": "RFQ-9405 — Andes Regional Airlines (Boeing 737)",
+   "title": "RFQ-9405: Andes Regional Airlines (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4447,12 +4447,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9405.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9405\n\nCustomer: Andes Regional Airlines (Chile)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-07-08\nAircraft: Boeing 737\nEngine: CF6\nApplication: Flight controls\nProgramme: Heavy maintenance\nRequired delivery: not stated\nLine items: 14\n\nAndes Regional Airlines requested 14 flight controls tooling items for Boeing 737 fleet induction."
+   "body": "REQUEST FOR QUOTATION RFQ-9405\n\nCustomer: Andes Regional Airlines (Chile)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-07-08\nAircraft: Boeing 737\nEngine: LEAP-1B\nApplication: Flight controls\nProgramme: Heavy maintenance\nRequired delivery: not stated\nLine items: 14\n\nAndes Regional Airlines requested 14 flight controls tooling items for Boeing 737 fleet induction."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9405",
-   "title": "QT-9405 — quotation for Andes Regional Airlines",
+   "title": "QT-9405: quotation for Andes Regional Airlines",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4470,7 +4470,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9425",
-   "title": "RFQ-9425 — Pacific Line Maintenance (Boeing 737)",
+   "title": "RFQ-9425: Pacific Line Maintenance (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4488,7 +4488,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9425",
-   "title": "QT-9425 — quotation for Pacific Line Maintenance",
+   "title": "QT-9425: quotation for Pacific Line Maintenance",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4506,7 +4506,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9438",
-   "title": "RFQ-9438 — Atlantic Cargo Air (Boeing 747)",
+   "title": "RFQ-9438: Atlantic Cargo Air (Boeing 747)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4519,12 +4519,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9438.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9438\n\nCustomer: Atlantic Cargo Air (Ireland)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2025-08-02\nAircraft: Boeing 747\nEngine: CF6\nApplication: Thrust reverser\nProgramme: Component overhaul\nRequired delivery: 9 weeks\nLine items: 12\n\nAtlantic Cargo Air requested 12 thrust reverser tooling items for Boeing 747 base check."
+   "body": "REQUEST FOR QUOTATION RFQ-9438\n\nCustomer: Atlantic Cargo Air (Ireland)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2025-08-02\nAircraft: Boeing 747\nEngine: RB211\nApplication: Thrust reverser\nProgramme: Component overhaul\nRequired delivery: 9 weeks\nLine items: 12\n\nAtlantic Cargo Air requested 12 thrust reverser tooling items for Boeing 747 base check."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9438",
-   "title": "QT-9438 — quotation for Atlantic Cargo Air",
+   "title": "QT-9438: quotation for Atlantic Cargo Air",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4542,7 +4542,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9448",
-   "title": "RFQ-9448 — Nordic Wings Technic (Boeing 737)",
+   "title": "RFQ-9448: Nordic Wings Technic (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4555,12 +4555,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9448.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9448\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2024-07-30\nAircraft: Boeing 737\nEngine: Trent 1000\nApplication: Doors\nProgramme: Line maintenance\nRequired delivery: 9 weeks\nLine items: 3\n\nNordic Wings Technic requested 3 doors tooling items for Boeing 737 base check."
+   "body": "REQUEST FOR QUOTATION RFQ-9448\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2024-07-30\nAircraft: Boeing 737\nEngine: CFM56\nApplication: Doors\nProgramme: Line maintenance\nRequired delivery: 9 weeks\nLine items: 3\n\nNordic Wings Technic requested 3 doors tooling items for Boeing 737 base check."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9448",
-   "title": "QT-9448 — quotation for Nordic Wings Technic",
+   "title": "QT-9448: quotation for Nordic Wings Technic",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4578,7 +4578,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9452",
-   "title": "RFQ-9452 — Cascade Aerospace Support (Boeing 737)",
+   "title": "RFQ-9452: Cascade Aerospace Support (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4596,7 +4596,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9452",
-   "title": "QT-9452 — quotation for Cascade Aerospace Support",
+   "title": "QT-9452: quotation for Cascade Aerospace Support",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4614,7 +4614,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9470",
-   "title": "RFQ-9470 — Cascade Aerospace Support (Boeing 767)",
+   "title": "RFQ-9470: Cascade Aerospace Support (Boeing 767)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4632,7 +4632,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9483",
-   "title": "RFQ-9483 — Atlantic Cargo Air (Boeing 767)",
+   "title": "RFQ-9483: Atlantic Cargo Air (Boeing 767)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4650,7 +4650,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9483",
-   "title": "QT-9483 — quotation for Atlantic Cargo Air",
+   "title": "QT-9483: quotation for Atlantic Cargo Air",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4668,7 +4668,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9503",
-   "title": "RFQ-9503 — Gulf Technical Services (Boeing 777)",
+   "title": "RFQ-9503: Gulf Technical Services (Boeing 777)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4686,7 +4686,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9503",
-   "title": "QT-9503 — quotation for Gulf Technical Services",
+   "title": "QT-9503: quotation for Gulf Technical Services",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4704,7 +4704,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9527",
-   "title": "RFQ-9527 — Pacific Line Maintenance (Boeing 737)",
+   "title": "RFQ-9527: Pacific Line Maintenance (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4722,7 +4722,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9527",
-   "title": "QT-9527 — quotation for Pacific Line Maintenance",
+   "title": "QT-9527: quotation for Pacific Line Maintenance",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4740,7 +4740,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9544",
-   "title": "RFQ-9544 — Nordic Wings Technic (Boeing 737)",
+   "title": "RFQ-9544: Nordic Wings Technic (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4753,12 +4753,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9544.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9544\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-04-07\nAircraft: Boeing 737\nEngine: GE90\nApplication: Fuel\nProgramme: Fleet induction\nRequired delivery: 20 weeks\nLine items: 4\n\nNordic Wings Technic requested 4 fuel tooling items for Boeing 737 component overhaul."
+   "body": "REQUEST FOR QUOTATION RFQ-9544\n\nCustomer: Nordic Wings Technic (Denmark)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2026-04-07\nAircraft: Boeing 737\nEngine: LEAP-1B\nApplication: Fuel\nProgramme: Fleet induction\nRequired delivery: 20 weeks\nLine items: 4\n\nNordic Wings Technic requested 4 fuel tooling items for Boeing 737 component overhaul."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9544",
-   "title": "QT-9544 — quotation for Nordic Wings Technic",
+   "title": "QT-9544: quotation for Nordic Wings Technic",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4776,7 +4776,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9566",
-   "title": "RFQ-9566 — Andes Regional Airlines (Boeing 737)",
+   "title": "RFQ-9566: Andes Regional Airlines (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4794,7 +4794,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9566",
-   "title": "QT-9566 — quotation for Andes Regional Airlines",
+   "title": "QT-9566: quotation for Andes Regional Airlines",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4812,7 +4812,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9573",
-   "title": "RFQ-9573 — Atlantic Cargo Air (Boeing 767)",
+   "title": "RFQ-9573: Atlantic Cargo Air (Boeing 767)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4830,7 +4830,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9573",
-   "title": "QT-9573 — quotation for Atlantic Cargo Air",
+   "title": "QT-9573: quotation for Atlantic Cargo Air",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4848,7 +4848,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9576",
-   "title": "RFQ-9576 — Gulf Technical Services (Boeing 787)",
+   "title": "RFQ-9576: Gulf Technical Services (Boeing 787)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4866,7 +4866,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9589",
-   "title": "RFQ-9589 — Pacific Line Maintenance (Boeing 737)",
+   "title": "RFQ-9589: Pacific Line Maintenance (Boeing 737)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4879,12 +4879,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9589.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9589\n\nCustomer: Pacific Line Maintenance (Australia)\nAccount owner: James Carter, Technical Sales Manager\nReceived: 2026-01-02\nAircraft: Boeing 737\nEngine: Trent 1000\nApplication: Doors\nProgramme: Heavy maintenance\nRequired delivery: 7 weeks\nLine items: 3\n\nPacific Line Maintenance requested 3 doors tooling items for Boeing 737 line maintenance."
+   "body": "REQUEST FOR QUOTATION RFQ-9589\n\nCustomer: Pacific Line Maintenance (Australia)\nAccount owner: James Carter, Technical Sales Manager\nReceived: 2026-01-02\nAircraft: Boeing 737\nEngine: CFM56\nApplication: Doors\nProgramme: Heavy maintenance\nRequired delivery: 7 weeks\nLine items: 3\n\nPacific Line Maintenance requested 3 doors tooling items for Boeing 737 line maintenance."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9589",
-   "title": "QT-9589 — quotation for Pacific Line Maintenance",
+   "title": "QT-9589: quotation for Pacific Line Maintenance",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4902,7 +4902,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9612",
-   "title": "RFQ-9612 — Gulf Technical Services (Boeing 787)",
+   "title": "RFQ-9612: Gulf Technical Services (Boeing 787)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4920,7 +4920,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9612",
-   "title": "QT-9612 — quotation for Gulf Technical Services",
+   "title": "QT-9612: quotation for Gulf Technical Services",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4938,7 +4938,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9628",
-   "title": "RFQ-9628 — Cascade Aerospace Support (Boeing 767)",
+   "title": "RFQ-9628: Cascade Aerospace Support (Boeing 767)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -4951,12 +4951,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "rfqs/rfq-9628.pdf",
-   "body": "REQUEST FOR QUOTATION RFQ-9628\n\nCustomer: Cascade Aerospace Support (Canada)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2024-06-07\nAircraft: Boeing 767\nEngine: GEnx\nApplication: Thrust reverser\nProgramme: Base check\nRequired delivery: 16 weeks\nLine items: 5\n\nCascade Aerospace Support requested 5 thrust reverser tooling items for Boeing 767 component overhaul."
+   "body": "REQUEST FOR QUOTATION RFQ-9628\n\nCustomer: Cascade Aerospace Support (Canada)\nAccount owner: Tom Whitfield, Sales Engineer\nReceived: 2024-06-07\nAircraft: Boeing 767\nEngine: CF6\nApplication: Thrust reverser\nProgramme: Base check\nRequired delivery: 16 weeks\nLine items: 5\n\nCascade Aerospace Support requested 5 thrust reverser tooling items for Boeing 767 component overhaul."
   },
   {
    "status": "current",
    "documentId": "DOC-QT-9628",
-   "title": "QT-9628 — quotation for Cascade Aerospace Support",
+   "title": "QT-9628: quotation for Cascade Aerospace Support",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -4974,7 +4974,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9647",
-   "title": "RFQ-9647 — Pacific Line Maintenance (Boeing 787)",
+   "title": "RFQ-9647: Pacific Line Maintenance (Boeing 787)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -4992,7 +4992,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9647",
-   "title": "QT-9647 — quotation for Pacific Line Maintenance",
+   "title": "QT-9647: quotation for Pacific Line Maintenance",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -5010,7 +5010,7 @@
   {
    "status": "current",
    "documentId": "DOC-RFQ-9655",
-   "title": "RFQ-9655 — Pacific Line Maintenance (Boeing 787)",
+   "title": "RFQ-9655: Pacific Line Maintenance (Boeing 787)",
    "documentType": "rfq",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -5028,7 +5028,7 @@
   {
    "status": "current",
    "documentId": "DOC-QT-9655",
-   "title": "QT-9655 — quotation for Pacific Line Maintenance",
+   "title": "QT-9655: quotation for Pacific Line Maintenance",
    "documentType": "quote",
    "department": "Commercial",
    "authorId": "EMP-012",
@@ -5046,7 +5046,7 @@
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-001",
-   "title": "Singapore Aero MRO — account profile",
+   "title": "Singapore Aero MRO: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -5059,12 +5059,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/singapore-aero-mro-profile.pdf",
-   "body": "CUSTOMER PROFILE — Singapore Aero MRO\n\nCountry: Singapore (APAC)\nType: MRO\nFleet: Boeing 787, Boeing 777, Airbus A350\nCustomer since: 2019-04-11\nAccount owner: James Carter, Technical Sales Manager\nIndicative annual spend: £410,000\nPayment terms: 45 days\n\nNotes: Heavy maintenance provider. Historically sensitive to delivery lead times.\nEnquiries on record: 8"
+   "body": "CUSTOMER PROFILE: Singapore Aero MRO\n\nCountry: Singapore (APAC)\nType: MRO\nFleet: Boeing 787, Boeing 777, Airbus A350\nCustomer since: 2019-04-11\nAccount owner: James Carter, Technical Sales Manager\nIndicative annual spend: £410,000\nPayment terms: 45 days\n\nNotes: Heavy maintenance provider. Historically sensitive to delivery lead times.\nEnquiries on record: 8"
   },
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-002",
-   "title": "Nordic Wings Technic — account profile",
+   "title": "Nordic Wings Technic: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5077,12 +5077,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/nordic-wings-technic-profile.pdf",
-   "body": "CUSTOMER PROFILE — Nordic Wings Technic\n\nCountry: Denmark (EMEA)\nType: MRO\nFleet: Boeing 737, Airbus A320\nCustomer since: 2021-09-02\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £185,000\nPayment terms: 30 days\n\nNotes: Narrowbody line maintenance.\nEnquiries on record: 7"
+   "body": "CUSTOMER PROFILE: Nordic Wings Technic\n\nCountry: Denmark (EMEA)\nType: MRO\nFleet: Boeing 737, Airbus A320\nCustomer since: 2021-09-02\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £185,000\nPayment terms: 30 days\n\nNotes: Narrowbody line maintenance.\nEnquiries on record: 7"
   },
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-003",
-   "title": "Gulf Technical Services — account profile",
+   "title": "Gulf Technical Services: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -5095,12 +5095,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/gulf-technical-services-profile.pdf",
-   "body": "CUSTOMER PROFILE — Gulf Technical Services\n\nCountry: UAE (MEA)\nType: MRO\nFleet: Boeing 777, Boeing 787\nCustomer since: 2018-01-22\nAccount owner: James Carter, Technical Sales Manager\nIndicative annual spend: £620,000\nPayment terms: 60 days\n\nNotes: Large widebody base maintenance operation.\nEnquiries on record: 4"
+   "body": "CUSTOMER PROFILE: Gulf Technical Services\n\nCountry: UAE (MEA)\nType: MRO\nFleet: Boeing 777, Boeing 787\nCustomer since: 2018-01-22\nAccount owner: James Carter, Technical Sales Manager\nIndicative annual spend: £620,000\nPayment terms: 60 days\n\nNotes: Large widebody base maintenance operation.\nEnquiries on record: 4"
   },
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-004",
-   "title": "Atlantic Cargo Air — account profile",
+   "title": "Atlantic Cargo Air: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5113,12 +5113,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/atlantic-cargo-air-profile.pdf",
-   "body": "CUSTOMER PROFILE — Atlantic Cargo Air\n\nCountry: Ireland (EMEA)\nType: Operator\nFleet: Boeing 747, Boeing 767\nCustomer since: 2020-06-30\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £240,000\nPayment terms: 30 days\n\nNotes: Freighter operator, ageing fleet.\nEnquiries on record: 6"
+   "body": "CUSTOMER PROFILE: Atlantic Cargo Air\n\nCountry: Ireland (EMEA)\nType: Operator\nFleet: Boeing 747, Boeing 767\nCustomer since: 2020-06-30\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £240,000\nPayment terms: 30 days\n\nNotes: Freighter operator, ageing fleet.\nEnquiries on record: 6"
   },
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-005",
-   "title": "Andes Regional Airlines — account profile",
+   "title": "Andes Regional Airlines: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5131,12 +5131,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/andes-regional-airlines-profile.pdf",
-   "body": "CUSTOMER PROFILE — Andes Regional Airlines\n\nCountry: Chile (LATAM)\nType: Operator\nFleet: Boeing 737\nCustomer since: 2022-11-14\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £95,000\nPayment terms: 30 days\n\nNotes: Growing narrowbody fleet.\nEnquiries on record: 5"
+   "body": "CUSTOMER PROFILE: Andes Regional Airlines\n\nCountry: Chile (LATAM)\nType: Operator\nFleet: Boeing 737\nCustomer since: 2022-11-14\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £95,000\nPayment terms: 30 days\n\nNotes: Growing narrowbody fleet.\nEnquiries on record: 5"
   },
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-006",
-   "title": "Pacific Line Maintenance — account profile",
+   "title": "Pacific Line Maintenance: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -5149,12 +5149,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/pacific-line-maintenance-profile.pdf",
-   "body": "CUSTOMER PROFILE — Pacific Line Maintenance\n\nCountry: Australia (APAC)\nType: MRO\nFleet: Boeing 787, Boeing 737\nCustomer since: 2021-02-08\nAccount owner: James Carter, Technical Sales Manager\nIndicative annual spend: £155,000\nPayment terms: 45 days\n\nNotes: Line maintenance, expanding into base checks.\nEnquiries on record: 8"
+   "body": "CUSTOMER PROFILE: Pacific Line Maintenance\n\nCountry: Australia (APAC)\nType: MRO\nFleet: Boeing 787, Boeing 737\nCustomer since: 2021-02-08\nAccount owner: James Carter, Technical Sales Manager\nIndicative annual spend: £155,000\nPayment terms: 45 days\n\nNotes: Line maintenance, expanding into base checks.\nEnquiries on record: 8"
   },
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-007",
-   "title": "Rhein Aviation Technik — account profile",
+   "title": "Rhein Aviation Technik: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -5167,12 +5167,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/rhein-aviation-technik-profile.pdf",
-   "body": "CUSTOMER PROFILE — Rhein Aviation Technik\n\nCountry: Germany (EMEA)\nType: MRO\nFleet: Airbus A330, Boeing 777\nCustomer since: 2017-05-19\nAccount owner: Priya Raman, Head of Sales\nIndicative annual spend: £480,000\nPayment terms: 60 days\n\nNotes: Long-standing account, engineering-led buying.\nEnquiries on record: 2"
+   "body": "CUSTOMER PROFILE: Rhein Aviation Technik\n\nCountry: Germany (EMEA)\nType: MRO\nFleet: Airbus A330, Boeing 777\nCustomer since: 2017-05-19\nAccount owner: Priya Raman, Head of Sales\nIndicative annual spend: £480,000\nPayment terms: 60 days\n\nNotes: Long-standing account, engineering-led buying.\nEnquiries on record: 2"
   },
   {
    "status": "current",
    "documentId": "DOC-PROF-CUST-008",
-   "title": "Cascade Aerospace Support — account profile",
+   "title": "Cascade Aerospace Support: account profile",
    "documentType": "customer-profile",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5185,12 +5185,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "customers/cascade-aerospace-support-profile.pdf",
-   "body": "CUSTOMER PROFILE — Cascade Aerospace Support\n\nCountry: Canada (AMER)\nType: MRO\nFleet: Boeing 767, Boeing 737\nCustomer since: 2023-03-27\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £72,000\nPayment terms: 30 days\n\nNotes: Newer account, price sensitive.\nEnquiries on record: 6"
+   "body": "CUSTOMER PROFILE: Cascade Aerospace Support\n\nCountry: Canada (AMER)\nType: MRO\nFleet: Boeing 767, Boeing 737\nCustomer since: 2023-03-27\nAccount owner: Tom Whitfield, Sales Engineer\nIndicative annual spend: £72,000\nPayment terms: 30 days\n\nNotes: Newer account, price sensitive.\nEnquiries on record: 6"
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-001",
-   "title": "Halden Precision Works — supplier summary",
+   "title": "Halden Precision Works: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5203,12 +5203,12 @@
    "relatedParts": [],
    "supplierId": "SUP-001",
    "path": "suppliers/halden-precision-works.docx",
-   "body": "SUPPLIER SUMMARY — Halden Precision Works\n\nCategory: Machined tooling\nCountry: United Kingdom\nStandard lead time: 10 weeks\nOn-time reliability: 94%\n\nNotes: Reliable on repeat items."
+   "body": "SUPPLIER SUMMARY: Halden Precision Works\n\nCategory: Machined tooling\nCountry: United Kingdom\nStandard lead time: 10 weeks\nOn-time reliability: 94%\n\nNotes: Reliable on repeat items."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-003",
-   "title": "Baltic Lifting Systems — supplier summary",
+   "title": "Baltic Lifting Systems: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5221,12 +5221,12 @@
    "relatedParts": [],
    "supplierId": "SUP-003",
    "path": "suppliers/baltic-lifting-systems.docx",
-   "body": "SUPPLIER SUMMARY — Baltic Lifting Systems\n\nCategory: Slings and hoists\nCountry: Poland\nStandard lead time: 8 weeks\nOn-time reliability: 91%\n\nNotes: Good on lifting equipment."
+   "body": "SUPPLIER SUMMARY: Baltic Lifting Systems\n\nCategory: Slings and hoists\nCountry: Poland\nStandard lead time: 8 weeks\nOn-time reliability: 91%\n\nNotes: Good on lifting equipment."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-004",
-   "title": "Kite Ground Support — supplier summary",
+   "title": "Kite Ground Support: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5239,12 +5239,12 @@
    "relatedParts": [],
    "supplierId": "SUP-004",
    "path": "suppliers/kite-ground-support.docx",
-   "body": "SUPPLIER SUMMARY — Kite Ground Support\n\nCategory: Ground support\nCountry: United Kingdom\nStandard lead time: 6 weeks\nOn-time reliability: 96%\n\nNotes: Fast turnaround on GSE."
+   "body": "SUPPLIER SUMMARY: Kite Ground Support\n\nCategory: Ground support\nCountry: United Kingdom\nStandard lead time: 6 weeks\nOn-time reliability: 96%\n\nNotes: Fast turnaround on GSE."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-005",
-   "title": "Osaka Tool Engineering — supplier summary",
+   "title": "Osaka Tool Engineering: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5257,12 +5257,12 @@
    "relatedParts": [],
    "supplierId": "SUP-005",
    "path": "suppliers/osaka-tool-engineering.docx",
-   "body": "SUPPLIER SUMMARY — Osaka Tool Engineering\n\nCategory: Precision fixtures\nCountry: Japan\nStandard lead time: 14 weeks\nOn-time reliability: 97%\n\nNotes: High quality, long lead times."
+   "body": "SUPPLIER SUMMARY: Osaka Tool Engineering\n\nCategory: Precision fixtures\nCountry: Japan\nStandard lead time: 14 weeks\nOn-time reliability: 97%\n\nNotes: High quality, long lead times."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-006",
-   "title": "Provence Composites — supplier summary",
+   "title": "Provence Composites: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5275,12 +5275,12 @@
    "relatedParts": [],
    "supplierId": "SUP-006",
    "path": "suppliers/provence-composites.docx",
-   "body": "SUPPLIER SUMMARY — Provence Composites\n\nCategory: Covers and plugs\nCountry: France\nStandard lead time: 7 weeks\nOn-time reliability: 89%\n\nNotes: Protective equipment specialist."
+   "body": "SUPPLIER SUMMARY: Provence Composites\n\nCategory: Covers and plugs\nCountry: France\nStandard lead time: 7 weeks\nOn-time reliability: 89%\n\nNotes: Protective equipment specialist."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-007",
-   "title": "Northgate Fabrication — supplier summary",
+   "title": "Northgate Fabrication: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5293,12 +5293,12 @@
    "relatedParts": [],
    "supplierId": "SUP-007",
    "path": "suppliers/northgate-fabrication.docx",
-   "body": "SUPPLIER SUMMARY — Northgate Fabrication\n\nCategory: Stands and frames\nCountry: United Kingdom\nStandard lead time: 9 weeks\nOn-time reliability: 92%\n\nNotes: Bulky fabricated items."
+   "body": "SUPPLIER SUMMARY: Northgate Fabrication\n\nCategory: Stands and frames\nCountry: United Kingdom\nStandard lead time: 9 weeks\nOn-time reliability: 92%\n\nNotes: Bulky fabricated items."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-008",
-   "title": "Vector Test Systems — supplier summary",
+   "title": "Vector Test Systems: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5311,12 +5311,12 @@
    "relatedParts": [],
    "supplierId": "SUP-008",
    "path": "suppliers/vector-test-systems.docx",
-   "body": "SUPPLIER SUMMARY — Vector Test Systems\n\nCategory: Test equipment\nCountry: Germany\nStandard lead time: 11 weeks\nOn-time reliability: 90%\n\nNotes: Electrical and test sets."
+   "body": "SUPPLIER SUMMARY: Vector Test Systems\n\nCategory: Test equipment\nCountry: Germany\nStandard lead time: 11 weeks\nOn-time reliability: 90%\n\nNotes: Electrical and test sets."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-009",
-   "title": "Cordoba Metalworks — supplier summary",
+   "title": "Cordoba Metalworks: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5329,12 +5329,12 @@
    "relatedParts": [],
    "supplierId": "SUP-009",
    "path": "suppliers/cordoba-metalworks.docx",
-   "body": "SUPPLIER SUMMARY — Cordoba Metalworks\n\nCategory: Machined tooling\nCountry: Spain\nStandard lead time: 9 weeks\nOn-time reliability: 85%\n\nNotes: Occasional quality escapes."
+   "body": "SUPPLIER SUMMARY: Cordoba Metalworks\n\nCategory: Machined tooling\nCountry: Spain\nStandard lead time: 9 weeks\nOn-time reliability: 85%\n\nNotes: Occasional quality escapes."
   },
   {
    "status": "current",
    "documentId": "DOC-SUP-SUP-010",
-   "title": "Lakeside Calibration — supplier summary",
+   "title": "Lakeside Calibration: supplier summary",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-010",
@@ -5347,7 +5347,133 @@
    "relatedParts": [],
    "supplierId": "SUP-010",
    "path": "suppliers/lakeside-calibration.docx",
-   "body": "SUPPLIER SUMMARY — Lakeside Calibration\n\nCategory: Calibration\nCountry: United Kingdom\nStandard lead time: 4 weeks\nOn-time reliability: 98%\n\nNotes: Calibration and certification services."
+   "body": "SUPPLIER SUMMARY: Lakeside Calibration\n\nCategory: Calibration\nCountry: United Kingdom\nStandard lead time: 4 weeks\nOn-time reliability: 98%\n\nNotes: Calibration and certification services."
+  },
+  {
+   "status": "current",
+   "documentId": "DOC-HIST-CUST-002",
+   "title": "Nordic Wings Technic: account history and commercial notes",
+   "documentType": "account-history",
+   "department": "Sales",
+   "authorId": "EMP-004",
+   "authorName": "Tom Whitfield",
+   "createdAt": "2024-07-30T00:00:00.000Z",
+   "updatedAt": "2026-07-18T00:00:00.000Z",
+   "customerId": "CUST-002",
+   "relatedRfqId": "RFQ-9261",
+   "relatedQuoteId": "QT-9261",
+   "relatedParts": [],
+   "supplierId": null,
+   "path": "customers/nordic-wings-technic-history.docx",
+   "body": "ACCOUNT HISTORY — Nordic Wings Technic\n\nAccount owner: Tom Whitfield, Sales Engineer\nCustomer since: 2021\nFleet: Boeing 737, Airbus A320\n\nENQUIRY HISTORY\n  RFQ-9448  2024-07-30  Boeing 737 CFM56 doors : lost\n  RFQ-9284  2025-06-19  Airbus A320 thrust reverser : won, quoted QT-9284\n  RFQ-9234  2025-10-23  Airbus A320 V2500 stabilizers : quoted, no decision\n  RFQ-9273  2025-12-15  Boeing 737 LEAP-1B stabilizers : open\n  RFQ-9544  2026-04-07  Boeing 737 LEAP-1B fuel : lost\n  RFQ-9205  2026-07-04  Airbus A320 nacelles/pylons : quoted, no decision\n  RFQ-9261  2026-07-18  Boeing 737 CFM56 fuel : lost\n\nCOMMERCIAL NOTES\n  Certificate paperwork is the recurring point of friction on this account: a sling\n  arrived with an out-of-date proof-load certificate (CS-2052) and was re-certified\n  before use. Renewal of the framework agreement is due next quarter."
+  },
+  {
+   "status": "current",
+   "documentId": "DOC-HIST-CUST-003",
+   "title": "Gulf Technical Services: account history and commercial notes",
+   "documentType": "account-history",
+   "department": "Sales",
+   "authorId": "EMP-003",
+   "authorName": "James Carter",
+   "createdAt": "2024-11-13T00:00:00.000Z",
+   "updatedAt": "2026-06-22T00:00:00.000Z",
+   "customerId": "CUST-003",
+   "relatedRfqId": "RFQ-9576",
+   "relatedQuoteId": null,
+   "relatedParts": [],
+   "supplierId": null,
+   "path": "customers/gulf-technical-services-history.docx",
+   "body": "ACCOUNT HISTORY — Gulf Technical Services\n\nAccount owner: James Carter, Technical Sales Manager\nCustomer since: 2018\nFleet: Boeing 777, Boeing 787\n\nENQUIRY HISTORY\n  RFQ-9503  2024-11-13  Boeing 777 nacelles/pylons : lost\n  RFQ-9383  2025-07-25  Boeing 787 nacelles/pylons : lost\n  RFQ-9612  2025-10-31  Boeing 787 flight controls : won, quoted QT-9612\n  RFQ-9576  2026-06-22  Boeing 787 flight controls : open\n\nCOMMERCIAL NOTES\n  Consolidated monthly shipments to Dubai are the recurring request (CS-2240).\n  Delivery lead time has been acceptable; a stand was damaged in transit once."
+  },
+  {
+   "status": "current",
+   "documentId": "DOC-HIST-CUST-004",
+   "title": "Atlantic Cargo Air: account history and commercial notes",
+   "documentType": "account-history",
+   "department": "Sales",
+   "authorId": "EMP-004",
+   "authorName": "Tom Whitfield",
+   "createdAt": "2024-10-23T00:00:00.000Z",
+   "updatedAt": "2026-06-20T00:00:00.000Z",
+   "customerId": "CUST-004",
+   "relatedRfqId": "RFQ-9573",
+   "relatedQuoteId": "QT-9573",
+   "relatedParts": [],
+   "supplierId": null,
+   "path": "customers/atlantic-cargo-air-history.docx",
+   "body": "ACCOUNT HISTORY — Atlantic Cargo Air\n\nAccount owner: Tom Whitfield, Sales Engineer\nCustomer since: 2020\nFleet: Boeing 747, Boeing 767\n\nENQUIRY HISTORY\n  RFQ-9483  2024-10-23  Boeing 767 fuel : won, quoted QT-9483\n  RFQ-9240  2024-10-29  Boeing 747 thrust reverser : open\n  RFQ-9133  2024-12-16  Boeing 767 exhaust : open\n  RFQ-9174  2025-05-02  Boeing 767 stabilizers : lost\n  RFQ-9438  2025-08-02  Boeing 747 RB211 thrust reverser : lost\n  RFQ-9573  2026-06-20  Boeing 767 stabilizers : won, quoted QT-9573\n\nCOMMERCIAL NOTES\n  Availability of out-of-production tooling for the 747 and 767 is the recurring issue\n  on this account. Several items have been quoted from refurbished stock.\n  Part shipments must carry an advice note (CS-2011)."
+  },
+  {
+   "status": "current",
+   "documentId": "DOC-HIST-CUST-005",
+   "title": "Andes Regional Airlines: account history and commercial notes",
+   "documentType": "account-history",
+   "department": "Sales",
+   "authorId": "EMP-004",
+   "authorName": "Tom Whitfield",
+   "createdAt": "2025-03-08T00:00:00.000Z",
+   "updatedAt": "2026-07-08T00:00:00.000Z",
+   "customerId": "CUST-005",
+   "relatedRfqId": "RFQ-9405",
+   "relatedQuoteId": "QT-9405",
+   "relatedParts": [],
+   "supplierId": null,
+   "path": "customers/andes-regional-airlines-history.docx",
+   "body": "ACCOUNT HISTORY — Andes Regional Airlines\n\nAccount owner: Tom Whitfield, Sales Engineer\nCustomer since: 2022\nFleet: Boeing 737\n\nENQUIRY HISTORY\n  RFQ-9566  2025-03-08  Boeing 737 doors : won, quoted QT-9566\n  RFQ-9310  2025-03-22  Boeing 737 stabilizers : lost\n  RFQ-9377  2025-11-30  Boeing 737 stabilizers : won, quoted QT-9377\n  RFQ-9157  2025-12-30  Boeing 737 thrust reverser : won, quoted QT-9157\n  RFQ-9405  2026-07-08  Boeing 737 LEAP-1B flight controls : quoted, no decision\n\nCOMMERCIAL NOTES\n  Newer account. Price is the recurring point of friction: two quotes declined on price\n  against a regional competitor. Lead time has not been raised."
+  },
+  {
+   "status": "current",
+   "documentId": "DOC-HIST-CUST-006",
+   "title": "Pacific Line Maintenance: account history and commercial notes",
+   "documentType": "account-history",
+   "department": "Sales",
+   "authorId": "EMP-003",
+   "authorName": "James Carter",
+   "createdAt": "2024-06-16T00:00:00.000Z",
+   "updatedAt": "2026-07-15T00:00:00.000Z",
+   "customerId": "CUST-006",
+   "relatedRfqId": "RFQ-9527",
+   "relatedQuoteId": "QT-9527",
+   "relatedParts": [],
+   "supplierId": null,
+   "path": "customers/pacific-line-maintenance-history.docx",
+   "body": "ACCOUNT HISTORY — Pacific Line Maintenance\n\nAccount owner: James Carter, Technical Sales Manager\nCustomer since: 2021\nFleet: Boeing 787, Boeing 737\n\nENQUIRY HISTORY\n  RFQ-9425  2024-06-16  Boeing 737 flight controls : won, quoted QT-9425\n  RFQ-9647  2025-06-01  Boeing 787 exhaust : lost\n  RFQ-9350  2025-08-16  Boeing 737 stabilizers : lost\n  RFQ-9184  2025-10-02  Boeing 737 fuel : quoted, no decision\n  RFQ-9655  2025-11-30  Boeing 787 GEnx flight controls : won, quoted QT-9655\n  RFQ-9589  2026-01-02  Boeing 737 CFM56 doors : lost\n  RFQ-9302  2026-07-15  Boeing 787 GEnx flight controls : open\n  RFQ-9527  2026-07-15  Boeing 737 exhaust : lost\n\nCOMMERCIAL NOTES\n  Expanding from line into base checks and asks for recommended tooling lists (CS-2263).\n  Engineering applicability questions are usually the gating item on a quote."
+  },
+  {
+   "status": "current",
+   "documentId": "DOC-HIST-CUST-007",
+   "title": "Rhein Aviation Technik: account history and commercial notes",
+   "documentType": "account-history",
+   "department": "Sales",
+   "authorId": "EMP-002",
+   "authorName": "Priya Raman",
+   "createdAt": "2024-11-08T00:00:00.000Z",
+   "updatedAt": "2026-02-27T00:00:00.000Z",
+   "customerId": "CUST-007",
+   "relatedRfqId": "RFQ-9355",
+   "relatedQuoteId": "QT-9355",
+   "relatedParts": [],
+   "supplierId": null,
+   "path": "customers/rhein-aviation-technik-history.docx",
+   "body": "ACCOUNT HISTORY — Rhein Aviation Technik\n\nAccount owner: Priya Raman, Head of Sales\nCustomer since: 2017\nFleet: Airbus A330, Boeing 777\n\nENQUIRY HISTORY\n  RFQ-9218  2024-11-08  Boeing 777 landing gear : won, quoted QT-9218\n  RFQ-9355  2026-02-27  Boeing 777 doors : quoted, no decision\n\nCOMMERCIAL NOTES\n  Engineering-led buying: applicability sign-off is the gating item on every quote,\n  and the customer expects drawing revisions to be stated. Price is rarely discussed.\n  One fixture was returned out of tolerance (CS-2138) and re-made."
+  },
+  {
+   "status": "current",
+   "documentId": "DOC-HIST-CUST-008",
+   "title": "Cascade Aerospace Support: account history and commercial notes",
+   "documentType": "account-history",
+   "department": "Sales",
+   "authorId": "EMP-004",
+   "authorName": "Tom Whitfield",
+   "createdAt": "2024-06-07T00:00:00.000Z",
+   "updatedAt": "2026-06-13T00:00:00.000Z",
+   "customerId": "CUST-008",
+   "relatedRfqId": "RFQ-9111",
+   "relatedQuoteId": "QT-9111",
+   "relatedParts": [],
+   "supplierId": null,
+   "path": "customers/cascade-aerospace-support-history.docx",
+   "body": "ACCOUNT HISTORY — Cascade Aerospace Support\n\nAccount owner: Tom Whitfield, Sales Engineer\nCustomer since: 2023\nFleet: Boeing 767, Boeing 737\n\nENQUIRY HISTORY\n  RFQ-9628  2024-06-07  Boeing 767 CF6 thrust reverser : quoted, no decision\n  RFQ-9452  2025-07-20  Boeing 737 thrust reverser : lost\n  RFQ-9326  2025-10-16  Boeing 737 thrust reverser : open\n  RFQ-9401  2025-12-09  Boeing 737 flight controls : won, quoted QT-9401\n  RFQ-9470  2026-01-23  Boeing 767 nacelles/pylons : open\n  RFQ-9111  2026-06-13  Boeing 767 PW4000 stabilizers : quoted, no decision\n\nCOMMERCIAL NOTES\n  Price is the recurring point of friction on this account, which is price sensitive:\n  an open complaint (CS-2279) compares the latest quote with an earlier one."
   },
   {
    "status": "current",
@@ -5388,7 +5514,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-001",
-   "title": "Engineering review call — 2026-05",
+   "title": "Engineering review call: 2026-05",
    "documentType": "meeting-notes",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5406,7 +5532,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-002",
-   "title": "Procurement supplier review — 2026-03",
+   "title": "Procurement supplier review: 2026-03",
    "documentType": "meeting-notes",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -5424,7 +5550,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-003",
-   "title": "Operations capacity review — 2026-06",
+   "title": "Operations capacity review: 2026-06",
    "documentType": "meeting-notes",
    "department": "Operations",
    "authorId": "EMP-008",
@@ -5442,7 +5568,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-004",
-   "title": "Commercial pricing review — 2025-10",
+   "title": "Commercial pricing review: 2025-10",
    "documentType": "meeting-notes",
    "department": "Commercial",
    "authorId": "EMP-005",
@@ -5460,7 +5586,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-005",
-   "title": "Quarterly account review — 2026-02",
+   "title": "Quarterly account review: 2026-02",
    "documentType": "meeting-notes",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -5478,7 +5604,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-006",
-   "title": "Engineering review call — 2026-02",
+   "title": "Engineering review call: 2026-02",
    "documentType": "meeting-notes",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5496,7 +5622,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-007",
-   "title": "Procurement supplier review — 2026-02",
+   "title": "Procurement supplier review: 2026-02",
    "documentType": "meeting-notes",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -5514,7 +5640,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-008",
-   "title": "Operations capacity review — 2025-12",
+   "title": "Operations capacity review: 2025-12",
    "documentType": "meeting-notes",
    "department": "Operations",
    "authorId": "EMP-008",
@@ -5532,7 +5658,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-009",
-   "title": "Commercial pricing review — 2026-02",
+   "title": "Commercial pricing review: 2026-02",
    "documentType": "meeting-notes",
    "department": "Commercial",
    "authorId": "EMP-005",
@@ -5550,7 +5676,7 @@
   {
    "status": "current",
    "documentId": "DOC-MEET-010",
-   "title": "Quarterly account review — 2026-01",
+   "title": "Quarterly account review: 2026-01",
    "documentType": "meeting-notes",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -5568,7 +5694,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-001",
-   "title": "Thrust reverser handling guidance — technical note",
+   "title": "Thrust reverser handling guidance: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-007",
@@ -5589,7 +5715,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-002",
-   "title": "Landing gear jacking and shoring — technical note",
+   "title": "Landing gear jacking and shoring: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5607,7 +5733,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-003",
-   "title": "Engine inlet protection during storage — technical note",
+   "title": "Engine inlet protection during storage: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5627,7 +5753,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-004",
-   "title": "Fan cowl support beam handling — technical note",
+   "title": "Fan cowl support beam handling: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-007",
@@ -5647,7 +5773,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-005",
-   "title": "Sling inspection and recertification — technical note",
+   "title": "Sling inspection and recertification: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-007",
@@ -5665,7 +5791,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-006",
-   "title": "Door rigging equipment usage — technical note",
+   "title": "Door rigging equipment usage: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5683,7 +5809,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-007",
-   "title": "Exhaust duct plug fitment — technical note",
+   "title": "Exhaust duct plug fitment: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-007",
@@ -5704,7 +5830,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-008",
-   "title": "Flaperon rigging procedure notes — technical note",
+   "title": "Flaperon rigging procedure notes: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5722,7 +5848,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-009",
-   "title": "Torque equipment calibration intervals — technical note",
+   "title": "Torque equipment calibration intervals: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5740,7 +5866,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-010",
-   "title": "Stand assembly load ratings — technical note",
+   "title": "Stand assembly load ratings: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-007",
@@ -5760,7 +5886,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-011",
-   "title": "Blocker door wear measurement — technical note",
+   "title": "Blocker door wear measurement: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5780,7 +5906,7 @@
   {
    "status": "current",
    "documentId": "DOC-TECH-012",
-   "title": "Protective plug material compatibility — technical note",
+   "title": "Protective plug material compatibility: technical note",
    "documentType": "technical-note",
    "department": "Engineering",
    "authorId": "EMP-006",
@@ -5798,7 +5924,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-001",
-   "title": "Cascade Aerospace Support — correspondence re RFQ-9111",
+   "title": "Cascade Aerospace Support: correspondence re RFQ-9111",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5811,12 +5937,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/cascade-aerospace-support-rfq-9111.txt",
-   "body": "From: procurement@cascade-aerospace-support.example\nTo: t.whitfield@field.example\nDate: 2026-06-13\nSubject: RFQ-9111 — Boeing 767 Stabilizers\n\nTom,\n\nPlease could you provide pricing and availability for our stabilizers\nrequirement on Boeing 767 (CF6).\nPlease advise your standard lead time.\n\nRegards,\nProcurement, Cascade Aerospace Support"
+   "body": "From: procurement@cascade-aerospace-support.example\nTo: t.whitfield@field.example\nDate: 2026-06-13\nSubject: RFQ-9111 — Boeing 767 Stabilizers\n\nTom,\n\nPlease could you provide pricing and availability for our stabilizers\nrequirement on Boeing 767 (PW4000).\nPlease advise your standard lead time.\n\nRegards,\nProcurement, Cascade Aerospace Support"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-002",
-   "title": "Atlantic Cargo Air — correspondence re RFQ-9133",
+   "title": "Atlantic Cargo Air: correspondence re RFQ-9133",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5834,7 +5960,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-003",
-   "title": "Andes Regional Airlines — correspondence re RFQ-9157",
+   "title": "Andes Regional Airlines: correspondence re RFQ-9157",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5852,7 +5978,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-004",
-   "title": "Atlantic Cargo Air — correspondence re RFQ-9174",
+   "title": "Atlantic Cargo Air: correspondence re RFQ-9174",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5870,7 +5996,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-005",
-   "title": "Pacific Line Maintenance — correspondence re RFQ-9184",
+   "title": "Pacific Line Maintenance: correspondence re RFQ-9184",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -5888,7 +6014,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-006",
-   "title": "Nordic Wings Technic — correspondence re RFQ-9205",
+   "title": "Nordic Wings Technic: correspondence re RFQ-9205",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5906,7 +6032,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-007",
-   "title": "Rhein Aviation Technik — correspondence re RFQ-9218",
+   "title": "Rhein Aviation Technik: correspondence re RFQ-9218",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -5924,7 +6050,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-008",
-   "title": "Nordic Wings Technic — correspondence re RFQ-9234",
+   "title": "Nordic Wings Technic: correspondence re RFQ-9234",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5937,12 +6063,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/nordic-wings-technic-rfq-9234.txt",
-   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2025-10-23\nSubject: RFQ-9234 — Airbus A320 Stabilizers\n\nTom,\n\nPlease could you provide pricing and availability for our stabilizers\nrequirement on Airbus A320 (GE90).\nWe would need delivery within 20 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
+   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2025-10-23\nSubject: RFQ-9234 — Airbus A320 Stabilizers\n\nTom,\n\nPlease could you provide pricing and availability for our stabilizers\nrequirement on Airbus A320 (V2500).\nWe would need delivery within 20 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-009",
-   "title": "Atlantic Cargo Air — correspondence re RFQ-9240",
+   "title": "Atlantic Cargo Air: correspondence re RFQ-9240",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5960,7 +6086,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-010",
-   "title": "Nordic Wings Technic — correspondence re RFQ-9261",
+   "title": "Nordic Wings Technic: correspondence re RFQ-9261",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5973,12 +6099,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/nordic-wings-technic-rfq-9261.txt",
-   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2026-07-18\nSubject: RFQ-9261 — Boeing 737 Fuel\n\nTom,\n\nPlease could you provide pricing and availability for our fuel\nrequirement on Boeing 737 (Trent 1000).\nWe would need delivery within 15 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
+   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2026-07-18\nSubject: RFQ-9261 — Boeing 737 Fuel\n\nTom,\n\nPlease could you provide pricing and availability for our fuel\nrequirement on Boeing 737 (CFM56).\nWe would need delivery within 15 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-011",
-   "title": "Nordic Wings Technic — correspondence re RFQ-9273",
+   "title": "Nordic Wings Technic: correspondence re RFQ-9273",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -5991,12 +6117,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/nordic-wings-technic-rfq-9273.txt",
-   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2025-12-15\nSubject: RFQ-9273 — Boeing 737 Stabilizers\n\nTom,\n\nPlease could you provide pricing and availability for our stabilizers\nrequirement on Boeing 737 (GE90).\nWe would need delivery within 6 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
+   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2025-12-15\nSubject: RFQ-9273 — Boeing 737 Stabilizers\n\nTom,\n\nPlease could you provide pricing and availability for our stabilizers\nrequirement on Boeing 737 (LEAP-1B).\nWe would need delivery within 6 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-012",
-   "title": "Nordic Wings Technic — correspondence re RFQ-9284",
+   "title": "Nordic Wings Technic: correspondence re RFQ-9284",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6014,7 +6140,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-013",
-   "title": "Pacific Line Maintenance — correspondence re RFQ-9302",
+   "title": "Pacific Line Maintenance: correspondence re RFQ-9302",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -6027,12 +6153,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/pacific-line-maintenance-rfq-9302.txt",
-   "body": "From: procurement@pacific-line-maintenance.example\nTo: j.carter@field.example\nDate: 2026-07-15\nSubject: RFQ-9302 — Boeing 787 Flight controls\n\nJames,\n\nPlease could you provide pricing and availability for our flight controls\nrequirement on Boeing 787 (Trent 1000).\nWe would need delivery within 15 weeks.\n\nRegards,\nProcurement, Pacific Line Maintenance"
+   "body": "From: procurement@pacific-line-maintenance.example\nTo: j.carter@field.example\nDate: 2026-07-15\nSubject: RFQ-9302 — Boeing 787 Flight controls\n\nJames,\n\nPlease could you provide pricing and availability for our flight controls\nrequirement on Boeing 787 (GEnx).\nWe would need delivery within 15 weeks.\n\nRegards,\nProcurement, Pacific Line Maintenance"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-014",
-   "title": "Andes Regional Airlines — correspondence re RFQ-9310",
+   "title": "Andes Regional Airlines: correspondence re RFQ-9310",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6050,7 +6176,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-015",
-   "title": "Cascade Aerospace Support — correspondence re RFQ-9326",
+   "title": "Cascade Aerospace Support: correspondence re RFQ-9326",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6068,7 +6194,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-016",
-   "title": "Pacific Line Maintenance — correspondence re RFQ-9350",
+   "title": "Pacific Line Maintenance: correspondence re RFQ-9350",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -6086,7 +6212,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-017",
-   "title": "Rhein Aviation Technik — correspondence re RFQ-9355",
+   "title": "Rhein Aviation Technik: correspondence re RFQ-9355",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-002",
@@ -6104,7 +6230,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-018",
-   "title": "Andes Regional Airlines — correspondence re RFQ-9377",
+   "title": "Andes Regional Airlines: correspondence re RFQ-9377",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6122,7 +6248,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-019",
-   "title": "Gulf Technical Services — correspondence re RFQ-9383",
+   "title": "Gulf Technical Services: correspondence re RFQ-9383",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -6140,7 +6266,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-020",
-   "title": "Cascade Aerospace Support — correspondence re RFQ-9401",
+   "title": "Cascade Aerospace Support: correspondence re RFQ-9401",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6158,7 +6284,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-021",
-   "title": "Andes Regional Airlines — correspondence re RFQ-9405",
+   "title": "Andes Regional Airlines: correspondence re RFQ-9405",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6171,12 +6297,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/andes-regional-airlines-rfq-9405.txt",
-   "body": "From: procurement@andes-regional-airlines.example\nTo: t.whitfield@field.example\nDate: 2026-07-08\nSubject: RFQ-9405 — Boeing 737 Flight controls\n\nTom,\n\nPlease could you provide pricing and availability for our flight controls\nrequirement on Boeing 737 (CF6).\nPlease advise your standard lead time.\n\nRegards,\nProcurement, Andes Regional Airlines"
+   "body": "From: procurement@andes-regional-airlines.example\nTo: t.whitfield@field.example\nDate: 2026-07-08\nSubject: RFQ-9405 — Boeing 737 Flight controls\n\nTom,\n\nPlease could you provide pricing and availability for our flight controls\nrequirement on Boeing 737 (LEAP-1B).\nPlease advise your standard lead time.\n\nRegards,\nProcurement, Andes Regional Airlines"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-022",
-   "title": "Pacific Line Maintenance — correspondence re RFQ-9425",
+   "title": "Pacific Line Maintenance: correspondence re RFQ-9425",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-003",
@@ -6194,7 +6320,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-023",
-   "title": "Atlantic Cargo Air — correspondence re RFQ-9438",
+   "title": "Atlantic Cargo Air: correspondence re RFQ-9438",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6207,12 +6333,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/atlantic-cargo-air-rfq-9438.txt",
-   "body": "From: procurement@atlantic-cargo-air.example\nTo: t.whitfield@field.example\nDate: 2025-08-02\nSubject: RFQ-9438 — Boeing 747 Thrust reverser\n\nTom,\n\nPlease could you provide pricing and availability for our thrust reverser\nrequirement on Boeing 747 (CF6).\nWe would need delivery within 9 weeks.\n\nRegards,\nProcurement, Atlantic Cargo Air"
+   "body": "From: procurement@atlantic-cargo-air.example\nTo: t.whitfield@field.example\nDate: 2025-08-02\nSubject: RFQ-9438 — Boeing 747 Thrust reverser\n\nTom,\n\nPlease could you provide pricing and availability for our thrust reverser\nrequirement on Boeing 747 (RB211).\nWe would need delivery within 9 weeks.\n\nRegards,\nProcurement, Atlantic Cargo Air"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-024",
-   "title": "Nordic Wings Technic — correspondence re RFQ-9448",
+   "title": "Nordic Wings Technic: correspondence re RFQ-9448",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6225,12 +6351,12 @@
    "relatedParts": [],
    "supplierId": null,
    "path": "emails/nordic-wings-technic-rfq-9448.txt",
-   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2024-07-30\nSubject: RFQ-9448 — Boeing 737 Doors\n\nTom,\n\nPlease could you provide pricing and availability for our doors\nrequirement on Boeing 737 (Trent 1000).\nWe would need delivery within 9 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
+   "body": "From: procurement@nordic-wings-technic.example\nTo: t.whitfield@field.example\nDate: 2024-07-30\nSubject: RFQ-9448 — Boeing 737 Doors\n\nTom,\n\nPlease could you provide pricing and availability for our doors\nrequirement on Boeing 737 (CFM56).\nWe would need delivery within 9 weeks.\n\nRegards,\nProcurement, Nordic Wings Technic"
   },
   {
    "status": "current",
    "documentId": "DOC-MAIL-025",
-   "title": "Cascade Aerospace Support — correspondence re RFQ-9452",
+   "title": "Cascade Aerospace Support: correspondence re RFQ-9452",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6248,7 +6374,7 @@
   {
    "status": "current",
    "documentId": "DOC-MAIL-026",
-   "title": "Cascade Aerospace Support — correspondence re RFQ-9470",
+   "title": "Cascade Aerospace Support: correspondence re RFQ-9470",
    "documentType": "email",
    "department": "Sales",
    "authorId": "EMP-004",
@@ -6266,7 +6392,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-001",
-   "title": "Halden Precision Works — lead time confirmation",
+   "title": "Halden Precision Works: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6284,7 +6410,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-002",
-   "title": "Halden Precision Works — order follow-up",
+   "title": "Halden Precision Works: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6302,7 +6428,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-003",
-   "title": "Meridian Aerospace Tooling — lead time confirmation",
+   "title": "Meridian Aerospace Tooling: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6320,7 +6446,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-004",
-   "title": "Meridian Aerospace Tooling — order follow-up",
+   "title": "Meridian Aerospace Tooling: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6338,7 +6464,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-005",
-   "title": "Baltic Lifting Systems — lead time confirmation",
+   "title": "Baltic Lifting Systems: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6356,7 +6482,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-006",
-   "title": "Baltic Lifting Systems — order follow-up",
+   "title": "Baltic Lifting Systems: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6374,7 +6500,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-007",
-   "title": "Kite Ground Support — lead time confirmation",
+   "title": "Kite Ground Support: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6392,7 +6518,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-008",
-   "title": "Kite Ground Support — order follow-up",
+   "title": "Kite Ground Support: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6410,7 +6536,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-009",
-   "title": "Osaka Tool Engineering — lead time confirmation",
+   "title": "Osaka Tool Engineering: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6428,7 +6554,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-010",
-   "title": "Osaka Tool Engineering — order follow-up",
+   "title": "Osaka Tool Engineering: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6446,7 +6572,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-011",
-   "title": "Provence Composites — lead time confirmation",
+   "title": "Provence Composites: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6464,7 +6590,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-012",
-   "title": "Provence Composites — order follow-up",
+   "title": "Provence Composites: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6482,7 +6608,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-013",
-   "title": "Northgate Fabrication — lead time confirmation",
+   "title": "Northgate Fabrication: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6500,7 +6626,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-014",
-   "title": "Northgate Fabrication — order follow-up",
+   "title": "Northgate Fabrication: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6518,7 +6644,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-015",
-   "title": "Vector Test Systems — lead time confirmation",
+   "title": "Vector Test Systems: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6536,7 +6662,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-016",
-   "title": "Vector Test Systems — order follow-up",
+   "title": "Vector Test Systems: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6554,7 +6680,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-017",
-   "title": "Cordoba Metalworks — lead time confirmation",
+   "title": "Cordoba Metalworks: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6572,7 +6698,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-018",
-   "title": "Cordoba Metalworks — order follow-up",
+   "title": "Cordoba Metalworks: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6590,7 +6716,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-019",
-   "title": "Lakeside Calibration — lead time confirmation",
+   "title": "Lakeside Calibration: lead time confirmation",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",
@@ -6608,7 +6734,7 @@
   {
    "status": "current",
    "documentId": "DOC-SUPMAIL-020",
-   "title": "Lakeside Calibration — order follow-up",
+   "title": "Lakeside Calibration: order follow-up",
    "documentType": "supplier-correspondence",
    "department": "Procurement",
    "authorId": "EMP-009",

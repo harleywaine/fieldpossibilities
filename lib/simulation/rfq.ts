@@ -6,13 +6,16 @@
  * is scripted. The customer is attached later, when they ask for a quote.
  */
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { retrieve } from '../ai/retrieval.ts';
 import { withVariant } from '../ai/requirement.ts';
+import { describeListed, parseApplicability, variantFit } from '../catalogue/variants.ts';
 import type { EvidenceItem, MatchClass } from '../catalogue/types.ts';
 
 /** What an engineer has to settle: the request and the record, side by side. */
 export interface EngineeringCheck {
-  topic: 'Aircraft variant' | 'Engine' | 'Application';
+  topic: 'Aircraft' | 'Aircraft variant' | 'Engine' | 'Application';
   asked: string;
   catalogue: string;
   question: string;
@@ -32,6 +35,10 @@ export interface SimLine {
   aircraft: string | null;
   engine: string | null;
   leadTimeDays: number | null;
+  /** The catalogue's manufacturer term: BOEING, DILLON, FIL TOOLING… Decides whether Field makes it or buys it in. */
+  manufacturer: string | null;
+  /** As published: "In Stock", "Available to Order", "Out of stock". */
+  stockStatus: string | null;
   sourceUrl: string;
   /** Catalogue photo, cached locally where possible; null when Field publishes none. */
   image: string | null;
@@ -83,9 +90,15 @@ function trim(s: string | null): string | null {
   return t.length > 260 ? `${t.slice(0, 257).replace(/\s\S*$/, '')}…` : t;
 }
 
+/**
+ * The cached copy when this machine has it; otherwise Field's own published
+ * image. The cache isn't deployed, so a hosted demo must not point at it.
+ */
 function imageOf(p: { images: Array<{ isPlaceholder: boolean; localPath: string | null; thumbnail: string | null; src: string }> }): string | null {
   const im = p.images.find((i) => !i.isPlaceholder);
-  return im ? (im.localPath ?? im.thumbnail ?? im.src) : null;
+  if (!im) return null;
+  if (im.localPath && existsSync(join(process.cwd(), 'public', im.localPath))) return im.localPath;
+  return im.thumbnail ?? im.src;
 }
 
 export function buildSimulatedRfq(request: string): SimRfq {
@@ -111,7 +124,7 @@ export function buildSimulatedRfq(request: string): SimRfq {
     if (s.matchClass !== 'strong') {
       const job = req.applications[0] ?? req.maintenanceCategories[0] ?? null;
       const asked = req.itemTypes.length
-        ? `A ${req.itemTypes[0]}${job ? ` — ${titleCase(job).toLowerCase()}` : ''}`
+        ? `A ${req.itemTypes[0]}${job ? `: ${titleCase(job).toLowerCase()}` : ''}`
         : job ?? 'The task described in the request';
       flags.push({
         kind: 'review',
@@ -124,18 +137,54 @@ export function buildSimulatedRfq(request: string): SimRfq {
         },
       });
     }
-    if (req.aircraftVariantRequested && p.aircraftModel) {
-      const model = titleCase(req.aircraftModels[0] ?? p.aircraftModel);
+    const listed = p.aircraftModels.length ? p.aircraftModels : (p.aircraftModel ? [p.aircraftModel] : []);
+    const aircraftFits = !req.aircraftModels.length || !listed.length
+      || listed.some((m) => req.aircraftModels.some((want) => want.toUpperCase() === m.toUpperCase()));
+    if (!aircraftFits) {
+      // The record names other aircraft: shown as a reference point, never as a fit.
+      const asked = titleCase(req.aircraftModels[0]!);
       flags.push({
         kind: 'review',
-        reason: `The request names the ${withVariant(model, req.aircraftVariantRequested)}; the catalogue lists ${p.aircraftModel} only.`,
+        reason: `The request is for the ${asked}; the catalogue lists this item for ${listed.map(titleCase).join(', ')}.`,
         check: {
-          topic: 'Aircraft variant',
-          asked: withVariant(model, req.aircraftVariantRequested),
-          catalogue: `${(p.aircraftModels.length ? p.aircraftModels : [p.aircraftModel]).map(titleCase).join(', ')} — model only, no variant`,
-          question: `Does it fit the ${withVariant(model, req.aircraftVariantRequested)}?`,
+          topic: 'Aircraft',
+          asked,
+          catalogue: listed.map(titleCase).join(', '),
+          question: `Is there an equivalent for the ${asked}, or is this item out of scope?`,
         },
       });
+    }
+    // The description's own applicability line decides whether the variant is
+    // covered. "737-600, 700, 800, 900" settles a 737-800 request; "B787" doesn't
+    // settle a 787-9 one; "737-100 … 500" rules a 737 MAX request out.
+    const applicability = parseApplicability(p.description);
+    if (req.aircraftVariantRequested && p.aircraftModel && aircraftFits) {
+      const model = titleCase(req.aircraftModels[0] ?? p.aircraftModel);
+      const wanted = withVariant(model, req.aircraftVariantRequested);
+      const fit = variantFit(applicability, req.aircraftModels[0] ?? p.aircraftModel, req.aircraftVariantRequested);
+      if (fit === 'unstated') {
+        flags.push({
+          kind: 'review',
+          reason: `The request names the ${wanted}; the catalogue lists ${p.aircraftModel} with no variant stated.`,
+          check: {
+            topic: 'Aircraft variant',
+            asked: wanted,
+            catalogue: `${(p.aircraftModels.length ? p.aircraftModels : [p.aircraftModel]).map(titleCase).join(', ')}: model only, no variant stated`,
+            question: `Does it fit the ${wanted}?`,
+          },
+        });
+      } else if (fit === 'contradicted') {
+        flags.push({
+          kind: 'review',
+          reason: `The request names the ${wanted}; the catalogue lists this item for the ${describeListed(applicability!, req.aircraftModels[0] ?? p.aircraftModel)}.`,
+          check: {
+            topic: 'Aircraft variant',
+            asked: wanted,
+            catalogue: describeListed(applicability!, req.aircraftModels[0] ?? p.aircraftModel),
+            question: `Is there a ${wanted} equivalent, or is this item out of scope?`,
+          },
+        });
+      }
     }
     if (req.engines.length && !p.engine) {
       flags.push({
@@ -154,7 +203,7 @@ export function buildSimulatedRfq(request: string): SimRfq {
     } else if (deadline !== null && p.leadTimeDays > deadline) {
       flags.push({
         kind: 'supplier',
-        reason: `Catalogue lead time is ${p.leadTimeDays} days — longer than the ${deadline}-day deadline.`,
+        reason: `Catalogue lead time is ${p.leadTimeDays} days, longer than the ${deadline}-day deadline.`,
       });
     }
 
@@ -168,6 +217,8 @@ export function buildSimulatedRfq(request: string): SimRfq {
       aircraft: p.aircraftModel,
       engine: p.engine,
       leadTimeDays: p.leadTimeDays,
+      manufacturer: p.manufacturer,
+      stockStatus: p.stockStatus,
       sourceUrl: p.sourceUrl,
       image: imageOf(p),
       category: p.maintenanceCategory ?? null,
@@ -175,6 +226,7 @@ export function buildSimulatedRfq(request: string): SimRfq {
       specs: [
         ['Equipment type', p.equipmentType],
         ['Aircraft', p.aircraftModels.length ? p.aircraftModels.join(', ') : p.aircraftModel],
+        ['Applicability', applicability?.text ?? null],
         ['Engine', p.engine],
         ['Application', p.application],
         ['Weight', p.weight],
@@ -182,7 +234,9 @@ export function buildSimulatedRfq(request: string): SimRfq {
         ['Material', p.material],
         ['CE marked', p.ceMarked === null ? null : p.ceMarked ? 'Yes' : 'No'],
       ].filter((x): x is [string, string] => Boolean(x[1])).map(([label, value]) => ({ label, value: titleCase(value) })),
-      evidence: s.evidence,
+      evidence: applicability
+        ? [...s.evidence, { label: 'Applicability', value: applicability.text, source: 'product-description' as const, quote: `AIRCRAFT APPLICATION: ${applicability.text}` }]
+        : s.evidence,
       flags,
     };
   });

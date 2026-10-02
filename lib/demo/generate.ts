@@ -76,6 +76,18 @@ const ROI: RoiAssumptions = {
 // ---------------------------------------------------------------- generation
 
 const AIRCRAFT = ['Boeing 737', 'Boeing 747', 'Boeing 767', 'Boeing 777', 'Boeing 787', 'Airbus A320', 'Airbus A330'];
+// The engines each type actually carries. A 737 never has a GE90; an aerospace
+// reader spots an impossible pairing instantly, so the filler must not invent one.
+const ENGINES_FOR: Record<string, string[]> = {
+  'Boeing 737': ['CFM56', 'LEAP-1B'],
+  'Boeing 747': ['CF6', 'RB211', 'GEnx'],
+  'Boeing 767': ['CF6', 'PW4000'],
+  'Boeing 777': ['GE90', 'Trent 800', 'PW4000'],
+  'Boeing 787': ['GEnx', 'Trent 1000'],
+  'Airbus A320': ['CFM56', 'V2500'],
+  'Airbus A330': ['Trent 700', 'CF6', 'PW4000'],
+  'Airbus A350': ['Trent XWB'],
+};
 const APPLICATIONS = ['Thrust reverser', 'Landing gear', 'Flight controls', 'Doors', 'Exhaust', 'Fuel', 'Nacelles/pylons', 'Stabilizers'];
 const PROGRAMMES = ['Heavy maintenance', 'Line maintenance', 'Base check', 'Component overhaul', 'Fleet induction'];
 
@@ -114,7 +126,7 @@ export function generateDataset(): DemoDataset {
     const rfq: Rfq = {
       id: ref, reference: ref, customerId: c.id, ownerId: owner.id,
       receivedAt: r.dateAgo(daysAgo), aircraft,
-      engine: r.chance(0.35) ? r.pick(['GEnx', 'Trent 1000', 'CF6', 'CFM56', 'GE90']) : null,
+      engine: r.chance(0.35) ? r.pick(ENGINES_FOR[aircraft] ?? ['CFM56']) : null,
       application, programme: r.pick(PROGRAMMES),
       requiredDeliveryWeeks: r.chance(0.7) ? r.int(6, 20) : null,
       status,
@@ -128,7 +140,7 @@ export function generateDataset(): DemoDataset {
     rfqs.push(rfq);
 
     addDoc({
-      documentId: `DOC-${ref}`, title: `${ref} — ${c.name} (${aircraft})`,
+      documentId: `DOC-${ref}`, title: `${ref}: ${c.name} (${aircraft})`,
       documentType: 'rfq', department: 'Sales', authorId: owner.id, authorName: owner.name,
       createdAt: rfq.receivedAt, updatedAt: rfq.receivedAt,
       customerId: c.id, relatedRfqId: ref, relatedQuoteId: null, relatedParts: [],
@@ -161,7 +173,7 @@ export function generateDataset(): DemoDataset {
       quotes.push(quote);
 
       addDoc({
-        documentId: `DOC-${qref}`, title: `${qref} — quotation for ${c.name}`,
+        documentId: `DOC-${qref}`, title: `${qref}: quotation for ${c.name}`,
         documentType: 'quote', department: 'Commercial', authorId: 'EMP-012', authorName: emp('EMP-012').name,
         createdAt: quote.issuedAt, updatedAt: quote.issuedAt,
         customerId: c.id, relatedRfqId: ref, relatedQuoteId: qref, relatedParts: [],
@@ -185,13 +197,13 @@ export function generateDataset(): DemoDataset {
     const owner = emp(c.accountOwnerId);
     const cRfqs = rfqs.filter((x) => x.customerId === c.id);
     addDoc({
-      documentId: `DOC-PROF-${c.id}`, title: `${c.name} — account profile`,
+      documentId: `DOC-PROF-${c.id}`, title: `${c.name}: account profile`,
       documentType: 'customer-profile', department: 'Sales', authorId: owner.id, authorName: owner.name,
       createdAt: r.dateAgo(r.int(200, 700)), updatedAt: r.dateAgo(r.int(10, 90)),
       customerId: c.id, relatedRfqId: null, relatedQuoteId: null, relatedParts: [],
       supplierId: null, path: `customers/${slug(c.name)}-profile.pdf`,
       body: [
-        `CUSTOMER PROFILE — ${c.name}`, '',
+        `CUSTOMER PROFILE: ${c.name}`, '',
         `Country: ${c.country} (${c.region})`, `Type: ${c.type}`,
         `Fleet: ${c.fleet.join(', ')}`,
         `Customer since: ${c.since}`,
@@ -208,14 +220,14 @@ export function generateDataset(): DemoDataset {
   for (const s of SUPPLIERS) {
     if (s.id === HERO.supplierId) continue; // hero supplier handled in the narrative
     addDoc({
-      documentId: `DOC-SUP-${s.id}`, title: `${s.name} — supplier summary`,
+      documentId: `DOC-SUP-${s.id}`, title: `${s.name}: supplier summary`,
       documentType: 'supplier-correspondence', department: 'Procurement',
       authorId: 'EMP-010', authorName: emp('EMP-010').name,
       createdAt: r.dateAgo(r.int(60, 500)), updatedAt: r.dateAgo(r.int(5, 60)),
       customerId: null, relatedRfqId: null, relatedQuoteId: null, relatedParts: [],
       supplierId: s.id, path: `suppliers/${slug(s.name)}.docx`,
       body: [
-        `SUPPLIER SUMMARY — ${s.name}`, '',
+        `SUPPLIER SUMMARY: ${s.name}`, '',
         `Category: ${s.category}`, `Country: ${s.country}`,
         `Standard lead time: ${s.standardLeadTimeWeeks} weeks`,
         `On-time reliability: ${s.reliabilityPct}%`, '',
@@ -224,6 +236,7 @@ export function generateDataset(): DemoDataset {
     });
   }
 
+  buildAccountHistories(addDoc, emp, rfqs, quotes);
   buildProcessDocs(addDoc, emp);
   buildMeetingNotes(addDoc, emp, r);
   buildTechnicalNotes(addDoc, emp, r);
@@ -259,16 +272,16 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
   const lineItems = [
     ...HERO.realParts.map((p, i) => ({
       line: i + 1, requestedPart: p,
-      description: `${HERO.application} tooling — ${p}`,
+      description: `${HERO.application} tooling, ${p}`,
       quantity: i % 3 === 0 ? 2 : 1, notes: null as string | null,
     })),
     { line: 11, requestedPart: 'K78012-63', description: 'Hold open equipment, GEnx-1B thrust reverser', quantity: 1, notes: 'Customer references a different revision to our last supply.' },
-    { line: 12, requestedPart: 'K71010-1', description: 'Stand assembly — storage, inlet assembly', quantity: 1, notes: null },
+    { line: 12, requestedPart: 'K71010-1', description: 'Stand assembly, storage, inlet assembly', quantity: 1, notes: null },
     { line: 13, requestedPart: 'K71001-17', description: 'Aft hold open assembly', quantity: 2, notes: null },
-    { line: 14, requestedPart: 'K10008-14', description: 'Protective plug equipment — engine exhaust, GE GEnx', quantity: 1, notes: null },
-    { line: 15, requestedPart: 'K78011-1', description: 'Hold open equipment — Trent 1000 thrust reverser', quantity: 1, notes: 'Engine variant differs from the rest of this request.' },
+    { line: 14, requestedPart: 'K10008-14', description: 'Protective plug equipment, engine exhaust, GE GEnx', quantity: 1, notes: null },
+    { line: 15, requestedPart: 'K78011-1', description: 'Hold open equipment, Trent 1000 thrust reverser', quantity: 1, notes: 'Engine variant differs from the rest of this request.' },
     { line: 16, requestedPart: HERO.unmatchablePart, description: 'Thrust reverser spreader bar, customer part reference', quantity: 1, notes: 'Customer-specific reference — no Field catalogue equivalent supplied.' },
-    { line: 17, requestedPart: 'K78002-70', description: 'Sling equipment — thrust reverser sleeve, GEnx', quantity: 1, notes: 'Repeat of item supplied under QT-09841.' },
+    { line: 17, requestedPart: 'K78002-70', description: 'Sling equipment, thrust reverser sleeve, GEnx', quantity: 1, notes: 'Repeat of item supplied under QT-09841.' },
   ];
 
   const currentRfq: Rfq = {
@@ -282,7 +295,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
   rfqs.push(currentRfq);
 
   addDoc({
-    documentId: `DOC-${HERO.currentRfq}`, title: `${HERO.currentRfq} — ${HERO.customerName} 787 GEnx thrust reverser tooling`,
+    documentId: `DOC-${HERO.currentRfq}`, title: `${HERO.currentRfq}: ${HERO.customerName} 787 GEnx thrust reverser tooling`,
     documentType: 'rfq', department: 'Sales', authorId: owner.id, authorName: owner.name,
     createdAt: day(2), updatedAt: day(2),
     customerId: HERO.customerId, relatedRfqId: HERO.currentRfq, relatedQuoteId: null,
@@ -300,7 +313,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
       'Customer is preparing a heavy maintenance programme and requires pricing and',
       'availability for the tooling listed. Delivery is required within 10 weeks of order.',
       '', 'REQUESTED ITEMS', '',
-      ...lineItems.map((l) => `${String(l.line).padStart(2, '0')}. ${l.requestedPart ?? '—'}  qty ${l.quantity}  ${l.description}${l.notes ? `  [${l.notes}]` : ''}`),
+      ...lineItems.map((l) => `${String(l.line).padStart(2, '0')}. ${l.requestedPart ?? '–'}  qty ${l.quantity}  ${l.description}${l.notes ? `  [${l.notes}]` : ''}`),
     ].join('\n'),
   });
 
@@ -321,7 +334,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
       status: p.status, lineItems: [], summary: p.note,
     });
     addDoc({
-      documentId: `DOC-${p.ref}`, title: `${p.ref} — ${HERO.customerName}`,
+      documentId: `DOC-${p.ref}`, title: `${p.ref}: ${HERO.customerName}`,
       documentType: 'rfq', department: 'Sales', authorId: owner.id, authorName: owner.name,
       createdAt: day(p.daysAgo), updatedAt: day(p.daysAgo),
       customerId: HERO.customerId, relatedRfqId: p.ref, relatedQuoteId: null,
@@ -352,7 +365,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
   });
 
   addDoc({
-    documentId: `DOC-${HERO.priorQuote}`, title: `${HERO.priorQuote} — quotation, ${HERO.customerName} 787 GEnx tooling`,
+    documentId: `DOC-${HERO.priorQuote}`, title: `${HERO.priorQuote}: quotation, ${HERO.customerName} 787 GEnx tooling`,
     documentType: 'quote', department: 'Commercial', authorId: quoter.id, authorName: quoter.name,
     createdAt: day(478), updatedAt: day(478),
     customerId: HERO.customerId, relatedRfqId: 'RFQ-09841', relatedQuoteId: HERO.priorQuote,
@@ -376,7 +389,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
   // ---- The lead-time conflict (§50) ---------------------------------------
   // Old internal note: 12 weeks. Recent supplier email: 8–10 weeks.
   addDoc({
-    documentId: 'DOC-SUP-002-NOTE', title: `${HERO.supplierName} — GEnx tooling lead times (internal note)`,
+    documentId: 'DOC-SUP-002-NOTE', title: `${HERO.supplierName}: GEnx tooling lead times (internal note)`,
     documentType: 'supplier-correspondence', department: 'Procurement',
     authorId: proc.id, authorName: proc.name,
     createdAt: day(425), updatedAt: day(425),
@@ -385,7 +398,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
     path: 'suppliers/meridian-genx-lead-times.docx',
     status: 'superseded', staleMonths: 14, conflictsWith: 'DOC-SUP-002-EMAIL',
     body: [
-      `INTERNAL NOTE — ${HERO.supplierName}`, '',
+      `INTERNAL NOTE: ${HERO.supplierName}`, '',
       `Prepared by: ${proc.name}, ${proc.role}`,
       `Date: ${day(425).slice(0, 10)}`, '',
       'Working assumption for GEnx thrust reverser tooling:',
@@ -397,7 +410,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
   });
 
   addDoc({
-    documentId: 'DOC-SUP-002-EMAIL', title: `${HERO.supplierName} — updated capacity and lead times`,
+    documentId: 'DOC-SUP-002-EMAIL', title: `${HERO.supplierName}: updated capacity and lead times`,
     documentType: 'email', department: 'Procurement', authorId: proc.id, authorName: proc.name,
     createdAt: day(23), updatedAt: day(23),
     customerId: null, relatedRfqId: null, relatedQuoteId: null,
@@ -421,7 +434,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
 
   // ---- Engineering caveat (blocks variant approval claims) ----------------
   addDoc({
-    documentId: 'DOC-ENG-787-VARIANT', title: '787 GEnx tooling — variant applicability note',
+    documentId: 'DOC-ENG-787-VARIANT', title: '787 GEnx tooling: variant applicability note',
     documentType: 'technical-note', department: 'Engineering', authorId: eng.id, authorName: eng.name,
     createdAt: day(96), updatedAt: day(96),
     customerId: null, relatedRfqId: null, relatedQuoteId: null,
@@ -447,7 +460,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
 
   // ---- Customer history: the delivery sensitivity ------------------------
   addDoc({
-    documentId: 'DOC-HIST-CUST-001', title: `${HERO.customerName} — account history and commercial notes`,
+    documentId: 'DOC-HIST-CUST-001', title: `${HERO.customerName}: account history and commercial notes`,
     documentType: 'account-history', department: 'Sales', authorId: owner.id, authorName: owner.name,
     createdAt: day(510), updatedAt: day(31),
     customerId: HERO.customerId, relatedRfqId: 'RFQ-09841', relatedQuoteId: HERO.priorQuote,
@@ -457,10 +470,10 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
       `Account owner: ${owner.name}, ${owner.role}`,
       `Customer since: 2019`, '',
       'ENQUIRY HISTORY',
-      `  RFQ-09102  Boeing 777 landing gear tooling  — lost on delivery`,
-      `  RFQ-09841  Boeing 787 GEnx thrust reverser  — won, quoted ${HERO.priorQuote}`,
-      `  RFQ-10271  Follow-on protective equipment    — quoted, no decision`,
-      `  ${HERO.currentRfq}  Boeing 787 GEnx thrust reverser  — open`,
+      `  RFQ-09102  Boeing 777 landing gear tooling : lost on delivery`,
+      `  RFQ-09841  Boeing 787 GEnx thrust reverser : won, quoted ${HERO.priorQuote}`,
+      `  RFQ-10271  Follow-on protective equipment   : quoted, no decision`,
+      `  ${HERO.currentRfq}  Boeing 787 GEnx thrust reverser : open`,
       '',
       'COMMERCIAL NOTES',
       '  Delivery lead time is the recurring point of friction on this account.',
@@ -476,7 +489,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
 
   // ---- Email thread on the live enquiry -----------------------------------
   addDoc({
-    documentId: 'DOC-EMAIL-CUST-001', title: `${HERO.customerName} — enquiry thread (${HERO.currentRfq})`,
+    documentId: 'DOC-EMAIL-CUST-001', title: `${HERO.customerName}: enquiry thread (${HERO.currentRfq})`,
     documentType: 'email', department: 'Sales', authorId: owner.id, authorName: owner.name,
     createdAt: day(2), updatedAt: day(1),
     customerId: HERO.customerId, relatedRfqId: HERO.currentRfq, relatedQuoteId: null,
@@ -507,7 +520,7 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
 
   // ---- Meeting note flagging urgency --------------------------------------
   addDoc({
-    documentId: 'DOC-MEET-SALES-SEP', title: 'Sales pipeline meeting — September',
+    documentId: 'DOC-MEET-SALES-SEP', title: 'Sales pipeline meeting: September',
     documentType: 'meeting-notes', department: 'Sales', authorId: 'EMP-002',
     authorName: EMPLOYEES.find((e) => e.id === 'EMP-002')!.name,
     createdAt: day(4), updatedAt: day(4),
@@ -529,6 +542,80 @@ function buildHeroThread(addDoc: AddDoc, rfqs: Rfq[], quotes: Quote[]) {
       '  Nordic Wings Technic renewal due next quarter.',
     ].join('\n'),
   });
+}
+
+/**
+ * Every account gets its own history file, so a brief about one customer can
+ * only ever cite that customer's record. The commercial note names the thing
+ * that actually recurs on that account, and agrees with its service cases.
+ */
+const COMMERCIAL_NOTES: Record<string, string[]> = {
+  'CUST-002': [
+    'Certificate paperwork is the recurring point of friction on this account: a sling',
+    'arrived with an out-of-date proof-load certificate (CS-2052) and was re-certified',
+    'before use. Renewal of the framework agreement is due next quarter.',
+  ],
+  'CUST-003': [
+    'Consolidated monthly shipments to Dubai are the recurring request (CS-2240).',
+    'Delivery lead time has been acceptable; a stand was damaged in transit once.',
+  ],
+  'CUST-004': [
+    'Availability of out-of-production tooling for the 747 and 767 is the recurring issue',
+    'on this account. Several items have been quoted from refurbished stock.',
+    'Part shipments must carry an advice note (CS-2011).',
+  ],
+  'CUST-005': [
+    'Newer account. Price is the recurring point of friction: two quotes declined on price',
+    'against a regional competitor. Lead time has not been raised.',
+  ],
+  'CUST-006': [
+    'Expanding from line into base checks and asks for recommended tooling lists (CS-2263).',
+    'Engineering applicability questions are usually the gating item on a quote.',
+  ],
+  'CUST-007': [
+    'Engineering-led buying: applicability sign-off is the gating item on every quote,',
+    'and the customer expects drawing revisions to be stated. Price is rarely discussed.',
+    'One fixture was returned out of tolerance (CS-2138) and re-made.',
+  ],
+  'CUST-008': [
+    'Price is the recurring point of friction on this account, which is price sensitive:',
+    'an open complaint (CS-2279) compares the latest quote with an earlier one.',
+  ],
+};
+
+function buildAccountHistories(addDoc: AddDoc, emp: (id: string) => Employee, rfqs: Rfq[], quotes: Quote[]) {
+  const day = (iso: string) => iso.slice(0, 10);
+  for (const c of CUSTOMERS) {
+    if (c.id === HERO.customerId) continue; // authored in the hero thread
+    const owner = emp(c.accountOwnerId);
+    const own = rfqs.filter((x) => x.customerId === c.id).sort((a, b) => a.receivedAt.localeCompare(b.receivedAt));
+    if (!own.length) continue;
+    const latest = own[own.length - 1]!;
+    const quoteOf = (id: string) => quotes.find((q) => q.rfqId === id);
+    addDoc({
+      documentId: `DOC-HIST-${c.id}`, title: `${c.name}: account history and commercial notes`,
+      documentType: 'account-history', department: 'Sales', authorId: owner.id, authorName: owner.name,
+      createdAt: own[0]!.receivedAt, updatedAt: latest.receivedAt,
+      customerId: c.id, relatedRfqId: latest.id, relatedQuoteId: quoteOf(latest.id)?.id ?? null,
+      relatedParts: [], supplierId: null, path: `customers/${slug(c.name)}-history.docx`,
+      body: [
+        `ACCOUNT HISTORY — ${c.name}`, '',
+        `Account owner: ${owner.name}, ${owner.role}`,
+        `Customer since: ${c.since.slice(0, 4)}`,
+        `Fleet: ${c.fleet.join(', ')}`, '',
+        'ENQUIRY HISTORY',
+        ...own.map((x) => {
+          const qt = quoteOf(x.id);
+          const outcome = x.status === 'won' ? `won, quoted ${qt?.reference ?? ''}`.trim()
+            : x.status === 'lost' ? 'lost' : x.status === 'quoted' ? 'quoted, no decision' : 'open';
+          return `  ${x.reference}  ${day(x.receivedAt)}  ${x.aircraft}${x.engine ? ` ${x.engine}` : ''} ${(x.application ?? 'tooling').toLowerCase()} : ${outcome}`;
+        }),
+        '',
+        'COMMERCIAL NOTES',
+        ...(COMMERCIAL_NOTES[c.id] ?? [`${c.notes}`]).map((l) => `  ${l}`),
+      ].join('\n'),
+    });
+  }
 }
 
 function buildProcessDocs(addDoc: AddDoc, emp: (id: string) => Employee) {
@@ -593,7 +680,7 @@ function buildMeetingNotes(
     const created = r.dateAgo(r.int(15, 400));
     addDoc({
       documentId: `DOC-MEET-${String(i + 1).padStart(3, '0')}`,
-      title: `${title} — ${created.slice(0, 7)}`,
+      title: `${title}: ${created.slice(0, 7)}`,
       documentType: 'meeting-notes', department: dept as Department,
       authorId: a.id, authorName: a.name, createdAt: created, updatedAt: created,
       customerId: null, relatedRfqId: null, relatedQuoteId: null, relatedParts: [],
@@ -636,7 +723,7 @@ function buildTechnicalNotes(
     const created = r.dateAgo(r.int(40, 620));
     addDoc({
       documentId: `DOC-TECH-${String(i + 1).padStart(3, '0')}`,
-      title: `${title} — technical note`,
+      title: `${title}: technical note`,
       documentType: 'technical-note', department: 'Engineering',
       authorId: author.id, authorName: author.name,
       createdAt: created, updatedAt: created,
@@ -677,7 +764,7 @@ function buildCustomerEmails(
     const created = rfq.receivedAt;
     addDoc({
       documentId: `DOC-MAIL-${String(i + 1).padStart(3, '0')}`,
-      title: `${c.name} — correspondence re ${rfq.reference}`,
+      title: `${c.name}: correspondence re ${rfq.reference}`,
       documentType: 'email', department: 'Sales',
       authorId: owner.id, authorName: owner.name,
       createdAt: created, updatedAt: created,
@@ -711,7 +798,7 @@ function buildSupplierThreads(
       const created = r.dateAgo(r.int(20, 420));
       addDoc({
         documentId: `DOC-SUPMAIL-${String(i * 2 + k + 1).padStart(3, '0')}`,
-        title: `${s.name} — ${k === 0 ? 'lead time confirmation' : 'order follow-up'}`,
+        title: `${s.name}: ${k === 0 ? 'lead time confirmation' : 'order follow-up'}`,
         documentType: 'supplier-correspondence', department: 'Procurement',
         authorId: buyer.id, authorName: buyer.name,
         createdAt: created, updatedAt: created,

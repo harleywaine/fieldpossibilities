@@ -80,7 +80,7 @@ export function BrowserFrame({ path, basket, children }: { path: string; basket:
 
 /* ------------------------------------------------------------------- field */
 
-export type CrmModule = 'Home' | 'Enquiries' | 'Accounts' | 'Quotes' | 'Engineering' | 'Procurement' | 'Orders';
+export type CrmModule = 'Home' | 'Enquiries' | 'Accounts' | 'Quotes' | 'Engineering' | 'Supply' | 'Orders';
 
 const NAV: Array<{ group: string; items: Array<{ id: CrmModule; icon: LucideIcon }> }> = [
   { group: 'Sales', items: [
@@ -91,7 +91,7 @@ const NAV: Array<{ group: string; items: Array<{ id: CrmModule; icon: LucideIcon
   ] },
   { group: 'Operations', items: [
     { id: 'Engineering', icon: Wrench },
-    { id: 'Procurement', icon: Truck },
+    { id: 'Supply', icon: Truck },
     { id: 'Orders', icon: Factory },
   ] },
 ];
@@ -107,7 +107,7 @@ export function CrmFrame({
   return (
     <div className={WINDOW}>
       <Chrome tag="MOCK-UP · SYNTHETIC RECORDS">
-        <span className="text-[11px] font-medium text-ink-500">Field CRM — {module}</span>
+        <span className="text-[11px] font-medium text-ink-500">Field CRM · {module}</span>
       </Chrome>
       <div className="flex min-h-[560px]">
         {/* ------------------------------------------------------ sidebar */}
@@ -253,7 +253,7 @@ export function YourDecision({ done, children }: { done: boolean; children: Reac
       </span>
       <div>
         <p className={`mono text-[10.5px] tracking-[0.12em] ${done ? 'text-strong-600' : 'text-caution-600'}`}>
-          {done ? 'DECIDED — THE PROCESS CAN CONTINUE' : 'YOUR DECISION — THE PROCESS HAS STOPPED'}
+          {done ? 'DECIDED · THE PROCESS CAN CONTINUE' : 'YOUR DECISION · THE PROCESS HAS STOPPED'}
         </p>
         <p className="mt-1 text-[13px] leading-relaxed text-ink-700">{children}</p>
       </div>

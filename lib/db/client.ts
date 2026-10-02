@@ -140,6 +140,8 @@ export interface CatalogueStats {
   withLeadTime: number;
   withEngine: number;
   withImages: number;
+  /** Records whose description states the variants they fit ("737-600, 700, 800, 900"). */
+  withApplicability: number;
   detailCrawled: number;
   manufacturers: number;
   aircraftModels: number;
@@ -162,7 +164,8 @@ export function catalogueStats(): CatalogueStats {
     withPartNumber: one("SELECT COUNT(*) n FROM products WHERE part_number IS NOT NULL AND part_number <> ''"),
     withLeadTime: one('SELECT COUNT(*) n FROM products WHERE lead_time_days IS NOT NULL'),
     withEngine: one('SELECT COUNT(*) n FROM products WHERE engine IS NOT NULL'),
-    withImages: one('SELECT COUNT(DISTINCT product_id) n FROM product_images'),
+    withImages: one('SELECT COUNT(DISTINCT product_id) n FROM product_images WHERE is_placeholder = 0'),
+    withApplicability: one("SELECT COUNT(*) n FROM products WHERE description LIKE '%AIRCRAFT APPLICATION%'"),
     detailCrawled: one('SELECT COUNT(*) n FROM products WHERE detail_crawled = 1'),
     manufacturers: one("SELECT COUNT(*) n FROM taxonomy_terms WHERE taxonomy='product_cat' AND count>0"),
     aircraftModels: one("SELECT COUNT(*) n FROM taxonomy_terms WHERE taxonomy='aircraft-model' AND count>0"),

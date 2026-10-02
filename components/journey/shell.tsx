@@ -69,7 +69,7 @@ export function TopBar({
                   onClick={() => !locked && go(i)}
                   disabled={locked}
                   aria-current={now ? 'step' : undefined}
-                  title={locked ? `${s.rail} — not reached yet` : s.rail}
+                  title={locked ? `${s.rail}: not reached yet` : s.rail}
                   className="group block w-full text-left disabled:cursor-default"
                 >
                   <span className={`block h-[3px] rounded-full transition-colors duration-500 ${
@@ -299,8 +299,10 @@ export function Dock({
 
 /* ------------------------------------------------------------------- cover */
 
+export interface CatalogueFacts { products: number; withImages: number; withLeadTime: number; withApplicability: number; aircraftModels: number }
+
 /** The landing: one full-screen scene, nothing else on it until the viewer begins. */
-export function Cover({ onBegin }: { onBegin: () => void }) {
+export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: CatalogueFacts | null }) {
   return (
     <section
       className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#07162a] text-white"
@@ -327,9 +329,10 @@ export function Cover({ onBegin }: { onBegin: () => void }) {
           <h1 className="enter mt-6 font-display text-[42px] font-medium leading-[1.0] tracking-[-0.045em] text-white sm:text-[68px]" style={{ animationDelay: '200ms' }}>
             Follow one enquiry from the customer to the factory.
           </h1>
-          <p className="enter mt-6 max-w-[30rem] text-[16px] leading-relaxed text-signal-100/70 sm:text-[18px]" style={{ animationDelay: '320ms' }}>
-            Play Field’s customer, then the people at Field who handle the enquiry. The system does the
-            preparation. You make the decisions.
+          <p className="enter mt-6 max-w-[32rem] text-[16px] leading-relaxed text-signal-100/70 sm:text-[18px]" style={{ animationDelay: '320ms' }}>
+            Built on Field’s own published catalogue: {catalogue ? catalogue.products.toLocaleString() : '8,316'} parts, from the 707 to the 787,
+            read the way a customer describes a job. Play the customer, then the people at Poole who
+            handle the enquiry. The system does the preparation. You make the decisions.
           </p>
           <div className="enter mt-9 flex flex-wrap items-center gap-5" style={{ animationDelay: '440ms' }}>
             <button
@@ -341,9 +344,23 @@ export function Cover({ onBegin }: { onBegin: () => void }) {
             </button>
             <span className="flex flex-col gap-1.5 text-[12.5px] text-signal-100/55 sm:flex-row sm:gap-4">
               <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> About five minutes</span>
-              <span className="flex items-center gap-1.5"><UserRound className="h-3.5 w-3.5" /> Five points where you decide</span>
+              <span className="flex items-center gap-1.5"><UserRound className="h-3.5 w-3.5" /> Up to six points where you decide</span>
             </span>
           </div>
+          {/* Field, as the public record has it. Nothing here is assumed. */}
+          <dl className="enter mt-10 grid max-w-[34rem] grid-cols-2 gap-x-6 gap-y-3 border-t border-white/10 pt-5 text-[12px] sm:grid-cols-4" style={{ animationDelay: '540ms' }}>
+            {[
+              ['Since 1995', 'Poole, Dorset'],
+              ['Boeing licensed', 'tooling and GSE'],
+              ['7 companies', 'UK, Singapore, China, India, UAE, USA'],
+              [catalogue ? `${catalogue.aircraftModels} aircraft models` : '27 aircraft models', 'in the public catalogue'],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <dt className="font-semibold text-white/90">{k}</dt>
+                <dd className="text-signal-100/50">{v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </div>
 
@@ -433,7 +450,7 @@ export function Results({
   const pct = before ? Math.round((saved / before) * 100) : 0;
   const stats = [
     { icon: FileSearch, v: considered.toLocaleString(), t: 'catalogue records searched' },
-    { icon: Building2, v: docs ? String(docs) : '—', t: 'internal documents read' },
+    { icon: Building2, v: docs ? String(docs) : '–', t: 'internal documents read' },
     { icon: ListChecks, v: String(checks), t: 'checks run on the lines' },
     { icon: UserRound, v: String(decisions), t: 'decisions made by you', you: true },
   ];
@@ -450,7 +467,7 @@ export function Results({
               {formatMinutes(after)}
             </p>
             <p className="mt-3 text-[15px] text-signal-100/70">
-              of people’s time with AI, against <span className="text-white">{formatMinutes(before)}</span> today —{' '}
+              of people’s time with AI, against <span className="text-white">{formatMinutes(before)}</span> today,{' '}
               <span className="text-[#7dd3fc]">{pct}% less</span>.
             </p>
           </div>
@@ -502,7 +519,7 @@ export function Results({
           <p className="mt-2 text-[12.5px] leading-relaxed text-ink-500">
             of people’s time a year: each step’s saving multiplied by how often that step is assumed to happen
             (from {Math.min(...rows.map((r) => r.volume)).toLocaleString()} to {Math.max(...rows.map((r) => r.volume)).toLocaleString()} times a year).
-            Every figure here is an estimate, not a measurement — see{' '}
+            Every figure here is an estimate, not a measurement. See{' '}
             <a href="#estimates" className="text-signal-600 underline decoration-signal-200 underline-offset-[3px] hover:text-signal-800">how they were made</a>.
           </p>
           <div className="mt-auto flex flex-wrap gap-2 pt-6">
@@ -516,6 +533,27 @@ export function Results({
       <section id="estimates" className="enter scroll-mt-32 rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '560ms' }}>
         <h2 className="mb-4 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">Where the time estimates come from</h2>
         <Estimates rows={rows} />
+      </section>
+
+      <section className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '580ms' }}>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-500">Where this goes next</p>
+        <h2 className="mt-2 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">One enquiry is the spine. These hang off it.</h2>
+        <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-ink-500">
+          The same system of record, the same catalogue and the same people. Each needs one more source of Field’s own data, named on the card.
+        </p>
+        <ol className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {NEXT_USES.map((u, i) => (
+            <li key={u.title} className="flex flex-col rounded-xl bg-ink-25 p-4 ring-1 ring-ink-100">
+              <span className="mono text-[11px] text-ink-300">{String(i + 1).padStart(2, '0')}</span>
+              <p className="mt-2 text-[13.5px] font-semibold leading-snug tracking-tight text-ink-950">{u.title}</p>
+              <p className="mt-1.5 flex-1 text-[12.5px] leading-relaxed text-ink-600">{u.does}</p>
+              <p className="mt-3 flex flex-wrap gap-1.5 text-[10.5px]">
+                <span className={`rounded-md px-1.5 py-0.5 font-medium ${u.data === 'public' ? 'bg-strong-600/[0.08] text-strong-600' : 'bg-caution-500/[0.1] text-caution-600'}`}>{u.needs}</span>
+                <span className="rounded-md bg-white px-1.5 py-0.5 font-medium text-ink-500 ring-1 ring-ink-100">{u.who}</span>
+              </p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <p className="enter flex items-start gap-2.5 px-1 text-[13px] leading-relaxed text-ink-500" style={{ animationDelay: '600ms' }}>
@@ -541,6 +579,46 @@ function Bar({ label, value, pct, cls }: { label: string; value: string; pct: nu
   );
 }
 
+/* ------------------------------------------------------------- what's next */
+
+/**
+ * The uses that hang off the enquiry spine once it exists. Each names the one
+ * extra source of Field's own data it would need, so nobody mistakes a
+ * possibility for a finding.
+ */
+const NEXT_USES: Array<{ title: string; does: string; needs: string; who: string; data: 'public' | 'internal' }> = [
+  {
+    title: 'The part-finder on fieldinternational.com',
+    does: 'Steps 1 and 2 of this journey on the live site. Tested on 27 realistic searches, the site’s current search returned nothing for 12 of them; this found relevant parts for 24.',
+    needs: 'Public catalogue only', who: 'Customers', data: 'public',
+  },
+  {
+    title: 'Every RFQ logged, from any inbox',
+    does: 'Enquiries that arrive at salesuk@, salespte@, salesme@, salesin@ or salesna@ become enquiries before anyone opens them: part lists read from PDFs and spreadsheets, account matched, owner assigned, clock started.',
+    needs: 'Microsoft 365 mailboxes', who: 'Sales desks', data: 'internal',
+  },
+  {
+    title: 'Who to call before Pensacola opens',
+    does: 'Operators and MROs whose fleets match Field’s catalogue but who aren’t customers, by region, with the news that makes a call timely. First list: the US order book for January 2027.',
+    needs: 'Public fleet data', who: 'Business development', data: 'public',
+  },
+  {
+    title: 'Calibration and recertification recall',
+    does: 'Every tool Field has calibrated or proof-loaded has a due date. A reminder and a ready quote at 60 and 30 days turns a certificate expiry into a booking instead of a lapse.',
+    needs: 'Calibration records', who: 'Service revenue', data: 'internal',
+  },
+  {
+    title: 'One pipeline across seven companies',
+    does: 'Enquiries in, quotes out, value open, response times and late lines for the group on one screen, and a Monday digest written by the system for the board.',
+    needs: 'The enquiry system', who: 'The board', data: 'internal',
+  },
+  {
+    title: 'A customer portal',
+    does: 'Quote status, order tracking, certificates to download, reorders and RFQ history, backed by the same records. Fewer “where is my order” emails, and a reason to come back.',
+    needs: 'Orders and certificates', who: 'Customers', data: 'internal',
+  },
+];
+
 /* -------------------------------------------------------------- AI uses */
 
 const USE_ICON: Partial<Record<string, typeof Search>> = {
@@ -548,10 +626,10 @@ const USE_ICON: Partial<Record<string, typeof Search>> = {
   check: ListChecks, review: Wrench, supplier: Truck, manufacture: Factory,
 };
 
-export function AiUses({ catalogue }: { catalogue: { products: number; withImages: number; withLeadTime: number } | null }) {
+export function AiUses({ catalogue }: { catalogue: CatalogueFacts | null }) {
   const people = [
     { who: 'Engineering', what: 'judges whether a part fits' },
-    { who: 'Procurement', what: 'approves every supplier request' },
+    { who: 'Supply planning', what: 'confirms where each line is made or bought' },
     { who: 'Commercial', what: 'sets prices and signs off the quote' },
     { who: 'Operations', what: 'decides what to do about late lines' },
   ];
@@ -603,7 +681,13 @@ export function AiUses({ catalogue }: { catalogue: { products: number; withImage
               {catalogue ? `: ${catalogue.products.toLocaleString()} products, ${catalogue.withImages.toLocaleString()} with photos, ${catalogue.withLeadTime.toLocaleString()} with a published lead time.` : '.'}
               {' '}Every part you’ll see is real.
             </li>
-            <li>What Field supplies: aerospace tooling and ground support equipment, for MROs and airlines.</li>
+            {catalogue?.withApplicability !== undefined && (
+              <li>
+                {catalogue.withApplicability.toLocaleString()} of those records say which variants they fit, in the description
+                (“737-600, 700, 800, 900”). The site’s own search doesn’t read that line; this does.
+              </li>
+            )}
+            <li>What Field supplies: Boeing-licensed aircraft tooling and ground support equipment, made in the UK, Singapore, China and India, for airlines, MROs and OEMs.</li>
           </ul>
         </div>
         <div className="bg-white p-5 sm:p-6">

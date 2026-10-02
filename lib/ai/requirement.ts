@@ -133,17 +133,21 @@ export function parseAircraft(text: string): {
 } {
   const t = ` ${text.toLowerCase()} `;
   const models = new Set<string>();
-  let variant: string | null = null;
+  // One variant per model, so "747-8F and 737 MAX" keeps each with its own aircraft.
+  const variants = new Map<string, string>();
 
   for (const [canonical, synonyms] of Object.entries(AIRCRAFT_SYNONYMS)) {
     for (const syn of synonyms) {
       const esc = syn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      // Allow a plural, and a trailing variant — -9, -800, MAX, NEO, NG — without absorbing it.
+      // Allow a plural, and a trailing variant, without absorbing it: -9, -800, -300ER,
+      // -8F, -200LR, MAX, MAX 8, NEO, NG. The letters airlines actually write after the
+      // dash (ER, LR, F, X) stay attached to the number.
       const re = new RegExp(
-        `[\\s(]${esc}s?(?:\\s?-\\s?(\\d{1,3}|max|neo|ng|er|lr|f)|\\s(max|neo|ng))?(?=[\\s),.!?;:'’]|$)`, 'i');
+        `[\\s(]${esc}s?(?:\\s?-\\s?(\\d{1,3}(?:er|lr|f|x)?|max|neo|ng|er|lr|f)|\\s(max|neo|ng)(?:\\s?\\d{1,2})?)?(?=[\\s),.!?;:'’/]|$)`, 'i');
       const m = t.match(re);
       if (m) {
         models.add(canonical);
+        let variant: string | null = null;
         if (m[1] || m[2]) variant = (m[1] ?? m[2])!.toUpperCase();
         // A synonym that itself names a variant ("737max", "a320neo", "777x").
         const named = syn.match(/\d\s?(max|neo|ng|x)$/i);
@@ -151,11 +155,13 @@ export function parseAircraft(text: string): {
         // A synonym that itself encodes a variant ("787-9", "737-800").
         const inner = syn.match(/^(?:b|a)?\d{3}-(\d{1,3})$/i);
         if (inner) variant = inner[1];
+        if (variant) variants.set(canonical, variant);
         break;
       }
     }
   }
-  return { models: [...models], variant };
+  const list = [...models];
+  return { models: list, variant: list.length ? variants.get(list[0]!) ?? null : null };
 }
 
 export function extractRequirement(query: string, now = new Date()): Requirement {
@@ -215,8 +221,8 @@ export function extractRequirement(query: string, now = new Date()): Requirement
       label: 'Aircraft identified',
       value: models.join(', '),
       note: variant
-        ? `Requirement mentions the ${withVariant(models[0]?.split(' ').pop() ?? '', variant)} variant. ` +
-          `The catalogue records applicability at model level only.`
+        ? `Requirement names the ${withVariant(models[0]?.split(' ').pop() ?? '', variant)}. ` +
+          `Checked against each record's own applicability line; where a record states none, Engineering confirms.`
         : undefined,
     });
   }

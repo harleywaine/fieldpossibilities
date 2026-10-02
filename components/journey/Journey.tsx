@@ -3,17 +3,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  STEPS, PERSONAS, stepIndex, simulatedLeadDays, matchAccount, supplierFor,
-  type StepId, type StepMetric,
+  STEPS, PERSONAS, SITES, stepIndex, simulatedLeadDays, simulatedExpedite, matchAccount, sourceFor,
+  type StepId, type StepMetric, type DeliveryPlan, type Region, type SiteId,
 } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import { priceLines, marginOf, MIN_MARGIN } from '@/lib/simulation/pricing.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
-import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow } from '@/components/journey/shell.tsx';
+import { duration } from '@/lib/journey.ts';
+import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import {
-  InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplierScreen, PricingScreen, ApprovalScreen, OrderScreen,
+  InboxScreen, AccountScreen, CheckScreen, ReviewScreen, SupplyScreen, PricingScreen, ApprovalScreen, OrderScreen,
   type Decision, type Contact,
 } from '@/components/journey/crm-stages.tsx';
 
@@ -26,20 +27,25 @@ interface SimState {
   rfq: SimRfq | null;
   brief: any | null;
   review: Record<number, Decision>;
+  /** The planner's site per made line, where they overruled the proposal. */
+  sites: Record<number, SiteId>;
+  /** The supply plan is confirmed and any bought-in requests sent. */
   supplierSent: boolean;
   prices: Record<number, number>;
   pricesConfirmed: boolean;
+  /** How late lines are handled, decided before the quote goes out. */
+  plan: DeliveryPlan | null;
   approval: 'approved' | 'returned' | null;
   risk: string | null;
 }
 
-const STORE = 'field-simulation-v3';
+const STORE = 'field-simulation-v4';
 const EMPTY: SimState = {
   request: '', found: null, excluded: [], form: { email: '', company: '' }, contact: null,
-  rfq: null, brief: null, review: {}, supplierSent: false, prices: {}, pricesConfirmed: false, approval: null, risk: null,
+  rfq: null, brief: null, review: {}, sites: {}, supplierSent: false, prices: {}, pricesConfirmed: false, plan: null, approval: null, risk: null,
 };
 const DOWNSTREAM: Partial<SimState> = {
-  contact: null, rfq: null, brief: null, review: {}, supplierSent: false, prices: {}, pricesConfirmed: false, approval: null, risk: null,
+  contact: null, rfq: null, brief: null, review: {}, sites: {}, supplierSent: false, prices: {}, pricesConfirmed: false, plan: null, approval: null, risk: null,
 };
 
 /** Who takes an enquiry from a company Field has no account for. Synthetic. */
@@ -55,7 +61,7 @@ export function Journey({
   metrics, accounts, inbox, suppliers, catalogue,
 }: {
   metrics: Record<string, StepMetric>; accounts: CrmAccount[]; inbox: CrmInboxItem[]; suppliers: CrmSupplier[];
-  catalogue: { products: number; withImages: number; withLeadTime: number } | null;
+  catalogue: CatalogueFacts | null;
 }) {
   const params = useSearchParams();
   const [sim, setSim] = useState<SimState>(EMPTY);
@@ -90,16 +96,48 @@ export function Journey({
   const included = rfq?.lines.filter((l) => !sim.review[l.line] || sim.review[l.line] === 'approve') ?? [];
   const held = rfq?.lines.filter((l) => sim.review[l.line] && sim.review[l.line] !== 'approve') ?? [];
   const supplierLines = included.filter((l) => l.flags.some((f) => f.kind === 'supplier'));
-  const supplierDone = supplierLines.length === 0 || sim.supplierSent;
 
-  const leadDays = useCallback((l: SimLine) => {
-    const needsSupplier = l.flags.some((f) => f.kind === 'supplier');
-    return needsSupplier ? simulatedLeadDays(l.partNumber, l.leadTimeDays) : (l.leadTimeDays ?? 0);
-  }, []);
-  const replies = Object.fromEntries(supplierLines.map((l) => [l.line, simulatedLeadDays(l.partNumber, l.leadTimeDays)]));
-  const deliveryDays = included.length ? Math.max(...included.map(leadDays)) : null;
-  const lateCount = included.filter((l) => rfq?.deadlineDays != null && leadDays(l) > rfq.deadlineDays).length;
-  const riskDone = lateCount === 0 || Boolean(sim.risk);
+  // Where each line comes from: Field's own sites, stock, or a bought-in range.
+  const region: Region = (account?.region as Region | undefined) ?? 'EMEA';
+  const sourceOf = useCallback((l: SimLine) => sourceFor(l, region), [region]);
+  const boughtIn = included.filter((l) => sourceOf(l).kind === 'bought-in');
+  const supplierDone = sim.supplierSent;
+  const siteOf = (l: SimLine): SiteId | null => {
+    const s = sourceOf(l);
+    return s.kind === 'make' ? (sim.sites[l.line] ?? s.proposed) : s.kind === 'stock' ? s.site : null;
+  };
+  const sourceLabel = (l: SimLine): string => {
+    const s = sourceOf(l);
+    if (s.kind === 'bought-in') return s.supplier;
+    const site = SITES[siteOf(l)!];
+    return s.kind === 'stock' ? `Ex-stock, ${site.name}` : `${site.name}, ${site.country}`;
+  };
+  // SIMULATED replies to the bought-in requests, stable per part.
+  const replies = Object.fromEntries(boughtIn.map((l) => [l.line, simulatedLeadDays(l.partNumber, l.leadTimeDays)]));
+  /** Door-to-door days for a line under the supply plan. */
+  const leadDays = (l: SimLine): number => {
+    const s = sourceOf(l);
+    if (s.kind === 'stock') return s.days;
+    if (s.kind === 'make') return s.options.find((o) => o.site === siteOf(l))!.totalDays;
+    return replies[l.line] ?? simulatedLeadDays(l.partNumber, l.leadTimeDays);
+  };
+  const deadline = rfq?.deadlineDays ?? null;
+  const lateLines = included.filter((l) => deadline !== null && leadDays(l) > deadline);
+  const lateCount = lateLines.length;
+  // SIMULATED supplier answers to an expedite request, stable per part.
+  const expedite = Object.fromEntries(lateLines.map((l) => [l.line, simulatedExpedite(l.partNumber)]));
+  /** Lead time once the delivery plan is applied: an accepted expedite lands on the deadline. */
+  const plannedDays = (l: SimLine) => {
+    const d = leadDays(l);
+    if (sim.plan === 'expedite' && deadline !== null && d > deadline && expedite[l.line]?.accepted) return deadline;
+    return d;
+  };
+  const deliveryDays = included.length ? Math.max(...included.map(plannedDays)) : null;
+  // Phasing and honest dates settle the late lines at quote time; only a refused
+  // expedite leaves Operations something to decide once the order is in.
+  const stillLate = sim.plan === 'expedite' ? lateLines.filter((l) => plannedDays(l) > deadline!) : [];
+  const planDone = lateCount === 0 || Boolean(sim.plan);
+  const riskDone = stillLate.length === 0 || Boolean(sim.risk);
 
   /** The furthest step the viewer may reach — they can't jump past a decision. */
   const reachable = useMemo(() => {
@@ -108,10 +146,10 @@ export function Journey({
     if (!reviewDone) return stepIndex('review');
     if (!supplierDone) return stepIndex('supplier');
     if (!sim.pricesConfirmed) return stepIndex('pricing');
-    if (sim.approval !== 'approved') return stepIndex('approval');
+    if (!planDone || sim.approval !== 'approved') return stepIndex('approval');
     if (!riskDone) return stepIndex('manufacture');
     return STEPS.length - 1;
-  }, [found, contact, rfq, reviewDone, supplierDone, sim.pricesConfirmed, sim.approval, riskDone]);
+  }, [found, contact, rfq, reviewDone, supplierDone, sim.pricesConfirmed, planDone, sim.approval, riskDone]);
 
   const raw = Number(params.get('s') ?? 0);
   const requested = Number.isFinite(raw) ? Math.max(0, Math.min(STEPS.length - 1, Math.floor(raw))) : 0;
@@ -198,14 +236,20 @@ export function Journey({
 
   // -------------------------------------------------------------- screens
   const decisions = Object.keys(sim.review).length + (sim.supplierSent ? 1 : 0) + (sim.pricesConfirmed ? 1 : 0)
-    + (sim.approval === 'approved' ? 1 : 0) + (sim.risk ? 1 : 0);
+    + (sim.plan ? 1 : 0) + (sim.approval === 'approved' ? 1 : 0) + (sim.risk ? 1 : 0);
   const pendingReview = reviewLines.filter((l) => !sim.review[l.line]).length;
   const you = (id: StepId) => ({ ...PERSONAS[id]!, you: true });
   const basket = found ? found.lines.length - sim.excluded.length : 0;
   // SYNTHETIC prices, seeded per part; the viewer's own figures override the suggestion.
   const linePrices = useMemo(
-    () => priceLines(included, account?.id ?? null, (name) => suppliers.find((x) => x.name === supplierFor(name))?.country),
-    [included.map((l) => l.partNumber).join('|'), account?.id, suppliers],
+    () => priceLines(included, account?.id ?? null, (name) => {
+      // Freight in the synthetic price follows where the line is made or bought.
+      const l = included.find((x) => x.name === name);
+      const s = l ? sourceOf(l) : null;
+      if (!s || s.kind === 'bought-in') return 'United States';
+      return SITES[s.kind === 'stock' ? s.site : (sim.sites[l!.line] ?? s.proposed)].country;
+    }, account?.fleet ?? []),
+    [included.map((l) => l.partNumber).join('|'), account?.id, suppliers, account?.fleet, sim.sites, sourceOf],
   );
   const finalPrices = Object.fromEntries(linePrices.map((p) => [p.line, sim.prices[p.line] ?? p.suggested]));
   const quoteMargin = marginOf(
@@ -219,7 +263,7 @@ export function Journey({
       badges={{
         Enquiries: inbox.length + (index <= stepIndex('check') ? 1 : 0),
         Engineering: reviewDone ? undefined : pendingReview,
-        Procurement: supplierDone ? undefined : 1,
+        Supply: supplierDone ? undefined : 1,
       }}
     >
       {body}
@@ -294,7 +338,7 @@ export function Journey({
     },
     account: {
       title: account ? `${owner.name} opens the account.` : `${owner.name} opens the new lead.`,
-      sub: account ? `Everything Field holds on ${account.name}, on one screen — with a brief written from its documents.` : `${customerName} is new to Field.`,
+      sub: account ? `Everything Field holds on ${account.name}, on one screen, with a brief written from its documents.` : `${customerName} is new to Field.`,
       frame: rfq && contact && crm('Accounts', owner,
         <AccountScreen account={account} contact={contact} rfq={rfq} brief={sim.brief} owner={owner.name} />),
     },
@@ -319,22 +363,26 @@ export function Journey({
       blocked: reviewDone ? undefined : 'Decide every line to continue',
     },
     supplier: {
-      title: supplierLines.length ? 'Some lead times need confirming.' : 'Every lead time is already known.',
-      sub: 'The system drafts the supplier requests. Nothing goes out without Procurement’s approval.',
+      title: 'Where will each line come from?',
+      sub: `Field makes Boeing-licensed tooling in Poole, Singapore, China and India, and buys some ranges in. The system proposes the fastest source for a customer in ${region}; a planner confirms or overrules it.`,
       persona: PERSONAS.supplier,
-      halt: supplierLines.length ? {
+      halt: {
         done: sim.supplierSent,
         text: sim.supplierSent
-          ? 'Requests sent. The supplier replies are simulated.'
-          : 'The drafts are ready. Approve them to send.',
-      } : undefined,
-      frame: rfq && crm('Procurement', you('supplier'),
-        <SupplierScreen rfq={rfq} lines={supplierLines} sent={sim.supplierSent} onSend={() => patch({ supplierSent: true })} replies={replies} suppliers={suppliers} />),
-      blocked: supplierDone ? undefined : 'Approve the requests to continue',
+          ? `Plan confirmed${boughtIn.length ? ', supplier requests sent' : ''}. Stock, site lead times and replies are simulated.`
+          : `A source is proposed for every line${supplierLines.length ? `, including the ${supplierLines.length === 1 ? 'one' : supplierLines.length} the line check flagged` : ''}. Change any site you disagree with, then confirm the plan.`,
+      },
+      frame: rfq && crm('Supply', you('supplier'),
+        <SupplyScreen
+          rfq={rfq} lines={included} region={region} sourceOf={sourceOf}
+          sites={sim.sites} onSite={(line, site) => setSim((s) => ({ ...s, sites: { ...s.sites, [line]: site } }))}
+          confirmed={sim.supplierSent} onConfirm={() => patch({ supplierSent: true })} replies={replies}
+        />),
+      blocked: supplierDone ? undefined : 'Confirm the plan to continue',
     },
     pricing: {
       title: 'The quote needs pricing.',
-      sub: 'The system builds each price and flags anything odd. The prices are synthetic — Field publishes none — and the final figure is a person’s.',
+      sub: 'The system builds each price and flags anything odd. The prices are synthetic, Field publishes none, and the final figure is a person’s.',
       persona: PERSONAS.pricing,
       halt: {
         done: sim.pricesConfirmed,
@@ -346,47 +394,62 @@ export function Journey({
         <PricingScreen
           rfq={rfq} customer={customerName} account={account} lines={included} prices={linePrices}
           chosen={sim.prices} onPrice={(line, price) => setSim((s) => ({ ...s, prices: { ...s.prices, [line]: price } }))}
-          confirmed={sim.pricesConfirmed} onConfirm={() => patch({ pricesConfirmed: true })}
+          confirmed={sim.pricesConfirmed} onConfirm={() => patch({ pricesConfirmed: true })} sourceLabel={sourceLabel}
         />),
       blocked: sim.pricesConfirmed ? undefined : 'Confirm the prices to continue',
     },
     approval: {
-      title: 'The quote needs signing off.',
-      sub: 'Assembled from the approved lines, confirmed lead times and the prices just set — all synthetic prices, clearly marked.',
+      title: lateCount && !sim.plan ? 'The quote misses the deadline. Decide before it goes out.' : 'The quote needs signing off.',
+      sub: lateCount && !sim.plan
+        ? `${lateCount === 1 ? 'One line lands' : `${lateCount} lines land`} after the customer’s ${duration(deadline!)}. The system shows the options; Commercial chooses, and the customer sees the choice on the quote.`
+        : 'Assembled from the approved lines, confirmed lead times and the prices just set. Synthetic prices, clearly marked.',
       persona: PERSONAS.approval,
       halt: {
         done: sim.approval === 'approved',
         text: sim.approval === 'approved'
           ? 'Signed off. In this mock-up nothing is actually sent.'
-          : 'The quote goes nowhere until you approve it, or return it to Engineering.',
+          : lateCount && !sim.plan
+            ? 'Choose how the late lines are handled, then approve the quote or return it to Engineering.'
+            : 'The quote goes nowhere until you approve it, or return it to Engineering.',
       },
       frame: rfq && contact && crm('Quotes', you('approval'),
         <ApprovalScreen
           rfq={rfq} customer={customerName} contact={contact} included={included} held={held}
-          leadDays={leadDays} deliveryDays={deliveryDays} decision={sim.approval}
+          leadDays={plannedDays} deliveryDays={deliveryDays} decision={sim.approval}
           reviewed={reviewLines.length} supplierAsked={supplierLines.length} approver={PERSONAS.approval!.name}
           prices={finalPrices} margin={quoteMargin} pricedBy={PERSONAS.pricing!.name}
           belowMin={linePrices.filter((p) => marginOf(finalPrices[p.line]!, p.landed) < MIN_MARGIN).length}
+          lateLines={lateLines} plan={sim.plan} onPlan={(plan) => patch({ plan, risk: null })} expedite={expedite}
+          queried={held.filter((l) => sim.review[l.line] === 'query')} sourceLabel={sourceLabel}
           onDecide={(d) => {
             patch({ approval: d });
             if (d === 'returned') go(stepIndex('review'));
           }}
         />),
-      blocked: sim.approval === 'approved' ? undefined : 'Approve the quote to continue',
+      blocked: sim.approval === 'approved' ? undefined : lateCount && !sim.plan ? 'Choose how to handle the late lines, then approve' : 'Approve the quote to continue',
     },
     manufacture: {
-      title: 'The customer accepts. The order goes into production.',
-      sub: lateCount ? 'One thing needs a decision before it ships.' : 'The system tracks every line until it ships.',
+      title: sim.plan === 'phased'
+        ? 'The customer accepts a phased delivery. The order goes into production.'
+        : sim.plan === 'realistic'
+          ? 'The customer accepts the dates quoted. The order goes into production.'
+          : 'The customer accepts. The order goes into production.',
+      sub: stillLate.length
+        ? 'The expedite didn’t come off on every line. One thing needs a decision before it ships.'
+        : sim.plan === 'expedite' ? 'The expedited lines are tracked against the deadline until they ship.' : 'The system tracks every line until it ships.',
       persona: PERSONAS.manufacture,
-      halt: lateCount ? {
+      halt: stillLate.length ? {
         done: Boolean(sim.risk),
         text: sim.risk
           ? `Decided: ${sim.risk.toLowerCase()}.`
-          : `${lateCount} ${lateCount === 1 ? 'item' : 'items'} will arrive after the customer’s deadline. Choose how to handle it.`,
+          : `${stillLate.length} ${stillLate.length === 1 ? 'line' : 'lines'} couldn’t be expedited and will arrive after the deadline. Choose how to handle it.`,
       } : undefined,
       frame: rfq && crm('Orders', you('manufacture'),
-        <OrderScreen rfq={rfq} customer={customerName} included={included} leadDays={leadDays} decision={sim.risk} onDecide={(d) => patch({ risk: d })} />),
-      blocked: riskDone ? undefined : `Decide how to handle the late ${lateCount === 1 ? 'item' : 'items'} to continue`,
+        <OrderScreen
+          rfq={rfq} customer={customerName} included={included} leadDays={plannedDays} catalogueDays={leadDays}
+          plan={sim.plan} expedite={expedite} stillLate={stillLate} decision={sim.risk} onDecide={(d) => patch({ risk: d })} sourceLabel={sourceLabel}
+        />),
+      blocked: riskDone ? undefined : `Decide how to handle the late ${stillLate.length === 1 ? 'line' : 'lines'} to continue`,
     },
   };
 
@@ -425,7 +488,7 @@ export function Journey({
         <TopBar index={index} reachable={reachable} go={go} onRestart={restart} canRestart={Boolean(found)} />
       )}
 
-      {!booting && step.id === 'start' && <Cover onBegin={() => go(1)} />}
+      {!booting && step.id === 'start' && <Cover onBegin={() => go(1)} catalogue={catalogue} />}
 
       <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-36 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : 'pt-8 sm:pt-12'}`}>
 

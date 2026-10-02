@@ -34,10 +34,13 @@ export default function JourneyPage() {
   let suppliers: CrmSupplier[] = [];
   try { accounts = listAccounts(); inbox = listInbox(); suppliers = listSuppliers(); } catch { /* dataset not generated */ }
 
-  let catalogue: { products: number; withImages: number; withLeadTime: number } | null = null;
+  let catalogue: { products: number; withImages: number; withLeadTime: number; withApplicability: number; aircraftModels: number } | null = null;
   try {
     const c = catalogueStats();
-    catalogue = { products: c.products, withImages: c.withImages, withLeadTime: c.withLeadTime };
+    catalogue = {
+      products: c.products, withImages: c.withImages, withLeadTime: c.withLeadTime,
+      withApplicability: c.withApplicability, aircraftModels: c.aircraftModels,
+    };
   } catch { /* catalogue not built */ }
 
   return (

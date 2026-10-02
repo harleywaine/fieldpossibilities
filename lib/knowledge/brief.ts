@@ -84,7 +84,7 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
   if (customer) {
     const owner = demoDb().prepare('SELECT * FROM employees WHERE id = ?').get(customer.account_owner_id) as any;
     fields.push({
-      label: 'Customer', value: `${customer.name} — ${customer.country} (${customer.type})`,
+      label: 'Customer', value: `${customer.name}, ${customer.country} (${customer.type})`,
       citations: cite((c) => c.document.document_type === 'customer-profile' && c.document.customer_id === customerId),
     });
     if (owner) {
@@ -108,7 +108,7 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
       .filter(Boolean).join(' / ');
     fields.push({
       label: 'Requirement',
-      value: `${requirement} — ${openRfq.programme.toLowerCase()}`,
+      value: `${requirement}, ${openRfq.programme.toLowerCase()}`,
       citations: cite((c) => c.document.related_rfq_id === openRfq.id),
     });
     if (openRfq.required_delivery_weeks) {
@@ -126,11 +126,14 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
       `SELECT * FROM rfqs WHERE customer_id = ? AND status != 'open' ORDER BY received_at DESC`
     ).all(customerId) as any[];
     if (prior.length) {
+      // Only this customer's own records may stand behind a statement about this
+      // customer: another account's history is never evidence here.
       fields.push({
         label: 'Previous interactions',
-        value: `${prior.length} related historical ${prior.length === 1 ? 'enquiry' : 'enquiries'} — ` +
+        value: `${prior.length} related historical ${prior.length === 1 ? 'enquiry' : 'enquiries'}: ` +
                prior.map((p) => `${p.reference} (${p.status})`).join(', '),
-        citations: cite((c) => c.document.document_type === 'account-history' || c.document.document_type === 'rfq'),
+        citations: cite((c) => c.document.customer_id === customerId &&
+                               (c.document.document_type === 'account-history' || c.document.document_type === 'rfq')),
       });
     }
 
@@ -143,7 +146,7 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
         label: 'Previous quote',
         value: `£${Number(quote.value_gbp).toLocaleString()} (${quote.reference}, ${quote.status})`,
         citations: cite((c) => c.document.related_quote_id === quote.id ||
-                               c.document.document_type === 'account-history'),
+                               (c.document.document_type === 'account-history' && c.document.customer_id === customerId)),
       });
       fields.push({
         label: 'Historical lead time quoted',
@@ -171,8 +174,8 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
           'Sources disagree on supplier lead time. The most recent source supersedes the older one, ' +
           'but the position should be confirmed with the supplier before it is used.',
         positions: [
-          { value: `${extractLeadTime(newer.text) ?? 'unstated'} — ${newer.document.updated_at.slice(0, 10)}`, citation: toCitation(newer) },
-          { value: `${extractLeadTime(older.text) ?? 'unstated'} — ${older.document.updated_at.slice(0, 10)}`, citation: toCitation(older) },
+          { value: `${extractLeadTime(newer.text) ?? 'unstated'}, ${newer.document.updated_at.slice(0, 10)}`, citation: toCitation(newer) },
+          { value: `${extractLeadTime(older.text) ?? 'unstated'}, ${older.document.updated_at.slice(0, 10)}`, citation: toCitation(older) },
         ],
       },
       ageWarning: older.document.stale_months
@@ -190,7 +193,7 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
     if (withLead) {
       fields.push({
         label: 'Latest supplier information',
-        value: `${extractLeadTime(withLead.text)} — ${withLead.document.updated_at.slice(0, 10)}`,
+        value: `${extractLeadTime(withLead.text)}, ${withLead.document.updated_at.slice(0, 10)}`,
         citations: [toCitation(withLead)],
       });
     } else {
@@ -216,16 +219,27 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
     openQuestions.push('Has Engineering confirmed applicability for the specific aircraft variant?');
   }
 
-  // ---- Potential issue, derived across documents -------------------------
-  const history = retrieval.chunks.find((c) => c.document.document_type === 'account-history');
-  if (history && /delivery|lead time|slot/i.test(history.text)) {
-    fields.push({
-      label: 'Potential issue', interpretation: true,
-      value:
-        'Account history indicates delivery lead time has been the recurring point of friction ' +
-        'with this customer, including a previous loss on that basis.',
-      citations: [toCitation(history)],
-    });
+  // ---- Potential issue, derived from THIS customer's history -------------
+  const history = retrieval.chunks.find(
+    (c) => c.document.document_type === 'account-history' && customerId !== null && c.document.customer_id === customerId);
+  if (history) {
+    const friction = history.text.match(/(delivery|lead time|price|pricing|quality|certificate|applicability|availability)[^.\n]*(?:friction|lost|issue|sensitive|recurring|gating)/i)
+      ?? history.text.match(/(?:friction|recurring (?:point|issue)|sensitive)[^.\n]*/i);
+    if (friction) {
+      const topic = /price|pricing/i.test(friction[0]) ? 'price'
+        : /quality|certificate/i.test(friction[0]) ? 'quality and certification'
+        : /applicability/i.test(friction[0]) ? 'engineering applicability'
+        : /availability/i.test(friction[0]) ? 'availability of out-of-production tooling'
+        : 'delivery lead time';
+      const lostOnIt = /lost/i.test(history.text) && topic === 'delivery lead time';
+      fields.push({
+        label: 'Potential issue', interpretation: true,
+        value:
+          `Account history indicates ${topic} has been the recurring point of friction with this customer` +
+          (lostOnIt ? ', including a previous loss on that basis.' : '.'),
+        citations: [toCitation(history)],
+      });
+    }
   }
 
   // ---- Ageing warnings ---------------------------------------------------

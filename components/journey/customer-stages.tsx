@@ -115,6 +115,7 @@ function deadlineText(days: number, phrase: string | null): string {
 export interface QuoteForm { email: string; company: string }
 
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 export function PartsScreen({
   found, excluded, onToggle, form, onForm, sent, onSend, onEdit, accountNames,
@@ -286,7 +287,12 @@ export function PartsScreen({
                     For a full account history on Field’s side, use a synthetic customer:
                     <span className="mt-1 flex flex-wrap gap-1">
                       {accountNames.slice(0, 4).map((n) => (
-                        <button key={n} onClick={() => onForm({ ...form, company: n })} className="rounded bg-white px-1.5 py-0.5 text-[10.5px] text-signal-700 ring-1 ring-ink-200 hover:ring-signal-300">
+                        <button
+                          key={n}
+                          // Fills both fields: the address matches the synthetic correspondence on file.
+                          onClick={() => onForm({ email: validEmail(form.email) ? form.email : `procurement@${slug(n)}.example`, company: n })}
+                          className="rounded bg-white px-1.5 py-0.5 text-[10.5px] text-signal-700 ring-1 ring-ink-200 hover:ring-signal-300"
+                        >
                           {n}
                         </button>
                       ))}
@@ -320,7 +326,7 @@ export function PartsScreen({
               </How>
               <How n={2} title={`Searched the catalogue in ${found.searchMs} ms`}>
                 {found.searchSteps.map((s) => (
-                  <span key={s.label} className="block"><span className="text-ink-700">{s.label}</span> — {s.detail}</span>
+                  <span key={s.label} className="block"><span className="text-ink-700">{s.label}</span>: {s.detail}</span>
                 ))}
               </How>
               <How n={3} title={`Kept the ${found.lines.length} closest of ${found.considered.toLocaleString()} relevant records`}>

@@ -63,11 +63,14 @@ export function marginOf(price: number, landed: number): number {
 }
 
 export function priceLines(
-  lines: Array<{ line: number; partNumber: string | null; name: string }>,
+  lines: Array<{ line: number; partNumber: string | null; name: string; aircraft?: string | null }>,
   accountId: string | null,
   supplierCountry: (name: string) => string | undefined,
+  fleet: string[] = [],
 ): LinePrice[] {
   const discountPct = accountId ? TERMS[accountId] ?? 0 : 0;
+  const flies = (aircraft: string | null | undefined) =>
+    !fleet.length || !aircraft || aircraft.split(', ').some((a) => fleet.some((f) => f.toUpperCase() === a.toUpperCase()));
   return lines.map((l) => {
     const key = l.partNumber ?? l.name;
     const entry = PRICE_LIST.find((p) => p.test.test(l.name))!;
@@ -75,8 +78,9 @@ export function priceLines(
     const freightPct = FREIGHT[supplierCountry(l.name) ?? ''] ?? 5;
     const landed = Math.round(cost * (1 + freightPct / 100));
     const suggested = priceFor(landed, entry.marginPct, discountPct);
-    // Some lines have sold to this customer before; the older price is usually a little lower.
-    const sold = accountId !== null && unit(`${key}:${accountId}:sold`) < 0.5;
+    // Some lines have sold to this customer before; the older price is usually a
+    // little lower. Only tooling for a type the customer actually operates.
+    const sold = accountId !== null && flies(l.aircraft) && unit(`${key}:${accountId}:sold`) < 0.5;
     const year = 2024 + Math.floor(unit(`${key}:year`) * 2);
     const month = 1 + Math.floor(unit(`${key}:month`) * 12);
     return {

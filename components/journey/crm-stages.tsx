@@ -6,7 +6,7 @@ import {
   ShieldCheck, Sparkles, Timer, Truck, UserPlus, Users, Wrench, XCircle, Zap, HelpCircle, ExternalLink, PoundSterling,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { aircraftLabel, duration, gbp, shortDate, supplierFor, variantTag } from '@/lib/journey.ts';
+import { PLANS, SITES, aircraftLabel, duration, gbp, shortDate, variantTag, type DeliveryPlan, type Region, type SiteId, type Source } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { MIN_MARGIN, gbpExact, marginOf, type LinePrice } from '@/lib/simulation/pricing.ts';
@@ -36,7 +36,7 @@ function PartCell({ l, sub }: { l: SimLine; sub?: React.ReactNode }) {
     <div className="flex min-w-0 items-start gap-2.5">
       <Thumb src={l.image} size={32} />
       <div className="min-w-0">
-        <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber ?? '—'}</p>
+        <p className="mono text-[11.5px] font-medium text-signal-700">{l.partNumber ?? '–'}</p>
         <p className="truncate text-[12px] text-ink-700">{l.name}</p>
         {sub}
       </div>
@@ -93,7 +93,9 @@ export function InboxScreen({
       : { icon: UserPlus, text: `No account for ${contact.company}; opened a new lead` },
     { icon: Users, text: account?.owner ? `Assigned to ${owner}, the account owner` : `Assigned to ${owner}, who takes new leads` },
     ...(rfq.deadlineDays ? [{ icon: Timer, text: `Deadline read from the message: ${rfq.deadlineDays} days` }] : []),
-    { icon: Plane, text: `Aircraft and ${plural(rfq.lines.length, 'part')} recorded` },
+    rfq.aircraft
+      ? { icon: Plane, text: `${aircraftLabel(rfq.aircraft)}${rfq.variant ? ` ${variantTag(rfq.variant)}` : ''} and ${plural(rfq.lines.length, 'part')} recorded` }
+      : { icon: Plane, text: `${plural(rfq.lines.length, 'part')} recorded; no aircraft stated, flagged for ${owner} to confirm` },
     { icon: Mail, text: `Acknowledgement sent to ${contact.email} (simulated)` },
   ];
   return (
@@ -216,9 +218,9 @@ export function AccountScreen({
 
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
         <Stat label="Annual spend" value={gbp(account.annualSpendGbp)} sub="indicative" />
-        <Stat label="Won to date" value={account.stats.wonGbp ? gbp(account.stats.wonGbp) : '—'} sub={plural(account.stats.won, 'order')} />
-        <Stat label="Win rate" value={account.stats.winRatePct === null ? '—' : `${account.stats.winRatePct}%`} sub={`${account.stats.won} of ${account.stats.decided} decided`} />
-        <Stat label="Open quotes" value={account.stats.pipelineGbp ? gbp(account.stats.pipelineGbp) : '—'} sub="awaiting the customer" />
+        <Stat label="Won to date" value={account.stats.wonGbp ? gbp(account.stats.wonGbp) : '–'} sub={plural(account.stats.won, 'order')} />
+        <Stat label="Win rate" value={account.stats.winRatePct === null ? '–' : `${account.stats.winRatePct}%`} sub={`${account.stats.won} of ${account.stats.decided} decided`} />
+        <Stat label="Open quotes" value={account.stats.pipelineGbp ? gbp(account.stats.pipelineGbp) : '–'} sub="awaiting the customer" />
         <Stat label="Open cases" value={String(open.length)} sub={openComplaint ? 'includes a complaint' : open.length ? 'queries only' : 'none'} tone={openComplaint ? 'bad' : open.length ? undefined : 'good'} />
       </div>
 
@@ -255,7 +257,7 @@ export function AccountScreen({
                     <Td className="whitespace-nowrap text-ink-500 max-sm:hidden">Today</Td>
                     <Td className="text-ink-800">{[aircraftLabel(rfq.aircraft), plural(rfq.lines.length, 'part')].filter(Boolean).join(' · ')}</Td>
                     <Td><Badge tone="red" dot>New</Badge></Td>
-                    <Td right className="text-ink-400">—</Td>
+                    <Td right className="text-ink-400">–</Td>
                   </tr>
                   {account.jobs.map((j) => (
                     <tr key={j.reference} className="hover:bg-ink-25">
@@ -263,7 +265,7 @@ export function AccountScreen({
                       <Td className="whitespace-nowrap text-ink-500 max-sm:hidden">{shortDate(j.date)}</Td>
                       <Td className="text-ink-800">{[j.aircraft, j.application?.toLowerCase()].filter(Boolean).join(' · ')}</Td>
                       <Td><Badge tone={JOB[j.status].tone} dot>{JOB[j.status].text}</Badge></Td>
-                      <Td right className="mono whitespace-nowrap text-ink-800">{j.valueGbp ? gbp(j.valueGbp) : '—'}</Td>
+                      <Td right className="mono whitespace-nowrap text-ink-800">{j.valueGbp ? gbp(j.valueGbp) : '–'}</Td>
                     </tr>
                   ))}
                 </tbody>
@@ -325,7 +327,7 @@ export function AccountScreen({
                 ))}
               </dl>
             ) : (
-              <p className="p-4 text-[12px] text-ink-500">Little on file beyond the profile — itself worth knowing before replying.</p>
+              <p className="p-4 text-[12px] text-ink-500">Little on file beyond the profile, which is itself worth knowing before replying.</p>
             )}
           </section>
 
@@ -390,7 +392,7 @@ function NewLead({ contact, rfq, owner }: { contact: Contact; rfq: SimRfq; owner
         actions={<><Button icon={Phone}>Log call</Button><Button icon={Building2} variant="primary">Convert to account</Button></>}
       />
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Won to date" value="—" sub="no orders" />
+        <Stat label="Won to date" value="–" sub="no orders" />
         <Stat label="Enquiries" value="1" sub="this one" />
         <Stat label="Open cases" value="0" sub="none" />
         <Stat label="Contacts" value="1" sub="from this enquiry" />
@@ -427,7 +429,7 @@ export function CheckScreen({ rfq, customer, owner }: { rfq: SimRfq; customer: s
       <div className="mb-4 grid grid-cols-3 gap-3">
         <Stat label="Ready to quote" value={String(ready)} sub="nothing to check" tone={ready ? 'good' : undefined} />
         <Stat label="To Engineering" value={String(toEng)} sub="applicability to confirm" />
-        <Stat label="To Procurement" value={String(toProc)} sub="lead time to confirm" />
+        <Stat label="To Supply" value={String(toProc)} sub="lead time to confirm" />
       </div>
       <Card title="Line check" icon={CheckCircle2} action="against each catalogue record" pad={false}>
         <ul className="divide-y divide-ink-100 sm:hidden">
@@ -447,7 +449,7 @@ export function CheckScreen({ rfq, customer, owner }: { rfq: SimRfq; customer: s
                 <div className="mt-1.5 flex flex-wrap gap-1 pl-[42px]">
                   {!l.flags.length && <Badge tone="green">Ready</Badge>}
                   {has(l, 'review') && <Badge tone="amber">Engineering</Badge>}
-                  {has(l, 'supplier') && <Badge tone="blue">Procurement</Badge>}
+                  {has(l, 'supplier') && <Badge tone="blue">Supply</Badge>}
                 </div>
               </li>
             );
@@ -488,7 +490,7 @@ export function CheckScreen({ rfq, customer, owner }: { rfq: SimRfq; customer: s
                       <span className="flex flex-wrap gap-1">
                         {!l.flags.length && <Badge tone="green">Ready</Badge>}
                         {has(l, 'review') && <Badge tone="amber">Engineering</Badge>}
-                        {has(l, 'supplier') && <Badge tone="blue">Procurement</Badge>}
+                        {has(l, 'supplier') && <Badge tone="blue">Supply</Badge>}
                       </span>
                     </Td>
                   </tr>
@@ -598,7 +600,7 @@ export function ReviewScreen({
               <BookOpen className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-400" />
               <p className="text-[11.5px] leading-relaxed text-ink-600">
                 <span className="font-semibold text-ink-800">Engineering guidance · </span>{guidance.value}
-                {guidance.citations?.[0] && <span className="ml-1.5 whitespace-nowrap text-[10.5px] text-ink-400">— {guidance.citations[0].path}</span>}
+                {guidance.citations?.[0] && <span className="ml-1.5 whitespace-nowrap text-[10.5px] text-ink-400">· {guidance.citations[0].path}</span>}
               </p>
             </div>
           )}
@@ -608,6 +610,32 @@ export function ReviewScreen({
       <div className="space-y-3">
         {!lines.length && (
           <Card><p className="text-[12.5px] text-ink-600">Nothing in the queue: every line establishes what the customer asked for.</p></Card>
+        )}
+        {lines.some((l) => decisions[l.line] === 'query') && (
+          <section className="step-in overflow-hidden rounded-lg border border-signal-600/25 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+            <header className="flex items-center gap-2 border-b border-signal-600/15 bg-signal-50 px-4 py-2.5">
+              <MessageSquare className="h-3.5 w-3.5 text-signal-600" />
+              <h3 className="text-[12.5px] font-semibold text-ink-900">Question to the customer</h3>
+              <span className="ml-auto flex items-center gap-1.5 text-[10.5px] text-ink-400"><Sparkles className="h-3 w-3 text-[#6d4fe0]" />Drafted by the system · the account owner sends it</span>
+            </header>
+            <div className="px-4 py-3 text-[12px] leading-relaxed text-ink-700">
+              <p className="text-ink-400">Subject <span className="ml-2 font-medium text-ink-800">Your enquiry {rfq.reference}: a question before we quote</span></p>
+              <p className="mt-2">Thank you for your enquiry. Before we quote, our engineering team would like to check {lines.filter((l) => decisions[l.line] === 'query').length === 1 ? 'one item' : 'a few items'} against your aircraft:</p>
+              <ul className="mt-2 space-y-1.5">
+                {lines.filter((l) => decisions[l.line] === 'query').map((l) => {
+                  const c = checksOf(l)[0];
+                  return (
+                    <li key={l.line} className="flex gap-2">
+                      <span className="mono shrink-0 text-signal-700">{l.partNumber}</span>
+                      <span>{c ? `${c.question} The catalogue lists it as ${c.catalogue.toLowerCase()}; you asked for ${c.asked.toLowerCase()}.` : 'Could you confirm the exact application?'}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-2">The remaining items are being priced now and will follow as one quotation.</p>
+              <p className="mt-2 text-[10.5px] text-ink-400">Mock-up: nothing is sent. The held lines stay off the quote until the customer answers.</p>
+            </div>
+          </section>
         )}
         {lines.map((l) => {
           const d = decisions[l.line];
@@ -682,105 +710,161 @@ function Compare({ label, value, muted }: { label: string; value: string; muted?
   );
 }
 
-/* ------------------------------------------------------------- 5 supplier */
+/* --------------------------------------------------------------- 5 supply */
 
-export function SupplierScreen({
-  rfq, lines, sent, onSend, replies, suppliers,
+const SOURCE_BADGE: Record<Source['kind'], { tone: Tone; text: string }> = {
+  make: { tone: 'blue', text: 'Made by Field' },
+  stock: { tone: 'green', text: 'Ex-stock' },
+  'bought-in': { tone: 'violet', text: 'Bought in' },
+};
+
+/**
+ * Where each line comes from. The system proposes the fastest door-to-door
+ * option for the customer's region; the planner can overrule any site, and
+ * nothing is sent to a supplier until the plan is confirmed.
+ */
+export function SupplyScreen({
+  rfq, lines, region, sourceOf, sites, onSite, confirmed, onConfirm, replies,
 }: {
-  rfq: SimRfq; lines: SimLine[]; sent: boolean; onSend: () => void;
-  replies: Record<number, number>; suppliers: CrmSupplier[];
+  rfq: SimRfq; lines: SimLine[]; region: Region; sourceOf: (l: SimLine) => Source;
+  sites: Record<number, SiteId>; onSite: (line: number, site: SiteId) => void;
+  confirmed: boolean; onConfirm: () => void; replies: Record<number, number>;
 }) {
-  const bySupplier = new Map<string, SimLine[]>();
-  for (const l of lines) {
-    const s = supplierFor(l.name);
-    bySupplier.set(s, [...(bySupplier.get(s) ?? []), l]);
-  }
   const deadline = rfq.deadlineDays;
+  const made = lines.filter((l) => sourceOf(l).kind === 'make');
+  const stock = lines.filter((l) => sourceOf(l).kind === 'stock');
+  const bought = lines.filter((l) => sourceOf(l).kind === 'bought-in');
+  const chosen = (l: SimLine): SiteId | null => {
+    const s = sourceOf(l);
+    return s.kind === 'make' ? (sites[l.line] ?? s.proposed) : s.kind === 'stock' ? s.site : null;
+  };
+  const daysOf = (l: SimLine): number | null => {
+    const s = sourceOf(l);
+    if (s.kind === 'stock') return s.days;
+    if (s.kind === 'make') return s.options.find((o) => o.site === chosen(l))!.totalDays;
+    return confirmed ? (replies[l.line] ?? null) : null;
+  };
+  const perSite = (Object.keys(SITES) as SiteId[]).map((id) => ({ id, ...SITES[id], count: lines.filter((l) => chosen(l) === id).length }));
+  const known = lines.map(daysOf).filter((d): d is number => d !== null);
+  const latest = known.length ? Math.max(...known) : null;
+  const complete = latest !== null && known.length === lines.length;
+
   return (
     <div>
       <PageHeader
-        crumbs={['Procurement', 'Lead-time requests', rfq.reference]}
-        icon={Truck}
-        title="Lead-time requests"
-        badges={lines.length ? (sent ? <Badge tone="green" dot>Sent · replies in</Badge> : <Badge tone="amber" dot>{plural(bySupplier.size, 'draft')}</Badge>) : undefined}
-        meta={[<><Inbox className="h-3.5 w-3.5" />{rfq.reference}</>, ...(deadline ? [<><Timer className="h-3.5 w-3.5" />Customer needs within {duration(deadline)}</>] : [])]}
-        actions={lines.length && !sent ? <Button icon={Send} variant="primary" size="md" onClick={onSend}>Approve and send {plural(bySupplier.size, 'request')}</Button> : undefined}
+        crumbs={['Supply', 'Enquiry plans', rfq.reference]}
+        icon={Factory}
+        title="Where each line comes from"
+        badges={confirmed ? <Badge tone="green" dot>Plan confirmed</Badge> : <Badge tone="amber" dot>Awaiting you</Badge>}
+        meta={[
+          <><Inbox className="h-3.5 w-3.5" />{rfq.reference}</>,
+          <><MapPin className="h-3.5 w-3.5" />Deliver to {region}</>,
+          ...(deadline ? [<><Timer className="h-3.5 w-3.5" />Customer needs within {duration(deadline)}</>] : []),
+        ]}
+        actions={!confirmed
+          ? <Button icon={CheckCircle2} variant="primary" size="md" onClick={onConfirm}>Confirm the plan{bought.length ? ` and send ${plural(bought.length, 'supplier request')}` : ''}</Button>
+          : undefined}
       />
-      {!lines.length && <Card><p className="text-[12.5px] text-ink-600">Nothing to ask: every line has a published lead time inside the deadline.</p></Card>}
-      <div className="space-y-4">
-        {[...bySupplier.entries()].map(([name, ls], si) => {
-          const s = suppliers.find((x) => x.name === name);
-          return (
-            <section key={name} className="overflow-hidden rounded-lg border border-ink-100 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-              <header className="flex flex-wrap items-center gap-3 border-b border-ink-100 px-4 py-3">
-                <Avatar name={name} size={34} square />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[13px] font-semibold text-ink-900">{name}</p>
-                  {s && <p className="text-[11px] text-ink-400">{s.category} · {s.country}</p>}
+
+      <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Made by Field" value={String(made.length)} sub="under licence, four factories" />
+        <Stat label="From stock" value={String(stock.length)} sub="published as in stock" tone={stock.length ? 'good' : undefined} />
+        <Stat label="Bought in" value={String(bought.length)} sub="the Dillon range" />
+        <Stat
+          label="Complete delivery"
+          value={latest !== null ? duration(latest) : '–'}
+          sub={!complete ? 'awaiting a supplier reply' : deadline ? (latest! > deadline ? `after the ${duration(deadline)} asked` : 'inside the deadline') : 'no deadline stated'}
+          tone={complete && deadline ? (latest! > deadline ? 'bad' : 'good') : undefined}
+        />
+      </div>
+
+      <div className="mb-4 grid gap-2 sm:grid-cols-4">
+        {perSite.map((s) => (
+          <div key={s.id} className={`rounded-lg border bg-white px-3.5 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${s.count ? 'border-signal-600/30' : 'border-ink-100'}`}>
+            <p className="flex items-center justify-between gap-2 text-[12.5px] font-semibold text-ink-900">
+              <span className="flex items-center gap-1.5"><Factory className={`h-3.5 w-3.5 ${s.count ? 'text-signal-600' : 'text-ink-300'}`} />{s.name}</span>
+              <span className="text-[11px] font-medium text-ink-400">{s.country}</span>
+            </p>
+            <p className="mt-0.5 text-[11px] leading-snug text-ink-500">{s.note}</p>
+            <p className="mt-2 text-[11.5px] font-medium">
+              {s.count ? <span className="text-signal-700">{plural(s.count, 'line')} planned here</span> : <span className="text-ink-300">nothing planned here</span>}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <Card title="Source per line" icon={Truck} action="stock, site lead times and costs are simulated" pad={false}>
+        <ul className="divide-y divide-ink-100">
+          {lines.map((l, i) => {
+            const s = sourceOf(l);
+            const d = daysOf(l);
+            const late = deadline !== null && d !== null && d > deadline;
+            return (
+              <li key={l.line} className="step-in px-4 py-3" style={T(i * 90)}>
+                <div className="flex flex-wrap items-start gap-3">
+                  <PartCell l={l} sub={<p className="mt-1 text-[11px] text-ink-500">{s.kind === 'make' ? s.licence : s.kind === 'stock' ? `Published as in stock; ships from ${SITES[s.site].name}` : s.range}</p>} />
+                  <span className="ml-auto flex items-center gap-2">
+                    <Badge tone={SOURCE_BADGE[s.kind].tone}>{SOURCE_BADGE[s.kind].text}</Badge>
+                    {d !== null
+                      ? <span className={`mono text-[12px] font-medium ${late ? 'text-action-600' : 'text-strong-600'}`}>{duration(d)}</span>
+                      : <span className="text-[11.5px] text-ink-400">awaiting reply</span>}
+                  </span>
                 </div>
-                {s && (
-                  <div className="flex gap-5 text-right max-sm:order-last max-sm:w-full max-sm:justify-start max-sm:pl-[46px] max-sm:text-left">
-                    <span><span className="block text-[10.5px] text-ink-400">On time</span><span className="block text-[12.5px] font-semibold text-ink-900">{s.reliabilityPct}%</span></span>
-                    <span><span className="block text-[10.5px] text-ink-400">Usual lead time</span><span className="block text-[12.5px] font-semibold text-ink-900">{s.standardLeadTimeWeeks} wks</span></span>
+
+                {s.kind === 'make' && (
+                  <div className="mt-2.5 grid gap-1.5 sm:grid-cols-4">
+                    {s.options.map((o) => {
+                      const on = chosen(l) === o.site;
+                      const fastest = o.site === s.proposed;
+                      const cheapest = o.costIndex === Math.min(...s.options.map((x) => x.costIndex));
+                      const over = deadline !== null && o.totalDays > deadline;
+                      return (
+                        <button
+                          key={o.site}
+                          disabled={confirmed}
+                          onClick={() => onSite(l.line, o.site)}
+                          className={`rounded-lg px-2.5 py-2 text-left ring-1 ring-inset transition-colors disabled:cursor-default ${on ? 'bg-signal-50 ring-signal-500' : 'ring-ink-200 hover:bg-ink-25'}`}
+                        >
+                          <span className="flex items-center justify-between gap-2 text-[12px] font-medium text-ink-900">
+                            {SITES[o.site].name}
+                            <span className={`mono ${over ? 'text-action-600' : 'text-ink-700'}`}>{duration(o.totalDays)}</span>
+                          </span>
+                          <span className="mt-0.5 block text-[10.5px] leading-snug text-ink-500">
+                            make {o.makeDays} d, ship {o.freightDays} d · cost {o.costIndex < 1 ? `−${Math.round((1 - o.costIndex) * 100)}%` : 'base'}
+                          </span>
+                          {(fastest || cheapest) && (
+                            <span className="mt-1 flex gap-1">
+                              {fastest && <Badge tone="blue">fastest</Badge>}
+                              {cheapest && <Badge tone="green">cheapest</Badge>}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
-                {sent ? <Badge tone="green" dot>Replied</Badge> : <Badge dot>Draft</Badge>}
-              </header>
-              {!sent && (
-                <div className="border-b border-ink-100 bg-ink-25 px-4 py-3 text-[12px]">
-                  <p className="text-ink-400">Subject <span className="ml-2 font-medium text-ink-800">Lead time request — {rfq.reference}</span></p>
-                  <p className="mt-2 leading-relaxed text-ink-700">
-                    Please confirm your current lead time for the items below, for delivery to Field. We are quoting a
-                    customer who needs them within {deadline ? `${deadline} days` : 'a stated window'}.
-                  </p>
-                  <p className="mt-2 flex items-center gap-1.5 text-[10.5px] text-ink-400"><Sparkles className="h-3 w-3 text-[#6d4fe0]" />Drafted by the system · not sent</p>
-                </div>
-              )}
-              <ul className="divide-y divide-ink-100 sm:hidden">
-                {ls.map((l) => {
-                  const days = replies[l.line];
-                  const late = deadline !== null && days > deadline;
-                  return (
-                    <li key={l.line} className="px-3 py-2.5">
-                      <PartCell l={l} />
-                      <p className="mt-1.5 flex flex-wrap items-center gap-2 pl-[42px] text-[11.5px] text-ink-500">
-                        Catalogue: {l.leadTimeDays !== null ? duration(l.leadTimeDays) : 'not published'}
-                        {sent
-                          ? <><span className="mono font-medium text-ink-900">→ {duration(days)}</span><Badge tone={late ? 'red' : 'green'}>{late ? 'After deadline' : 'In time'}</Badge></>
-                          : <span className="text-ink-300">· not asked</span>}
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-              <table className="hidden w-full table-fixed sm:table">
-                <thead><tr><Th>Item</Th><Th right className="w-32">Catalogue</Th><Th right className="w-52">Supplier reply</Th></tr></thead>
-                <tbody className="divide-y divide-ink-100">
-                  {ls.map((l, i) => {
-                    const days = replies[l.line];
-                    const late = deadline !== null && days > deadline;
-                    return (
-                      <tr key={l.line}>
-                        <Td><PartCell l={l} /></Td>
-                        <Td right className="text-[12px] text-ink-500">{l.leadTimeDays !== null ? duration(l.leadTimeDays) : 'Not published'}</Td>
-                        <Td right>
-                          {sent ? (
-                            <span className="step-in inline-flex items-center gap-2" style={T(si * 300 + i * 250 + 200)}>
-                              <span className="mono whitespace-nowrap text-[12px] font-medium text-ink-900">{duration(days)}</span>
-                              <Badge tone={late ? 'red' : 'green'}>{late ? 'After deadline' : 'In time'}</Badge>
-                            </span>
-                          ) : <span className="text-[12px] text-ink-300">Not asked</span>}
-                        </Td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </section>
-          );
-        })}
-        {sent && lines.length > 0 && <p className="text-[11px] text-ink-400">Supplier replies are simulated.</p>}
-      </div>
+
+                {s.kind === 'bought-in' && (
+                  <div className="mt-2.5 rounded-lg bg-ink-25 px-3 py-2.5 text-[12px] text-ink-700 ring-1 ring-inset ring-ink-100">
+                    <p className="text-ink-400">To <span className="ml-2 font-medium text-ink-800">{s.supplier}</span> · Subject <span className="ml-2 font-medium text-ink-800">Lead time request: {rfq.reference}</span></p>
+                    <p className="mt-1.5 leading-relaxed">
+                      Please confirm your current lead time for {l.partNumber} for delivery to Field. We are quoting a customer who needs it within {deadline ? `${deadline} days` : 'a stated window'}.
+                    </p>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-ink-400">
+                      <Sparkles className="h-3 w-3 text-[#6d4fe0]" />
+                      {confirmed ? `Sent. Reply, simulated: ${duration(replies[l.line] ?? 0)}` : 'Drafted by the system · not sent until the plan is confirmed'}
+                    </p>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+      <p className="mt-3 text-[11px] leading-relaxed text-ink-400">
+        The four factories and the Boeing licences are Field’s, as published. Which site makes which tool, what is in stock where,
+        site lead times, freight and cost differences are invented for this demo.
+      </p>
     </div>
   );
 }
@@ -810,11 +894,11 @@ function Synth() {
 }
 
 export function PricingScreen({
-  rfq, customer, account, lines, prices, chosen, onPrice, confirmed, onConfirm,
+  rfq, customer, account, lines, prices, chosen, onPrice, confirmed, onConfirm, sourceLabel,
 }: {
   rfq: SimRfq; customer: string; account: CrmAccount | null; lines: SimLine[];
   prices: LinePrice[]; chosen: Record<number, number>; onPrice: (line: number, price: number) => void;
-  confirmed: boolean; onConfirm: () => void;
+  confirmed: boolean; onConfirm: () => void; sourceLabel: (l: SimLine) => string;
 }) {
   const priceOf = (p: LinePrice) => chosen[p.line] ?? p.suggested;
   const total = prices.reduce((a, p) => a + priceOf(p), 0);
@@ -844,7 +928,7 @@ export function PricingScreen({
 
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="Quote total" value={gbpExact(total)} sub="synthetic" />
-        <Stat label="Landed cost" value={gbpExact(landed)} sub="supplier cost + freight" />
+        <Stat label="Landed cost" value={gbpExact(landed)} sub="cost + freight" />
         <Stat label="Margin" value={`${(blended * 100).toFixed(1)}%`} sub={blended < MIN_MARGIN ? 'below the 20% minimum' : 'above the 20% minimum'} tone={blended < MIN_MARGIN ? 'bad' : 'good'} />
         <Stat label="Sold before" value={`${prices.filter((p) => p.last).length} of ${prices.length}`} sub="lines with a past price" />
       </div>
@@ -880,15 +964,15 @@ export function PricingScreen({
                   <p className="truncate text-[12.5px] font-medium text-ink-900">{l.name}</p>
                 </div>
                 <span className="hidden text-right sm:block">
-                  <span className="block text-[10.5px] text-ink-400">Supplier</span>
-                  <span className="block text-[11.5px] text-ink-700">{supplierFor(l.name)}</span>
+                  <span className="block text-[10.5px] text-ink-400">Source</span>
+                  <span className="block text-[11.5px] text-ink-700">{sourceLabel(l)}</span>
                 </span>
               </div>
               <div className="grid gap-px border-t border-ink-100 bg-ink-100 md:grid-cols-[1fr_1.15fr_1fr]">
                 <div className="bg-white p-4">
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">How the price is built<Synth /></p>
                   <dl className="space-y-1 text-[12px]">
-                    <Row k="Supplier cost" v={gbpExact(p.cost)} />
+                    <Row k="Works or supplier cost" v={gbpExact(p.cost)} />
                     <Row k={`Freight and duty`} v={`+${p.freightPct}%`} />
                     <Row k={`Margin · ${p.rule.label}`} v={`${p.rule.marginPct}%`} />
                     <Row k="Account discount" v={p.discountPct ? `−${p.discountPct}%` : 'none'} />
@@ -958,24 +1042,48 @@ function Row({ k, v }: { k: string; v: string }) {
 
 export function ApprovalScreen({
   rfq, customer, contact, included, held, leadDays, deliveryDays, decision, onDecide, reviewed, supplierAsked, approver,
-  prices, margin, pricedBy, belowMin,
+  prices, margin, pricedBy, belowMin, lateLines, plan, onPlan, expedite, queried, sourceLabel,
 }: {
   rfq: SimRfq; customer: string; contact: Contact; included: SimLine[]; held: SimLine[];
+  /** Lead time with the delivery plan applied. */
   leadDays: (l: SimLine) => number; deliveryDays: number | null;
   decision: 'approved' | 'returned' | null; onDecide: (d: 'approved' | 'returned') => void;
   reviewed: number; supplierAsked: number; approver: string;
   prices: Record<number, number>; margin: number; pricedBy: string; belowMin: number;
+  lateLines: SimLine[]; plan: DeliveryPlan | null; onPlan: (p: DeliveryPlan) => void;
+  expedite: Record<number, { accepted: boolean; surchargePct: number }>; queried: SimLine[]; sourceLabel: (l: SimLine) => string;
 }) {
   const total = included.reduce((a, l) => a + (prices[l.line] ?? 0), 0);
-  const lateCount = rfq.deadlineDays === null ? 0 : included.filter((l) => leadDays(l) > rfq.deadlineDays!).length;
+  const deadline = rfq.deadlineDays;
+  const lateCount = lateLines.length;
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const qt = rfq.reference.replace('RFQ', 'QT');
+  const inTime = deadline === null ? included : included.filter((l) => !lateLines.some((x) => x.line === l.line));
+  const pulled = lateLines.filter((l) => expedite[l.line]?.accepted);
+  const refused = lateLines.filter((l) => !expedite[l.line]?.accepted);
+  const planDetail = !lateCount ? 'all in time'
+    : !plan ? `${plural(lateCount, 'line')} late: choose how to handle it`
+    : plan === 'phased' ? `${plural(lateCount, 'line')} late: phased delivery offered`
+    : plan === 'expedite' ? `expedite asked on ${plural(lateCount, 'line')}: ${pulled.length} pulled forward, ${refused.length} refused (simulated)`
+    : `${plural(lateCount, 'line')} quoted at the dates we can meet`;
   const checks: Array<{ ok: boolean; label: string; detail: string }> = [
     { ok: true, label: 'Engineering review', detail: reviewed ? `${plural(reviewed, 'line')} decided${held.length ? `, ${held.length} held back` : ''}` : 'not needed' },
     { ok: true, label: 'Supplier lead times', detail: supplierAsked ? `${supplierAsked} confirmed` : 'all published' },
-    { ok: !lateCount, label: 'Delivery against deadline', detail: lateCount ? `${plural(lateCount, 'item')} late` : 'all in time' },
+    { ok: !lateCount || Boolean(plan), label: 'Delivery against deadline', detail: planDetail },
     { ok: margin >= MIN_MARGIN && !belowMin, label: 'Pricing', detail: `${gbpExact(total)} at ${(margin * 100).toFixed(1)}% margin${belowMin ? ` · ${plural(belowMin, 'line')} below the 20% minimum` : ''} · set by ${pricedBy} · synthetic` },
   ];
+  const deliveryLine = (() => {
+    if (deliveryDays === null) return 'Delivery: to be confirmed';
+    if (!lateCount || deadline === null) return `Delivery: all items within ${duration(deliveryDays)}${deadline ? ` (requested ${duration(deadline)})` : ''}`;
+    if (plan === 'phased') return `Delivery: ${plural(inTime.length, 'item')} within ${duration(deadline)} as requested; ${plural(lateCount, 'item')} to follow within ${duration(deliveryDays)}`;
+    if (plan === 'expedite') {
+      return refused.length
+        ? `Delivery: ${plural(included.length - refused.length, 'item')} within ${duration(deadline)}; ${plural(refused.length, 'item')} within ${duration(deliveryDays)}`
+        : `Delivery: all items within ${duration(deadline)} as requested (expedited)`;
+    }
+    if (plan === 'realistic') return `Delivery: ${plural(inTime.length, 'item')} within ${duration(deadline)} as requested; ${plural(lateCount, 'item')} within ${duration(deliveryDays)}, which cannot be improved`;
+    return `Delivery: all items within ${duration(deliveryDays)} (requested ${duration(deadline)})`;
+  })();
   return (
     <div>
       <PageHeader
@@ -988,6 +1096,65 @@ export function ApprovalScreen({
       <div className="mb-4"><StagePath stages={ENQUIRY_STAGES} current={4} /></div>
       <Grid>
         <div className="min-w-0 space-y-3">
+        {lateCount > 0 && (
+          <section className={`overflow-hidden rounded-lg border bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)] ${plan ? 'border-ink-100' : 'border-caution-500/40'}`}>
+            <header className={`flex flex-wrap items-center gap-2 border-b px-4 py-2.5 ${plan ? 'border-ink-100 bg-ink-25' : 'border-caution-500/20 bg-[#fdf6ea]'}`}>
+              {plan ? <CheckCircle2 className="h-3.5 w-3.5 text-strong-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-caution-600" />}
+              <h3 className="text-[12.5px] font-semibold text-ink-900">Delivery against the deadline</h3>
+              <span className="ml-auto text-[11px] text-ink-500">
+                {plural(lateCount, 'line')} of {included.length} after the customer’s {duration(deadline!)}
+              </span>
+            </header>
+            <div className="px-4 py-3">
+              <p className="text-[12px] leading-snug text-ink-600">
+                <span className="mono font-medium text-ink-900">{lateLines.map((l) => l.partNumber).join(', ')}</span>{' '}
+                {lateCount === 1 ? 'lands' : 'land'} after the deadline on {lateCount === 1 ? 'its' : 'their'} catalogue lead time. The customer decides on delivery as much as price, so this is settled before the quote goes out, not after the order.
+              </p>
+              <div className="mt-3 grid gap-2 md:grid-cols-3">
+                {PLANS.map((o) => {
+                  const on = plan === o.id;
+                  return (
+                    <button
+                      key={o.id}
+                      onClick={() => onPlan(o.id)}
+                      className={`flex items-start gap-2.5 rounded-lg p-2.5 text-left ring-1 ring-inset transition-colors ${on ? 'bg-signal-50 ring-signal-500' : 'ring-ink-200 hover:bg-ink-25'}`}
+                    >
+                      <span className={`mt-0.5 grid h-3.5 w-3.5 shrink-0 place-items-center rounded-full ring-1 ${on ? 'bg-signal-600 ring-signal-600' : 'ring-ink-300'}`}>
+                        {on && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                      </span>
+                      <span>
+                        <span className="block text-[12px] font-medium text-ink-900">{o.title}</span>
+                        <span className="block text-[11px] leading-snug text-ink-500">{o.detail}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {plan === 'expedite' && (
+                <ul className="mt-3 divide-y divide-ink-100 rounded-lg ring-1 ring-inset ring-ink-100">
+                  {lateLines.map((l, i) => {
+                    const e = expedite[l.line]!;
+                    return (
+                      <li key={l.line} className="step-in flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-[12px]" style={T(150 + i * 200)}>
+                        <span className="mono font-medium text-signal-700">{l.partNumber}</span>
+                        <span className="text-ink-500">{sourceLabel(l)} replies:</span>
+                        {e.accepted
+                          ? <span className="flex items-center gap-1.5 text-strong-600"><CheckCircle2 className="h-3.5 w-3.5" />can deliver within {duration(deadline!)} for +{e.surchargePct}%</span>
+                          : <span className="flex items-center gap-1.5 text-action-600"><XCircle className="h-3.5 w-3.5" />cannot pull {duration(leadDays(l))} forward</span>}
+                        <span className="ml-auto text-[10.5px] text-ink-400">simulated</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {plan === 'phased' && (
+                <p className="mt-3 text-[11.5px] text-ink-500">
+                  Shipment 1 by the deadline: {plural(inTime.length, 'line')}. Shipment 2 within {duration(deliveryDays ?? 0)}: {plural(lateCount, 'line')}.
+                </p>
+              )}
+            </div>
+          </section>
+        )}
         <SyntheticPrices compact />
         <div className="relative min-w-0 overflow-hidden rounded-md bg-white p-4 shadow-[0_1px_3px_rgba(16,24,40,0.1),0_12px_32px_-16px_rgba(16,24,40,0.25)] ring-1 ring-ink-100 sm:p-8">
           <span aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-[24deg] whitespace-nowrap text-[54px] font-black tracking-[0.12em] text-[#5b3fc4]/[0.07]">
@@ -1020,14 +1187,17 @@ export function ApprovalScreen({
               </thead>
               <tbody className="divide-y divide-ink-100">
                 {included.map((l, i) => {
-                  const over = rfq.deadlineDays !== null && leadDays(l) > rfq.deadlineDays;
+                  const over = deadline !== null && leadDays(l) > deadline;
+                  const pulledForward = plan === 'expedite' && expedite[l.line]?.accepted;
                   return (
                     <tr key={l.line}>
                       <td className="py-2 text-ink-400">{i + 1}</td>
                       <td className="mono text-signal-700">{l.partNumber}</td>
                       <td className="truncate pr-2 text-ink-800 max-sm:hidden">{l.name}</td>
                       <td className="text-right text-ink-700 max-sm:hidden">1</td>
-                      <td className={`text-right ${over ? 'font-medium text-action-600' : 'text-ink-700'}`}>{duration(leadDays(l), true)}</td>
+                      <td className={`text-right ${over ? 'font-medium text-action-600' : 'text-ink-700'}`}>
+                        {duration(leadDays(l), true)}{pulledForward && <span className="ml-1 text-[9px] uppercase tracking-[0.06em] text-signal-600">expedited</span>}
+                      </td>
                       <td className="mono whitespace-nowrap text-right text-ink-900">{gbpExact(prices[l.line] ?? 0)}</td>
                     </tr>
                   );
@@ -1036,11 +1206,12 @@ export function ApprovalScreen({
             </table>
           </div>
           <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-ink-200 pt-3 text-[11.5px]">
-            <span className="text-ink-500">Delivery: {deliveryDays !== null ? `all items within ${duration(deliveryDays)}` : '—'}{rfq.deadlineDays ? ` (requested ${duration(rfq.deadlineDays)})` : ''}</span>
+            <span className={lateCount && !plan ? 'font-medium text-action-600' : 'text-ink-500'}>{deliveryLine}</span>
             <span className="font-semibold text-ink-950">Total {gbpExact(total)} <span className="text-[10px] font-bold tracking-[0.08em] text-[#5b3fc4]">SYNTHETIC</span></span>
           </div>
           <p className="mt-4 text-[10.5px] leading-relaxed text-ink-400">
-            {held.length > 0 && `${plural(held.length, 'line')} not included pending confirmation. `}
+            {queried.length > 0 && `${plural(queried.length, 'line')} held while the customer answers Engineering’s question. `}
+            {held.length - queried.length > 0 && `${plural(held.length - queried.length, 'line')} removed at review. `}
             Prices are synthetic: Field publishes none, so these were invented for the demo and set in the pricing step.
           </p>
         </div>
@@ -1071,7 +1242,9 @@ export function ApprovalScreen({
             <div className="mt-4 space-y-2">
               <button
                 onClick={() => onDecide('approved')}
-                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-strong-600 text-[12.5px] font-medium text-white transition-colors hover:bg-strong-500"
+                disabled={lateCount > 0 && !plan}
+                title={lateCount > 0 && !plan ? 'Choose how the late lines are handled first' : undefined}
+                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-strong-600 text-[12.5px] font-medium text-white transition-colors hover:bg-strong-500 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <CheckCircle2 className="h-4 w-4" /> {decision === 'approved' ? 'Approved and sent' : 'Approve and send'}
               </button>
@@ -1091,18 +1264,21 @@ export function ApprovalScreen({
 
 /* ---------------------------------------------------------------- 8 order */
 
-export const LATE_OPTIONS = ['Offer a phased delivery', 'Ask the supplier to expedite', 'Agree a new date with the customer'];
+/** What Operations can still do once an expedite has been refused. */
+export const LATE_OPTIONS = ['Ship the rest now and the late lines when ready', 'Agree a new date with the customer'];
 const LATE_DETAIL: Record<string, string> = {
-  'Offer a phased delivery': 'Ship what’s ready by the deadline; the rest follows.',
-  'Ask the supplier to expedite': 'Procurement asks for an earlier date, possibly at a cost.',
-  'Agree a new date with the customer': 'The account owner contacts the customer.',
+  'Ship the rest now and the late lines when ready': 'A part shipment by the deadline, with an advice note; the late lines follow.',
+  'Agree a new date with the customer': 'The account owner calls the customer with the realistic date before it slips.',
 };
 
 export function OrderScreen({
-  rfq, customer, included, leadDays, decision, onDecide,
+  rfq, customer, included, leadDays, catalogueDays, plan, expedite, stillLate, decision, onDecide, sourceLabel,
 }: {
-  rfq: SimRfq; customer: string; included: SimLine[]; leadDays: (l: SimLine) => number;
-  decision: string | null; onDecide: (d: string) => void;
+  rfq: SimRfq; customer: string; included: SimLine[];
+  /** Lead time with the delivery plan applied, and as the catalogue published it. */
+  leadDays: (l: SimLine) => number; catalogueDays: (l: SimLine) => number;
+  plan: DeliveryPlan | null; expedite: Record<number, { accepted: boolean; surchargePct: number }>;
+  stillLate: SimLine[]; decision: string | null; onDecide: (d: string) => void; sourceLabel: (l: SimLine) => string;
 }) {
   const deadline = rfq.deadlineDays;
   const longestDays = Math.max(...included.map(leadDays), deadline ?? 0, 7);
@@ -1110,8 +1286,21 @@ export function OrderScreen({
   const span = totalWeeks * 7;
   const pct = (d: number) => `${(d / span) * 100}%`;
   const ticks = Array.from({ length: totalWeeks / 2 + 1 }, (_, i) => i * 2);
-  const late = included.filter((l) => deadline !== null && leadDays(l) > deadline);
+  const late = stillLate;
+  const afterDeadline = (l: SimLine) => deadline !== null && leadDays(l) > deadline;
   const so = rfq.reference.replace('RFQ', 'SO');
+  const planLabel = PLANS.find((p) => p.id === plan)?.title ?? 'No late lines';
+  // A phased order ships in two groups; everything else is one schedule.
+  const groups: Array<{ label: string | null; lines: SimLine[] }> = plan === 'phased' && deadline !== null
+    ? [
+        { label: `Shipment 1 · by the deadline`, lines: included.filter((l) => !afterDeadline(l)) },
+        { label: `Shipment 2 · follows`, lines: included.filter(afterDeadline) },
+      ]
+    : [{ label: null, lines: included }];
+  // The marker on the chart: the customer's deadline, or the later date they agreed to.
+  const marker = plan === 'realistic' && deadline !== null && included.some(afterDeadline)
+    ? { at: Math.max(...included.map(leadDays)), label: 'Agreed date' }
+    : deadline !== null ? { at: deadline, label: 'Deadline' } : null;
 
   return (
     <div>
@@ -1119,7 +1308,7 @@ export function OrderScreen({
         crumbs={['Orders', so]}
         icon={Factory}
         title={so}
-        badges={<><Badge tone="blue" dot>In production</Badge>{late.length > 0 && <Badge tone="red" dot>{plural(late.length, 'exception')}</Badge>}</>}
+        badges={<><Badge tone="blue" dot>In production</Badge>{plan === 'phased' && <Badge tone="violet">Phased</Badge>}{late.length > 0 && <Badge tone="red" dot>{plural(late.length, 'exception')}</Badge>}</>}
         meta={[<><Building2 className="h-3.5 w-3.5" />{customer}</>, <><FileText className="h-3.5 w-3.5" />From {rfq.reference.replace('RFQ', 'QT')}</>, <>{plural(included.length, 'line')}</>]}
       />
       <div className="mb-4"><StagePath stages={['Accepted', 'Orders placed', 'In production', 'Shipped', 'Delivered']} current={2} /></div>
@@ -1128,7 +1317,7 @@ export function OrderScreen({
           <div className="px-4 pb-3 pt-3">
             <div>
               <div className="flex">
-                <span className="w-[92px] shrink-0 text-[10px] font-semibold uppercase sm:w-[128px] tracking-[0.05em] text-ink-400">Line · supplier</span>
+                <span className="w-[92px] shrink-0 text-[10px] font-semibold uppercase sm:w-[128px] tracking-[0.05em] text-ink-400">Line · source</span>
                 <div className="relative h-5 flex-1">
                   {ticks.map((w) => (
                     <span key={w} className="absolute -translate-x-1/2 text-[10px] text-ink-400" style={{ left: pct(w * 7) }}>{w}</span>
@@ -1138,36 +1327,45 @@ export function OrderScreen({
               <div className="relative border-t border-ink-100">
                 <div className="pointer-events-none absolute inset-y-0 left-[92px] right-0 sm:left-[128px]">
                   {ticks.map((w) => <span key={w} className="absolute inset-y-0 w-px bg-ink-50" style={{ left: pct(w * 7) }} />)}
-                  {deadline !== null && (
-                    <span className="absolute inset-y-0 z-10 border-l-2 border-dashed border-action-500" style={{ left: pct(deadline) }}>
-                      <span className="absolute left-1 top-1 whitespace-nowrap rounded bg-action-600 px-1 text-[9.5px] font-medium text-white">Deadline</span>
+                  {marker && (
+                    <span className={`absolute inset-y-0 z-10 border-l-2 border-dashed ${marker.label === 'Deadline' ? 'border-action-500' : 'border-strong-600'}`} style={{ left: pct(marker.at) }}>
+                      <span className={`absolute left-1 top-1 whitespace-nowrap rounded px-1 text-[9.5px] font-medium text-white ${marker.label === 'Deadline' ? 'bg-action-600' : 'bg-strong-600'}`}>{marker.label}</span>
                     </span>
                   )}
                 </div>
-                <ul>
-                  {included.map((l, i) => {
-                    const d = leadDays(l);
-                    const over = deadline !== null && d > deadline;
-                    const inside = d / span > 0.22;
-                    return (
-                      <li key={l.line} className="flex h-11 items-center border-b border-ink-50 last:border-0">
-                        <span className="w-[92px] shrink-0 pr-2 sm:w-[128px] sm:pr-3">
-                          <span className="mono block text-[11.5px] font-medium text-signal-700">{l.partNumber}</span>
-                          <span className="block truncate text-[10.5px] text-ink-400">{supplierFor(l.name)}</span>
-                        </span>
-                        <span className="relative h-5 flex-1">
-                          <span
-                            className={`step-in absolute inset-y-0 left-0 flex items-center rounded ${over ? 'bg-action-500' : 'bg-signal-500'}`}
-                            style={{ width: pct(d), ...T(i * 100) }}
-                          >
-                            {inside && <span className="px-2 text-[10.5px] font-medium text-white">{duration(d, true)}</span>}
-                          </span>
-                          {!inside && <span className="absolute inset-y-0 flex items-center pl-1.5 text-[10.5px] text-ink-600" style={{ left: pct(d) }}>{duration(d, true)}</span>}
-                        </span>
+                {groups.map((g) => (
+                  <ul key={g.label ?? 'all'}>
+                    {g.label && (
+                      <li className="flex h-7 items-center border-b border-ink-50 bg-ink-25/70 px-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-500">
+                        {g.label} · {plural(g.lines.length, 'line')}
                       </li>
-                    );
-                  })}
-                </ul>
+                    )}
+                    {g.lines.map((l, i) => {
+                      const d = leadDays(l);
+                      // Red only when the line will actually miss what the customer accepted.
+                      const over = late.some((x) => x.line === l.line) || (plan !== 'realistic' && plan !== 'phased' && afterDeadline(l));
+                      const pulled = plan === 'expedite' && expedite[l.line]?.accepted;
+                      const inside = d / span > 0.22;
+                      return (
+                        <li key={l.line} className="flex h-11 items-center border-b border-ink-50 last:border-0">
+                          <span className="w-[92px] shrink-0 pr-2 sm:w-[128px] sm:pr-3">
+                            <span className="mono block text-[11.5px] font-medium text-signal-700">{l.partNumber}</span>
+                            <span className="block truncate text-[10.5px] text-ink-400">{pulled ? `expedited, was ${duration(catalogueDays(l), true)}` : sourceLabel(l)}</span>
+                          </span>
+                          <span className="relative h-5 flex-1">
+                            <span
+                              className={`step-in absolute inset-y-0 left-0 flex items-center rounded ${over ? 'bg-action-500' : pulled ? 'bg-strong-600' : 'bg-signal-500'}`}
+                              style={{ width: pct(d), ...T(i * 100) }}
+                            >
+                              {inside && <span className="px-2 text-[10.5px] font-medium text-white">{duration(d, true)}</span>}
+                            </span>
+                            {!inside && <span className="absolute inset-y-0 flex items-center pl-1.5 text-[10.5px] text-ink-600" style={{ left: pct(d) }}>{duration(d, true)}</span>}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ))}
               </div>
             </div>
           </div>
@@ -1183,7 +1381,7 @@ export function OrderScreen({
               <div className="p-4">
                 <p className="text-[12px] leading-snug text-ink-600">
                   <span className="mono font-medium text-ink-900">{late.map((l) => l.partNumber).join(', ')}</span>{' '}
-                  {late.length === 1 ? 'is' : 'are'} due after the customer’s deadline. Choose how to handle it:
+                  could not be expedited and {late.length === 1 ? 'is' : 'are'} still due after the customer’s deadline. Choose how to handle it:
                 </p>
                 <div className="mt-3 space-y-2">
                   {LATE_OPTIONS.map((o) => {
@@ -1209,7 +1407,15 @@ export function OrderScreen({
             </section>
           ) : (
             <Card title="Tracking" icon={CheckCircle2}>
-              <p className="text-[12px] leading-snug text-ink-600">Every line is due inside the deadline. The system flags any that slip.</p>
+              <p className="text-[12px] leading-snug text-ink-600">
+                {plan === 'phased'
+                  ? 'Two shipments, both agreed with the customer on the quote. The system flags either if it slips.'
+                  : plan === 'realistic'
+                    ? 'The customer accepted the quoted dates, so nothing is late against what was agreed. The system flags any line that slips past it.'
+                    : plan === 'expedite'
+                      ? 'Every late line was pulled forward to the deadline. The system flags any that slip.'
+                      : 'Every line is due inside the deadline. The system flags any that slip.'}
+              </p>
             </Card>
           )}
           <Card title="Details">
@@ -1217,6 +1423,7 @@ export function OrderScreen({
               ['Customer', customer],
               ['Quote', rfq.reference.replace('RFQ', 'QT')],
               ['Needed within', deadline ? duration(deadline) : 'Not stated'],
+              ['Delivery plan', deadline && included.some((l) => catalogueDays(l) > deadline) ? planLabel : 'Not needed'],
               ['Latest line', duration(Math.max(...included.map(leadDays), 0))],
             ]} />
           </Card>

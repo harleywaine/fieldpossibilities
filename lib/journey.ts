@@ -33,7 +33,7 @@ export const STEPS: JourneyStep[] = [
   { id: 'account', rail: 'Account', side: 'field', metric: 'Internal knowledge retrieval', ledgerLabel: 'Researching the account' },
   { id: 'check', rail: 'Line check', side: 'field', metric: 'RFQ preparation', ledgerLabel: 'Checking every line' },
   { id: 'review', rail: 'Engineering', side: 'field', human: true, metric: 'Technical applicability check', ledgerLabel: 'Technical review' },
-  { id: 'supplier', rail: 'Procurement', side: 'field', human: true, metric: 'Supplier follow-up', ledgerLabel: 'Confirming lead times' },
+  { id: 'supplier', rail: 'Supply', side: 'field', human: true, metric: 'Supplier follow-up', ledgerLabel: 'Planning the supply' },
   { id: 'pricing', rail: 'Pricing', side: 'field', human: true, metric: 'Quote pricing', ledgerLabel: 'Pricing the quote' },
   { id: 'approval', rail: 'Quote sign-off', side: 'field', human: true },
   { id: 'manufacture', rail: 'Order', side: 'field', human: true },
@@ -45,7 +45,7 @@ export const stepIndex = (id: StepId) => STEPS.findIndex((s) => s.id === id);
 /** Who the viewer is signed in as on each Field screen. Synthetic employees. */
 export const PERSONAS: Partial<Record<StepId, { name: string; role: string }>> = {
   review: { name: 'Hannah Lund', role: 'Tooling Engineer' },
-  supplier: { name: 'Robert Ellis', role: 'Supplier Manager' },
+  supplier: { name: 'Robert Ellis', role: 'Supply Planner' },
   pricing: { name: 'Chris Bailey', role: 'Quotations Specialist' },
   approval: { name: 'Alison Reid', role: 'Commercial Director' },
   manufacture: { name: 'Michael Byrne', role: 'Operations Manager' },
@@ -59,13 +59,13 @@ export interface StepMetric { before: number; after: number; volume: number }
  * or would need Field's internal records.
  */
 export const AI_USES: Array<{ step: StepId; title: string; does: string; data: 'public' | 'internal' }> = [
-  { step: 'request', title: 'Understand a request in plain words', does: 'Reads a customer’s description — aircraft, engine, task, deadline — without needing part numbers.', data: 'public' },
+  { step: 'request', title: 'Understand a request in plain words', does: 'Reads a customer’s description (aircraft, engine, task, deadline) without needing part numbers.', data: 'public' },
   { step: 'parts', title: 'Find the right parts, and say why', does: 'Searches the whole catalogue and shows the facts behind every match.', data: 'public' },
   { step: 'inbox', title: 'Log and route every enquiry', does: 'Creates the enquiry, matches the account, assigns an owner and acknowledges the customer.', data: 'internal' },
   { step: 'account', title: 'Brief the salesperson', does: 'Reads past quotes, emails, notes and complaints, and writes what to know before replying.', data: 'internal' },
   { step: 'check', title: 'Check every line', does: 'Tests each part against the request and the catalogue, and routes anything uncertain to a person.', data: 'public' },
   { step: 'review', title: 'Prepare engineering questions', does: 'Puts the request and the catalogue record side by side, so the engineer only has to judge.', data: 'public' },
-  { step: 'supplier', title: 'Draft supplier requests', does: 'Writes the lead-time requests for Procurement to approve and send.', data: 'internal' },
+  { step: 'supplier', title: 'Propose where each line comes from', does: 'Checks group stock and the lead time at each of Field’s four factories, and drafts requests for the bought-in ranges. A planner confirms.', data: 'internal' },
   { step: 'pricing', title: 'Assemble the price', does: 'Builds each price from cost, freight, margin rules, the customer’s terms and what they paid before, and flags anything odd.', data: 'internal' },
   { step: 'manufacture', title: 'Watch every order', does: 'Tracks each line against the customer’s deadline and flags any that will be late.', data: 'internal' },
 ];
@@ -96,8 +96,8 @@ export const ESTIMATE_NOTES: Record<string, { today: string; withAi: string }> =
     withAi: 'The price is built and checked for you; a person reviews it and sets the final figure.',
   },
   'Supplier follow-up': {
-    today: 'Writing lead-time requests and chasing replies.',
-    withAi: 'The requests are drafted; a person approves them and reads the replies.',
+    today: 'Checking stock, asking each factory for a date, writing to suppliers for bought-in lines and chasing replies.',
+    withAi: 'Stock and site lead times are proposed per line and the supplier requests drafted; a planner confirms the plan.',
   },
 };
 
@@ -128,10 +128,14 @@ export function formatMinutes(total: number): string {
 
 export const weeks = (days: number) => Math.round((days / 7) * 10) / 10;
 
-/** "3 days" under a fortnight, otherwise "4.3 weeks" (or "4.3 wks" when short). */
+/**
+ * Lead times the way a quotation states them: whole weeks when the figure is
+ * one, otherwise days as the catalogue publishes them. Never "8.6 weeks".
+ */
 export function duration(days: number, short = false): string {
   if (days < 14) return `${days} ${days === 1 ? 'day' : 'days'}`;
-  return `${weeks(days)} ${short ? 'wks' : 'weeks'}`;
+  if (days % 7 === 0) return `${days / 7} ${short ? 'wks' : 'weeks'}`;
+  return `${days} days`;
 }
 
 export function gbp(n: number): string {
@@ -156,6 +160,97 @@ export function simulatedLeadDays(partNumber: string | null, catalogueDays: numb
   let h = 2166136261;
   for (const ch of partNumber ?? 'x') h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return (5 + (Math.abs(h) % 9)) * 7;
+}
+
+/**
+ * How a quote handles lines that will land after the customer's deadline. The
+ * choice is Commercial's, made before the quote goes out, and the order step
+ * shows its consequence.
+ */
+export type DeliveryPlan = 'phased' | 'expedite' | 'realistic';
+
+export const PLANS: Array<{ id: DeliveryPlan; title: string; detail: string }> = [
+  { id: 'phased', title: 'Offer a phased delivery', detail: 'Ship what’s ready by the deadline; the late lines follow on their own lead time.' },
+  { id: 'expedite', title: 'Ask Procurement to expedite', detail: 'Procurement asks for an earlier date on the late lines, usually at a cost. The replies are simulated.' },
+  { id: 'realistic', title: 'Quote the dates we can meet', detail: 'Say plainly which lines miss the deadline and let the customer decide. Honest, but this is how lead time loses orders.' },
+];
+
+/** Whether a SIMULATED supplier can pull a late line forward, stable per part. */
+export function simulatedExpedite(partNumber: string | null): { accepted: boolean; surchargePct: number } {
+  let h = 2166136261;
+  for (const ch of `${partNumber ?? 'x'}:expedite`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const u = (Math.abs(h) % 1000) / 1000;
+  return { accepted: u < 0.6, surchargePct: 6 + Math.round(u * 6) };
+}
+
+/* ------------------------------------------------------------------ supply */
+
+export type Region = 'EMEA' | 'APAC' | 'MEA' | 'AMER' | 'LATAM';
+export type SiteId = 'poole' | 'seletar' | 'jiaxing' | 'chennai';
+
+/**
+ * Field's factories, as published: the UK, Singapore, China and India, with
+ * Boeing tooling licences held in Singapore and China. Everything else about
+ * them here (what each makes, how fast, at what cost) is SIMULATED.
+ */
+export const SITES: Record<SiteId, { name: string; country: string; region: Region; note: string; cost: number; pace: number }> = {
+  poole:   { name: 'Poole',   country: 'United Kingdom', region: 'EMEA', note: 'Group HQ and the UK factory, since 1995',        cost: 1.0,  pace: 1.0 },
+  seletar: { name: 'Seletar', country: 'Singapore',      region: 'APAC', note: 'Boeing tooling licence; service and fulfilment', cost: 0.92, pace: 0.95 },
+  jiaxing: { name: 'Jiaxing', country: 'China',          region: 'APAC', note: 'Boeing tooling licence; manufacturing',          cost: 0.78, pace: 0.85 },
+  chennai: { name: 'Chennai', country: 'India',          region: 'APAC', note: 'Manufacturing, opened 2024',                     cost: 0.80, pace: 0.9 },
+};
+
+/** Simulated door-to-door freight, in days, from each site to a customer region. */
+const FREIGHT_DAYS: Record<SiteId, Record<Region, number>> = {
+  poole:   { EMEA: 3,  MEA: 6,  AMER: 8,  LATAM: 12, APAC: 12 },
+  seletar: { EMEA: 12, MEA: 8,  AMER: 14, LATAM: 18, APAC: 4 },
+  jiaxing: { EMEA: 16, MEA: 10, AMER: 16, LATAM: 20, APAC: 6 },
+  chennai: { EMEA: 14, MEA: 7,  AMER: 18, LATAM: 22, APAC: 7 },
+};
+
+export interface SiteOption { site: SiteId; makeDays: number; freightDays: number; totalDays: number; costIndex: number }
+
+export type Source =
+  | { kind: 'stock'; site: SiteId; days: number }
+  | { kind: 'bought-in'; supplier: string; range: string }
+  | { kind: 'make'; licence: string; options: SiteOption[]; proposed: SiteId };
+
+const jitter = (seed: string) => {
+  let h = 2166136261;
+  for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return 0.9 + ((Math.abs(h) % 1000) / 1000) * 0.2;
+};
+
+/**
+ * Where a line would come from. Three real distinctions from the catalogue:
+ * the Dillon range is bought in, a few items are published as in stock, and
+ * everything else is tooling Field makes. The site proposal is the fastest
+ * door-to-door option for the customer's region; a planner can overrule it.
+ */
+export function sourceFor(
+  line: { partNumber: string | null; name: string; manufacturer: string | null; stockStatus: string | null; leadTimeDays: number | null },
+  region: Region,
+): Source {
+  const m = (line.manufacturer ?? '').toUpperCase();
+  if (m === 'DILLON' || /\bDILLON\b/i.test(line.name)) {
+    return { kind: 'bought-in', supplier: 'Dillon (bought-in range)', range: 'Dillon force measurement range, bought in' };
+  }
+  const nearest: SiteId = region === 'APAC' ? 'seletar' : 'poole';
+  if (line.stockStatus === 'In Stock') return { kind: 'stock', site: nearest, days: FREIGHT_DAYS[nearest][region] + 2 };
+
+  const base = line.leadTimeDays ?? simulatedLeadDays(line.partNumber, null);
+  const options: SiteOption[] = (Object.keys(SITES) as SiteId[]).map((site) => {
+    const makeDays = Math.max(5, Math.round(base * SITES[site].pace * jitter(`${line.partNumber ?? line.name}:${site}`)));
+    const freightDays = FREIGHT_DAYS[site][region];
+    return { site, makeDays, freightDays, totalDays: makeDays + freightDays, costIndex: SITES[site].cost };
+  });
+  const proposed = options.reduce((a, b) => (b.totalDays < a.totalDays ? b : a)).site;
+  const licence = m === 'BOEING' ? 'Boeing tooling, made under licence'
+    : m === 'MCDONNELL DOUGLAS' ? 'McDonnell Douglas tooling, made under the Boeing licence'
+    : m === 'FIL TOOLING' ? 'Field’s own FIL design'
+    : m === 'AIRBUS' ? 'Airbus tooling, made by Field'
+    : 'Made by Field';
+  return { kind: 'make', licence, options, proposed };
 }
 
 /** Which synthetic supplier Procurement would ask, from the kind of item. */
