@@ -9,6 +9,7 @@ import { STEPS, AI_USES, ESTIMATE_NOTES, formatMinutes, type JourneyStep, type S
 import { Avatar } from '@/components/journey/ui.tsx';
 import { FieldLogo, FieldWordmark, PHOTOS } from '@/components/journey/brand.tsx';
 import { ModuleDialog, type ModuleId } from '@/components/journey/modules.tsx';
+import { SITE_SEARCH_SUMMARY } from '@/lib/site-search.ts';
 
 /*
  * The frame around the story: the bar at the top, the narration, the stage the
@@ -415,22 +416,26 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
 /* ----------------------------------------------------------------- results */
 
 export function Results({
-  before, after, decisions, considered, docs, checks, rows, onRestart,
+  decisions, considered, docs, checks, rows, onRestart,
 }: {
-  before: number; after: number; decisions: number;
+  decisions: number;
   considered: number; docs: number; checks: number;
   rows: EstimateRow[];
   onRestart: () => void;
 }) {
+  // This enquiry's time counts only the steps it went through; the year counts every step at its volume.
+  const counted = rows.filter((r) => !r.skipped);
+  const before = counted.reduce((a, r) => a + r.before, 0);
+  const after = counted.reduce((a, r) => a + r.after, 0);
   const saved = before - after;
   const [mock, setMock] = useState<ModuleId | null>(null);
   // Each step's saving at its own assumed yearly volume, so this agrees with the table below.
   const hoursPerYear = Math.round(rows.reduce((a, r) => a + (r.before - r.after) * r.volume, 0) / 60);
   const pct = before ? Math.round((saved / before) * 100) : 0;
   const stats = [
-    { icon: FileSearch, v: considered.toLocaleString(), t: 'catalogue records searched' },
-    { icon: Building2, v: docs ? String(docs) : '–', t: 'internal documents read' },
-    { icon: ListChecks, v: String(checks), t: 'checks run on the lines' },
+    { icon: FileSearch, v: considered.toLocaleString(), t: 'catalogue records considered' },
+    { icon: Building2, v: docs ? String(docs) : '–', t: 'documents on the account read' },
+    { icon: ListChecks, v: String(checks), t: 'fit and date checks on the lines' },
     { icon: UserRound, v: String(decisions), t: 'decisions made by you', you: true },
   ];
   return (
@@ -442,7 +447,7 @@ export function Results({
       >
         {/* Field's globe watermark, as on the dark bands of their own site. */}
         <img src={PHOTOS.watermark} alt="" aria-hidden draggable={false} className="pointer-events-none absolute -right-10 -top-6 w-[520px] opacity-[0.07]" />
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-300">One enquiry, start to finish</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-300">One enquiry, start to finish · estimated times</p>
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-end">
           <div>
             <p className="font-display text-[44px] font-medium leading-none tracking-[-0.04em] sm:text-[64px]">
@@ -480,7 +485,14 @@ export function Results({
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-100">
-              {rows.map((r) => (
+              {rows.map((r) => r.skipped ? (
+                <tr key={r.label} className="text-ink-400">
+                  <td className="py-2.5">{r.label}</td>
+                  <td className="text-right text-[11.5px] sm:hidden">not needed this time</td>
+                  <td className="hidden text-right text-[11.5px] sm:table-cell" colSpan={2}>not needed this time</td>
+                  <td className="mono text-right">–</td>
+                </tr>
+              ) : (
                 <tr key={r.label}>
                   <td className="py-2.5 text-ink-800">{r.label}</td>
                   <td className="mono whitespace-nowrap text-right text-ink-500 sm:hidden">{r.before} → <span className="text-ink-900">{r.after}</span></td>
@@ -641,12 +653,12 @@ function Bar({ label, value, pct, cls }: { label: string; value: string; pct: nu
 const NEXT_USES: Array<{ title: string; does: string; needs: string; who: string; data: 'public' | 'internal'; mock?: ModuleId }> = [
   {
     title: 'The part-finder on fieldinternational.com',
-    does: 'Steps 1 and 2 of this journey on the live site. Tested on 27 realistic searches, the site’s current search returned nothing for 12 of them; this found relevant parts for 24.',
+    does: `Steps 1 and 2 of this journey on the live site. On ${SITE_SEARCH_SUMMARY.total} realistic searches the site’s own search returned nothing for ${SITE_SEARCH_SUMMARY.nothing}; this found relevant parts for ${SITE_SEARCH_SUMMARY.finderRelevant}.`,
     needs: 'Public catalogue only', who: 'Customers', data: 'public',
   },
   {
     title: 'Every RFQ logged, from any inbox',
-    does: 'Enquiries that arrive at salesuk@, salespte@, salesme@, salesin@ or salesna@ become enquiries before anyone opens them: part lists read from PDFs and spreadsheets, account matched, owner assigned, clock started. You can send one by email at the start of this journey.',
+    does: 'Enquiries that arrive at salesuk@, salespte@, salesme@ or salesna@ become enquiries before anyone opens them: part lists read from PDFs and spreadsheets, account matched, owner assigned, clock started. Built, and not on this walkthrough.',
     needs: 'Microsoft 365 mailboxes', who: 'Sales desks', data: 'internal',
   },
   {
@@ -770,7 +782,7 @@ export function AiUses({ catalogue }: { catalogue: CatalogueFacts | null }) {
 
 /* ------------------------------------------------------------- estimates */
 
-export interface EstimateRow { process: string; label: string; before: number; after: number; volume: number }
+export interface EstimateRow { process: string; label: string; before: number; after: number; volume: number; /** This step did not happen in the enquiry just followed. */ skipped?: boolean }
 
 export function Estimates({ rows }: { rows: EstimateRow[] }) {
   return (

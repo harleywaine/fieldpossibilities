@@ -534,6 +534,8 @@ export function Journey({
   const breakdown: EstimateRow[] = STEPS.filter((s) => s.metric && metrics[s.metric]).map((s) => ({
     process: s.metric!, label: s.ledgerLabel ?? s.rail,
     before: metrics[s.metric!]!.before, after: metrics[s.metric!]!.after, volume: metrics[s.metric!]!.volume,
+    // Engineering only happens when a line needs it; this enquiry's total says so.
+    skipped: s.id === 'review' && reviewLines.length === 0,
   }));
 
   // Two worlds: the customer's side is light and open; inside Field is navy and close.
@@ -575,12 +577,10 @@ export function Journey({
 
         {!booting && step.id === 'summary' && (
           <Results
-            before={ledger.totalBefore}
-            after={ledger.totalAfter}
             decisions={decisions}
             considered={rfq?.considered ?? 0}
-            docs={sim.brief?.retrieval?.documents?.length ?? 0}
-            checks={rfq ? rfq.lines.length * 4 : 0}
+            docs={(sim.brief?.retrieval?.documents ?? []).filter((d: any) => d.customer_id === account?.id).length}
+            checks={rfq ? rfq.lines.length * 2 : 0}
             rows={breakdown}
             onRestart={restart}
           />
