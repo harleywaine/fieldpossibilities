@@ -514,14 +514,14 @@ export function CheckScreen({ rfq, customer, owner }: { rfq: SimRfq; customer: s
       </div>
       <Card title="Checked against the catalogue" icon={CheckCircle2} action={`${rfq.lines.length} parts`} pad={false}>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] table-fixed">
+          <table className="w-full min-w-[860px] table-fixed">
             <thead>
               <tr>
                 <Th className="w-10">#</Th>
                 <Th>Part</Th>
-                <Th className="w-56">Fits {aircraft ? `the ${aircraft}` : 'the aircraft'}?</Th>
+                <Th className="w-52">Fits {aircraft ? `the ${aircraft}` : 'the aircraft'}?</Th>
                 <Th className="w-44">In time{deadline !== null ? ` for ${duration(deadline)}` : ''}?</Th>
-                <Th className="w-44">Next</Th>
+                <Th className="w-40">Next</Th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-100">
