@@ -65,16 +65,20 @@ export function marginOf(price: number, landed: number): number {
 }
 
 export function priceLines(
-  lines: Array<{ line: number; partNumber: string | null; name: string; aircraft?: string | null }>,
+  lines: Array<{ line: number; partNumber: string | null; name: string; aircraft?: string | null; category?: string | null }>,
   accountId: string | null,
   supplierCountry: (name: string) => string | undefined,
   /** The account's won orders. A line can only have been sold before inside one of these. */
-  wonJobs: Array<{ aircraft: string | null; date: string }> = [],
+  wonJobs: Array<{ aircraft: string | null; application?: string | null; date: string }> = [],
 ): LinePrice[] {
   const discountPct = accountId ? TERMS[accountId] ?? 0 : 0;
-  const wonFor = (aircraft: string | null | undefined) => {
+  // Sold before means: inside an order this account won, for that aircraft and that kind of work.
+  const wonFor = (aircraft: string | null | undefined, category: string | null | undefined) => {
     const named = (aircraft ?? '').split(', ').map((a) => a.toUpperCase()).filter(Boolean);
-    return wonJobs.find((j) => j.aircraft && named.includes(j.aircraft.toUpperCase())) ?? null;
+    const kind = (category ?? '').toUpperCase();
+    return wonJobs.find((j) =>
+      j.aircraft && named.includes(j.aircraft.toUpperCase()) &&
+      (!j.application || !kind || kind.includes(j.application.toUpperCase().split('/')[0]!))) ?? null;
   };
   return lines.map((l) => {
     const key = l.partNumber ?? l.name;
@@ -88,7 +92,7 @@ export function priceLines(
     const suggested = floored ? floorPrice : discounted;
     // A line has sold to this customer before only if the account actually won an
     // order for that aircraft, and the date is that order's. The older price is usually a little lower.
-    const won = accountId !== null ? wonFor(l.aircraft) : null;
+    const won = accountId !== null ? wonFor(l.aircraft, l.category) : null;
     const sold = won !== null && unit(`${key}:${accountId}:sold`) < 0.7;
     return {
       line: l.line,
