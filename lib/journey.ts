@@ -31,7 +31,7 @@ export const STEPS: JourneyStep[] = [
   { id: 'parts', rail: 'Parts and quote', side: 'customer' },
   { id: 'inbox', rail: 'Inbox', side: 'field', metric: 'Customer enquiry handling', ledgerLabel: 'Logging the enquiry' },
   { id: 'account', rail: 'Account', side: 'field', metric: 'Internal knowledge retrieval', ledgerLabel: 'Researching the account' },
-  { id: 'check', rail: 'Line check', side: 'field', metric: 'RFQ preparation', ledgerLabel: 'Checking every line' },
+  { id: 'check', rail: 'Checks', side: 'field', metric: 'RFQ preparation', ledgerLabel: 'Checking every line' },
   { id: 'review', rail: 'Engineering', side: 'field', human: true, metric: 'Technical applicability check', ledgerLabel: 'Technical review' },
   { id: 'supplier', rail: 'Supply', side: 'field', human: true, metric: 'Supplier follow-up', ledgerLabel: 'Planning the supply' },
   { id: 'pricing', rail: 'Pricing', side: 'field', human: true, metric: 'Quote pricing', ledgerLabel: 'Pricing the quote' },

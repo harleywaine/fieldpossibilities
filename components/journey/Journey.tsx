@@ -390,8 +390,8 @@ export function Journey({
         <AccountScreen account={account} contact={contact} rfq={rfq} brief={sim.brief} owner={owner.name} />),
     },
     check: {
-      title: 'Every line is checked against the catalogue.',
-      sub: 'Anything the catalogue doesn’t establish goes to a person, never guessed.',
+      title: 'Each part, checked against its catalogue record.',
+      sub: 'Two questions per part: does it fit the aircraft they named, and can it arrive by the date they need? Only what the record can’t settle goes to a person.',
       frame: rfq && crm('Enquiries', owner,
         <CheckScreen rfq={rfq} customer={customerName} owner={owner.name} />),
     },

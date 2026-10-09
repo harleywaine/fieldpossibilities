@@ -469,79 +469,77 @@ export function CheckScreen({ rfq, customer, owner }: { rfq: SimRfq; customer: s
   const ready = rfq.lines.filter((l) => !l.flags.length).length;
   const toEng = rfq.lines.filter((l) => has(l, 'review')).length;
   const toProc = rfq.lines.filter((l) => has(l, 'supplier')).length;
+  const deadline = rfq.deadlineDays;
+  const variant = rfq.variant ? (variantTag(rfq.variant).startsWith('-') ? variantTag(rfq.variant) : ` ${variantTag(rfq.variant)}`) : '';
+  const aircraft = rfq.aircraft ? `${aircraftLabel(rfq.aircraft)}${variant}` : null;
+  const asked = [aircraft, rfq.engine].filter(Boolean).join(', ');
+
+  /** The fit question, answered from the record: what it lists, or what it leaves unsaid. */
+  const fit = (l: SimLine): { ok: boolean | null; text: string } => {
+    const rev = l.flags.find((f) => f.kind === 'review');
+    const check = rev && rev.kind === 'review' ? rev.check : undefined;
+    if (rev) return { ok: null, text: check ? `Not established. ${check.catalogue}` : `Not established. ${rev.reason}` };
+    const listed = l.specs.find((x) => x.label === 'Applicability')?.value;
+    if (!rfq.aircraft) return { ok: true, text: listed ? `Record lists ${listed}` : 'No aircraft named in the request' };
+    return { ok: true, text: listed ? `Yes. Record lists ${listed}` : `Yes. Record is for the ${aircraftLabel(l.aircraft ?? rfq.aircraft)}` };
+  };
+  /** The date question, answered from the published lead time against the customer's deadline. */
+  const time = (l: SimLine): { ok: boolean | null; text: string } => {
+    if (l.leadTimeDays === null) return { ok: null, text: 'Unknown. No lead time published' };
+    if (deadline === null) return { ok: true, text: `${duration(l.leadTimeDays)}. No deadline given` };
+    return l.leadTimeDays > deadline
+      ? { ok: false, text: `No. ${l.leadTimeDays} days, deadline ${deadline} days` }
+      : { ok: true, text: `Yes. ${duration(l.leadTimeDays)}` };
+  };
+  const Answer = ({ a }: { a: { ok: boolean | null; text: string } }) => (
+    <span className={`flex items-start gap-1.5 text-[12px] leading-snug ${a.ok === true ? 'text-ink-700' : a.ok === false ? 'text-action-600' : 'text-caution-600'}`}>
+      {a.ok === true ? <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-strong-600" />
+        : a.ok === false ? <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        : <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />}
+      <span>{a.text}</span>
+    </span>
+  );
+
   return (
     <div>
       <EnquiryHeader rfq={rfq} customer={customer} owner={owner} stage={1} tab="Lines" />
+      <p className="mb-4 text-[13px] leading-relaxed text-ink-600">
+        {customer} asked for {asked || 'tooling'}{deadline !== null ? `, delivered within ${duration(deadline)}` : ''}.
+        Each part is checked against its own catalogue record on two questions. Only what the record can’t settle goes to a person.
+      </p>
       <div className="mb-4 grid grid-cols-3 gap-3">
-        <Stat label="Ready to quote" value={String(ready)} sub="nothing to check" tone={ready ? 'good' : undefined} />
-        <Stat label="To Engineering" value={String(toEng)} sub="applicability to confirm" />
-        <Stat label="To Supply" value={String(toProc)} sub="lead time to confirm" />
+        <Stat label="Can be quoted now" value={String(ready)} sub="fit and date both settled" tone={ready ? 'good' : undefined} />
+        <Stat label="Need a date from Supply" value={String(toProc)} sub="no lead time, or too long" />
+        <Stat label="Need Engineering" value={String(toEng)} sub="fit not established" />
       </div>
-      <Card title="Line check" icon={CheckCircle2} action="against each catalogue record" pad={false}>
-        <ul className="divide-y divide-ink-100 sm:hidden">
-          {rfq.lines.map((l) => {
-            const over = rfq.deadlineDays !== null && l.leadTimeDays !== null && l.leadTimeDays > rfq.deadlineDays;
-            return (
-              <li key={l.line} className="px-3 py-3">
-                <PartCell l={l} />
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 pl-[42px] text-[11.5px]">
-                  {has(l, 'review')
-                    ? <span className="flex items-center gap-1 text-caution-600"><AlertTriangle className="h-3 w-3" />Fit not established</span>
-                    : <span className="flex items-center gap-1 text-strong-600"><CheckCircle2 className="h-3 w-3" />Fit confirmed</span>}
-                  {l.leadTimeDays === null
-                    ? <span className="flex items-center gap-1 text-caution-600"><AlertTriangle className="h-3 w-3" />Lead time not published</span>
-                    : <span className={`flex items-center gap-1 ${over ? 'text-action-600' : 'text-strong-600'}`}>{over ? <XCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}{duration(l.leadTimeDays)}</span>}
-                </div>
-                <div className="mt-1.5 flex flex-wrap gap-1 pl-[42px]">
-                  {!l.flags.length && <Badge tone="green">Ready</Badge>}
-                  {has(l, 'review') && <Badge tone="amber">Engineering</Badge>}
-                  {has(l, 'supplier') && <Badge tone="blue">Supply</Badge>}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="hidden overflow-x-auto sm:block">
-          <table className="w-full min-w-[640px] table-fixed">
+      <Card title="Checked against the catalogue" icon={CheckCircle2} action={`${rfq.lines.length} parts`} pad={false}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] table-fixed">
             <thead>
-              <tr><Th className="w-10">#</Th><Th>Part</Th><Th className="w-36">Applicability</Th><Th className="w-32">Lead time</Th><Th className="w-52">Routed to</Th></tr>
+              <tr>
+                <Th className="w-10">#</Th>
+                <Th>Part</Th>
+                <Th className="w-56">Fits {aircraft ? `the ${aircraft}` : 'the aircraft'}?</Th>
+                <Th className="w-44">In time{deadline !== null ? ` for ${duration(deadline)}` : ''}?</Th>
+                <Th className="w-44">Next</Th>
+              </tr>
             </thead>
             <tbody className="divide-y divide-ink-100">
-              {rfq.lines.map((l, i) => {
-                const reasons = l.flags.map((f) => f.reason);
-                const over = rfq.deadlineDays !== null && l.leadTimeDays !== null && l.leadTimeDays > rfq.deadlineDays;
-                return (
-                  <tr key={l.line} className="step-in align-top" style={T(i * 120)}>
-                    <Td className="mono pt-3.5 text-[11px] text-ink-400">{String(l.line).padStart(2, '0')}</Td>
-                    <Td>
-                      <PartCell l={l} sub={reasons.length > 0 && (
-                        <ul className="mt-1.5 space-y-0.5">
-                          {reasons.map((r) => <li key={r} className="whitespace-normal text-[11px] leading-snug text-ink-500">{r}</li>)}
-                        </ul>
-                      )} />
-                    </Td>
-                    <Td className="pt-3.5">
-                      {has(l, 'review')
-                        ? <span className="flex items-center gap-1.5 text-[12px] text-caution-600"><AlertTriangle className="h-3.5 w-3.5" />Not established</span>
-                        : <span className="flex items-center gap-1.5 text-[12px] text-strong-600"><CheckCircle2 className="h-3.5 w-3.5" />Confirmed</span>}
-                    </Td>
-                    <Td className="pt-3.5">
-                      {l.leadTimeDays === null
-                        ? <span className="flex items-center gap-1.5 text-[12px] text-caution-600"><AlertTriangle className="h-3.5 w-3.5" />Not published</span>
-                        : <span className={`flex items-center gap-1.5 text-[12px] ${over ? 'text-action-600' : 'text-strong-600'}`}>
-                            {over ? <XCircle className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}{duration(l.leadTimeDays)}
-                          </span>}
-                    </Td>
-                    <Td className="pt-3.5">
-                      <span className="flex flex-wrap gap-1">
-                        {!l.flags.length && <Badge tone="green">Ready</Badge>}
-                        {has(l, 'review') && <Badge tone="amber">Engineering</Badge>}
-                        {has(l, 'supplier') && <Badge tone="blue">Supply</Badge>}
-                      </span>
-                    </Td>
-                  </tr>
-                );
-              })}
+              {rfq.lines.map((l, i) => (
+                <tr key={l.line} className="step-in align-top" style={T(i * 120)}>
+                  <Td className="mono pt-3.5 text-[11px] text-ink-400">{String(l.line).padStart(2, '0')}</Td>
+                  <Td><PartCell l={l} /></Td>
+                  <Td className="pt-3.5"><Answer a={fit(l)} /></Td>
+                  <Td className="pt-3.5"><Answer a={time(l)} /></Td>
+                  <Td className="pt-3.5">
+                    <span className="flex flex-col gap-1 text-[12px] text-ink-700">
+                      {!l.flags.length && <span><Badge tone="green">Quote now</Badge></span>}
+                      {has(l, 'supplier') && <span><Badge tone="blue">Supply</Badge> <span className="text-ink-500">confirm a date</span></span>}
+                      {has(l, 'review') && <span><Badge tone="amber">Engineering</Badge> <span className="text-ink-500">confirm fit</span></span>}
+                    </span>
+                  </Td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
