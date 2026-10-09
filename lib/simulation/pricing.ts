@@ -22,6 +22,8 @@ export interface LinePrice {
   high: number;
   last: { price: number; date: string } | null;
   typical: number;
+  /** The account discount took the price under the margin floor, so the suggestion holds the floor instead. */
+  floored: boolean;
 }
 
 function hash(s: string): number {
@@ -40,7 +42,7 @@ const PRICE_LIST: Array<{ test: RegExp; label: string; cost: [number, number]; m
   { test: /sling|hoist|lift/i, label: 'Lifting equipment', cost: [3_000, 12_000], marginPct: 30 },
   { test: /cover|plug|protect/i, label: 'Protective equipment', cost: [400, 2_500], marginPct: 38 },
   { test: /test|gauge|measur/i, label: 'Test and measurement', cost: [1_500, 9_000], marginPct: 32 },
-  { test: /./, label: 'Hand tooling', cost: [250, 3_500], marginPct: 35 },
+  { test: /./, label: 'Other tooling', cost: [250, 3_500], marginPct: 35 },
 ];
 
 // Invented freight and duty, by where the supplier ships from.
@@ -66,23 +68,28 @@ export function priceLines(
   lines: Array<{ line: number; partNumber: string | null; name: string; aircraft?: string | null }>,
   accountId: string | null,
   supplierCountry: (name: string) => string | undefined,
-  fleet: string[] = [],
+  /** The account's won orders. A line can only have been sold before inside one of these. */
+  wonJobs: Array<{ aircraft: string | null; date: string }> = [],
 ): LinePrice[] {
   const discountPct = accountId ? TERMS[accountId] ?? 0 : 0;
-  const flies = (aircraft: string | null | undefined) =>
-    !fleet.length || !aircraft || aircraft.split(', ').some((a) => fleet.some((f) => f.toUpperCase() === a.toUpperCase()));
+  const wonFor = (aircraft: string | null | undefined) => {
+    const named = (aircraft ?? '').split(', ').map((a) => a.toUpperCase()).filter(Boolean);
+    return wonJobs.find((j) => j.aircraft && named.includes(j.aircraft.toUpperCase())) ?? null;
+  };
   return lines.map((l) => {
     const key = l.partNumber ?? l.name;
     const entry = PRICE_LIST.find((p) => p.test.test(l.name))!;
     const cost = round(entry.cost[0] + unit(`${key}:cost`) * (entry.cost[1] - entry.cost[0]), 10);
     const freightPct = FREIGHT[supplierCountry(l.name) ?? ''] ?? 5;
     const landed = Math.round(cost * (1 + freightPct / 100));
-    const suggested = priceFor(landed, entry.marginPct, discountPct);
-    // Some lines have sold to this customer before; the older price is usually a
-    // little lower. Only tooling for a type the customer actually operates.
-    const sold = accountId !== null && flies(l.aircraft) && unit(`${key}:${accountId}:sold`) < 0.5;
-    const year = 2024 + Math.floor(unit(`${key}:year`) * 2);
-    const month = 1 + Math.floor(unit(`${key}:month`) * 12);
+    const discounted = priceFor(landed, entry.marginPct, discountPct);
+    const floorPrice = round(landed / (1 - MIN_MARGIN), 5);
+    const floored = marginOf(discounted, landed) < MIN_MARGIN;
+    const suggested = floored ? floorPrice : discounted;
+    // A line has sold to this customer before only if the account actually won an
+    // order for that aircraft, and the date is that order's. The older price is usually a little lower.
+    const won = accountId !== null ? wonFor(l.aircraft) : null;
+    const sold = won !== null && unit(`${key}:${accountId}:sold`) < 0.7;
     return {
       line: l.line,
       cost,
@@ -94,9 +101,10 @@ export function priceLines(
       low: round(suggested * 0.97, 5),
       high: round(suggested * 1.03, 5),
       last: sold
-        ? { price: round(suggested * (0.84 + unit(`${key}:last`) * 0.14), 5), date: `${year}-${String(month).padStart(2, '0')}-01` }
+        ? { price: round(suggested * (0.84 + unit(`${key}:last`) * 0.14), 5), date: won!.date }
         : null,
       typical: round(suggested * (0.95 + unit(`${key}:typical`) * 0.12), 5),
+      floored,
     };
   });
 }

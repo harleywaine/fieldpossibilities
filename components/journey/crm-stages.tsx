@@ -1096,6 +1096,7 @@ export function PricingScreen({
                     <Row k={`Freight and duty`} v={`+${p.freightPct}%`} />
                     <Row k={`Margin · ${p.rule.label}`} v={`${p.rule.marginPct}%`} />
                     <Row k="Account discount" v={p.discountPct ? `−${p.discountPct}%` : 'none'} />
+                    {p.floored && <Row k="Held at the 20% floor" v="discount trimmed" />}
                     <div className="flex justify-between border-t border-ink-100 pt-1.5 font-semibold text-ink-900">
                       <dt>Suggested</dt><dd className="mono">{gbpExact(p.suggested)}</dd>
                     </div>
@@ -1105,8 +1106,7 @@ export function PricingScreen({
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">Price history<Synth /></p>
                   <dl className="space-y-1 text-[12px]">
                     <Row k={p.last ? `They paid · ${shortDate(p.last.date).replace(/^1 /, '')}` : 'They paid'} v={p.last ? gbpExact(p.last.price) : 'never bought'} />
-                    <Row k="Others pay" v={gbpExact(p.typical)} />
-                    <Row k="Range" v={`${gbpExact(p.low)}–${gbpExact(p.high)}`} />
+                    <Row k="Typical quoted price" v={gbpExact(p.typical)} />
                   </dl>
                 </div>
                 <div className="bg-ink-25/60 p-4">

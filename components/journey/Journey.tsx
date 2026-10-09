@@ -286,8 +286,8 @@ export function Journey({
       const s = l ? sourceOf(l) : null;
       if (!s || s.kind === 'bought-in') return 'United States';
       return SITES[s.kind === 'stock' ? s.site : (sim.sites[l!.line] ?? s.proposed)].country;
-    }, account?.fleet ?? []),
-    [included.map((l) => l.partNumber).join('|'), account?.id, suppliers, account?.fleet, sim.sites, sourceOf],
+    }, account?.jobs.filter((j) => j.status === 'won') ?? []),
+    [included.map((l) => l.partNumber).join('|'), account?.id, suppliers, account?.jobs, sim.sites, sourceOf],
   );
   const finalPrices = Object.fromEntries(linePrices.map((p) => [p.line, sim.prices[p.line] ?? p.suggested]));
   const quoteMargin = marginOf(
