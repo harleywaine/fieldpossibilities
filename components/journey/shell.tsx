@@ -108,7 +108,6 @@ export function Narration({
   /** On the customer's side, lets the viewer go back and play someone else. */
   onChangePersona?: () => void;
 }) {
-  const t = trackIndex(index);
   const dark = tone === 'dark';
   const pill = dark
     ? 'bg-white/10 text-white ring-1 ring-white/15'
@@ -123,10 +122,6 @@ export function Narration({
             }`}>
               {step.side === 'customer' ? <UserRound className="h-3.5 w-3.5" strokeWidth={2.6} /> : <Building2 className="h-3.5 w-3.5" strokeWidth={2.4} />}
               {step.side === 'customer' ? 'The customer’s side' : 'Inside Field'}
-            </span>
-            <span className={`text-[12.5px] font-medium ${dark ? 'text-white/70' : 'text-[#0369a1]'}`}>
-              <span className="mono mr-1.5 opacity-60">{String(t + 1).padStart(2, '0')}</span>
-              {step.side === 'customer' ? 'On fieldinternational.com, as a customer' : 'In Field’s own system, as the team'}
             </span>
           </p>
         )}
