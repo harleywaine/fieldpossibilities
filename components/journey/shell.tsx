@@ -51,8 +51,8 @@ export function TopBar({
       {/* ---------------------------------------------------------- track */}
       <nav aria-label="Journey" className="mx-auto w-full max-w-6xl px-4 pb-3 sm:px-8">
         <div className="mb-1.5 hidden gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] sm:grid" style={{ gridTemplateColumns: `${customerCount}fr ${TRACK.length - customerCount}fr` }}>
-          <span className={current >= 0 && current < customerCount ? 'text-signal-600' : 'text-ink-300'}>The customer</span>
-          <span className={current >= customerCount ? 'text-signal-600' : 'text-ink-300'}>Field</span>
+          <span className={current >= 0 && current < customerCount ? 'text-[#0284c7]' : 'text-ink-300'}>The customer’s side</span>
+          <span className={current >= customerCount ? 'text-signal-600' : 'text-ink-300'}>Inside Field</span>
         </div>
         <ol className="grid gap-1 sm:gap-1.5" style={{ gridTemplateColumns: `repeat(${TRACK.length}, minmax(0, 1fr))` }}>
           {TRACK.map((s, t) => {
@@ -70,7 +70,7 @@ export function TopBar({
                   className="group block w-full text-left disabled:cursor-default"
                 >
                   <span className={`block h-[3px] rounded-full transition-colors duration-500 ${
-                    now ? 'bg-signal-700' : done ? 'bg-signal-400' : 'bg-ink-100'
+                    now ? (s.side === 'customer' ? 'bg-[#0284c7]' : 'bg-signal-700') : done ? (s.side === 'customer' ? 'bg-[#7dd3fc]' : 'bg-signal-400') : 'bg-ink-100'
                   } ${!locked && !now ? 'group-hover:bg-signal-300' : ''}`} />
                   <span className="mt-1.5 hidden items-center gap-1 text-[11px] leading-none md:flex">
                     <span className={`truncate ${now ? 'font-semibold text-ink-950' : done ? 'text-ink-600' : 'text-ink-300'}`}>{s.rail}</span>
@@ -99,43 +99,53 @@ export function TopBar({
 export interface Halt { done: boolean; text: React.ReactNode }
 
 export function Narration({
-  step, index, title, sub, persona, halt, eyebrow,
+  step, index, title, sub, persona, halt, eyebrow, tone = 'light', onChangePersona,
 }: {
   step: JourneyStep; index: number; title: React.ReactNode; sub?: React.ReactNode;
   persona?: { name: string; role: string }; halt?: Halt; eyebrow?: string;
+  /** Dark when the narration sits on Field's navy band. */
+  tone?: 'light' | 'dark';
+  /** On the customer's side, lets the viewer go back and play someone else. */
+  onChangePersona?: () => void;
 }) {
   const t = trackIndex(index);
+  const dark = tone === 'dark';
+  const pill = dark
+    ? 'bg-white/10 text-white ring-1 ring-white/15'
+    : 'bg-white text-ink-600 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-ink-100';
   return (
     <section className="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div>
         {step.side && (
-          <p className="enter inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11.5px] font-medium text-ink-600 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-ink-100">
-            <span className={`h-1.5 w-1.5 rounded-full ${step.side === 'customer' ? 'bg-[#38bdf8]' : 'bg-signal-600'}`} />
-            <span className="mono text-ink-400">{String(t + 1).padStart(2, '0')}</span>
-            {step.side === 'customer' ? 'The customer · Field’s website' : 'Field · the CRM'}
+          <p className={`enter inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium ${pill}`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${step.side === 'customer' ? 'bg-[#0ea5e9]' : 'bg-[#7EA7D7]'}`} />
+            <span className={`mono ${dark ? 'text-white/50' : 'text-ink-400'}`}>{String(t + 1).padStart(2, '0')}</span>
+            {step.side === 'customer' ? 'The customer’s side · Field’s website' : 'Inside Field · the CRM'}
           </p>
         )}
         {eyebrow && (
-          <p className="enter inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11.5px] font-medium text-ink-600 shadow-[0_1px_2px_rgba(16,24,40,0.06)] ring-1 ring-ink-100">
+          <p className={`enter inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium ${pill}`}>
             <Sparkles className="h-3 w-3 text-signal-500" /> {eyebrow}
           </p>
         )}
-        <h1 className="enter mt-3 max-w-3xl font-display text-[29px] font-light sm:mt-4 leading-[1.08] tracking-[-0.02em] text-ink-950 sm:text-[44px]" style={{ animationDelay: '80ms' }}>
+        <h1 className={`enter mt-3 max-w-3xl font-display text-[29px] font-light sm:mt-4 leading-[1.08] tracking-[-0.02em] sm:text-[44px] ${dark ? 'text-white' : 'text-ink-950'}`} style={{ animationDelay: '80ms' }}>
           {title}
         </h1>
         {sub && (
-          <p className="enter mt-2.5 max-w-2xl text-[15px] leading-relaxed text-ink-500 sm:mt-3 sm:text-[18px]" style={{ animationDelay: '180ms' }}>
+          <p className={`enter mt-2.5 max-w-2xl text-[15px] leading-relaxed sm:mt-3 sm:text-[18px] ${dark ? 'text-signal-100/75' : 'text-ink-500'}`} style={{ animationDelay: '180ms' }}>
             {sub}
           </p>
         )}
       </div>
-      {persona && <PersonaCard persona={persona} halt={halt} />}
+      {persona && <PersonaCard persona={persona} halt={halt} kind={step.side ?? 'field'} onChange={onChangePersona} />}
     </section>
   );
 }
 
-function PersonaCard({ persona, halt }: { persona: { name: string; role: string }; halt?: Halt }) {
+/** The same card on both sides: who you are playing, and whether this step is waiting on you. */
+function PersonaCard({ persona, halt, kind, onChange }: { persona: { name: string; role: string }; halt?: Halt; kind: 'customer' | 'field'; onChange?: () => void }) {
   const waiting = halt && !halt.done;
+  const customer = kind === 'customer';
   return (
     <div
       className={`enter overflow-hidden rounded-2xl bg-white shadow-[0_12px_32px_-18px_rgba(4,24,47,0.35)] ring-1 ${waiting ? 'ring-caution-500/40' : 'ring-ink-100'}`}
@@ -156,16 +166,61 @@ function PersonaCard({ persona, halt }: { persona: { name: string; role: string 
         <span className="hidden font-medium normal-case tracking-normal opacity-80 sm:inline">{waiting ? 'The process has stopped' : 'The process can continue'}</span>
       </div>
       <div className="flex items-center gap-3 px-4 pt-3">
-        <Avatar name={persona.name} size={34} you />
-        <span className="leading-tight">
-          <span className="block text-[11px] text-ink-400">You are signed in as</span>
-          <span className="block text-[14px] font-semibold text-ink-950">{persona.name}</span>
+        <Avatar name={persona.name} size={34} square={customer} you={!customer} />
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block text-[11px] text-ink-400">{customer ? 'You are playing' : 'You are signed in as'}</span>
+          <span className="block truncate text-[14px] font-semibold text-ink-950">{persona.name}</span>
           <span className="block text-[12px] text-ink-500">{persona.role}</span>
         </span>
+        {onChange && (
+          <button onClick={onChange} className="shrink-0 rounded-md px-2 py-1 text-[11.5px] font-medium text-signal-600 ring-1 ring-inset ring-ink-200 hover:bg-ink-25">
+            Change
+          </button>
+        )}
       </div>
       <p className="px-4 pb-3.5 pt-2.5 text-[12.5px] leading-relaxed text-ink-600">
         {halt ? halt.text : 'The system found nothing that needs this person at this step.'}
       </p>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- handover */
+
+/** The one moment the viewer changes seat: the request leaves the customer and the story moves inside Field. */
+export function Handover({ company, onNext }: { company: string; onNext: () => void }) {
+  return (
+    <section className="enter relative mt-8 overflow-hidden rounded-[28px] bg-signal-900 text-white sm:mt-10" style={{ animationDelay: '320ms' }}>
+      <img src={PHOTOS.sites.poole} alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full object-cover object-center opacity-50" />
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(100deg,rgba(2,25,58,0.98)_0%,rgba(2,25,58,0.92)_52%,rgba(2,25,58,0.4)_100%)]" />
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,25,58,0.55)_0%,rgba(2,25,58,0)_60%)]" />
+      <div className="relative max-w-2xl px-6 py-12 sm:px-12 sm:py-16">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7EA7D7]">Now switch sides</p>
+        <h2 className="mt-3 font-display text-[32px] font-light leading-[1.05] tracking-[-0.02em] text-white sm:text-[48px]">
+          Your request has left the building.
+          <span className="block text-[#7EA7D7]">Now you’re at Field.</span>
+        </h2>
+        <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-signal-100/75 sm:text-[17px]">
+          Everything from here is inside Field’s own system in Poole, Dorset. {company}’s request arrives before anyone has opened it.
+        </p>
+        <button
+          onClick={onNext}
+          className="mt-7 inline-flex h-12 items-center gap-2.5 rounded-[3px] bg-action-600 px-6 text-[14px] font-bold text-white shadow-[0_16px_40px_-12px_rgba(162,18,18,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-action-400"
+        >
+          Open Field’s inbox <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    </section>
+  );
+}
+
+/** Field's navy band behind the narration on every step inside Field. */
+export function FieldBand({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative overflow-hidden bg-signal-900">
+      <img src={PHOTOS.watermark} alt="" aria-hidden draggable={false} className="pointer-events-none absolute -right-10 -top-16 w-[620px] opacity-[0.07]" />
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,25,58,0)_0%,rgba(3,70,148,0.25)_100%)]" />
+      <div className="relative mx-auto w-full max-w-6xl px-4 pb-24 pt-8 sm:px-8 sm:pt-12">{children}</div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { priceLines, marginOf, MIN_MARGIN } from '@/lib/simulation/pricing.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
 import { duration } from '@/lib/journey.ts';
-import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts } from '@/components/journey/shell.tsx';
+import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts, Handover, FieldBand } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, PersonaBar, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import { SiteSearchProof } from '@/components/journey/site-search.tsx';
 import {
@@ -333,13 +333,9 @@ export function Journey({
       cta: 'Start the enquiry',
     },
     request: {
-      title: (
-        <>
-          You are: <span className="font-bold">{picked ? picked.name : 'the customer'}</span>
-          <span className="block text-signal-600">What do you need?</span>
-        </>
-      ),
+      title: 'What do you need?',
       sub: 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
+      halt: { done: Boolean(found), text: found ? 'You described the job and searched.' : 'Describe the job and search. Nothing happens until you do.' },
       pre: <PersonaBar accounts={accounts} chosen={sim.persona} onPick={pick} />,
       frame: (
         <BrowserFrame path="find-a-part" basket={basket}>
@@ -351,11 +347,13 @@ export function Journey({
       hint: 'Search on the website to continue',
     },
     parts: {
-      title: contact ? 'Your request is on its way to Field.' : 'These are the parts you’ll need.',
+      title: contact ? 'Request sent.' : 'These are the parts you’ll need.',
       sub: contact
-        ? 'Next, the same enquiry from the other side: inside Field.'
+        ? 'Field has it. Next, the same enquiry from the other side.'
         : 'Each one comes from Field’s real catalogue, with the reason it was picked. Add the ones you want and request a quote.',
-      body: found && !contact ? <SiteSearchProof /> : undefined,
+      halt: { done: Boolean(contact), text: contact ? 'You sent the request to Field.' : 'Add the parts you want quoted, then request the quote.' },
+      body: found && (contact ? <Handover company={contact.company} onNext={() => go(stepIndex('inbox'))} /> : <SiteSearchProof />),
+      cta: contact ? 'Open Field’s inbox' : undefined,
       frame: found && (
         <BrowserFrame path={contact ? 'find-a-part/request-sent' : 'find-a-part/results'} basket={basket}>
           <PartsScreen
@@ -374,7 +372,6 @@ export function Journey({
           />
         </BrowserFrame>
       ),
-      cta: 'See it arrive at Field',
       hideContinue: !contact,
       hint: 'Request a quote on the website to continue',
     },
@@ -528,10 +525,30 @@ export function Journey({
     before: metrics[s.metric!]!.before, after: metrics[s.metric!]!.after, volume: metrics[s.metric!]!.volume,
   }));
 
+  // Two worlds: the customer's side is light and open; inside Field is navy and close.
+  const side = step.side;
+  const who = side === 'customer'
+    ? { name: picked?.name ?? (contact?.company || sim.form.company || 'Someone new'), role: picked ? `Customer · ${picked.country}` : 'A company new to Field' }
+    : side === 'field' ? { name: owner.name, role: `${owner.role}, Field` } : undefined;
+  const narration = c && (
+    <Narration
+      step={step} index={index} title={c.title} sub={c.sub} halt={c.halt} eyebrow={c.eyebrow}
+      persona={c.persona ?? who}
+      tone={side === 'field' ? 'dark' : 'light'}
+      onChangePersona={side === 'customer' && step.id !== 'request' ? () => go(stepIndex('request')) : undefined}
+    />
+  );
+
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'radial-gradient(1200px 500px at 50% -120px, #e3ebf6 0%, transparent 70%), #f5f7fa' }}
+      style={{
+        background: side === 'field'
+          ? '#e6ebf2'
+          : side === 'customer'
+            ? 'radial-gradient(1200px 520px at 50% -120px, #cfe3f6 0%, transparent 70%), #eef4fa'
+            : 'radial-gradient(1200px 500px at 50% -120px, #e3ebf6 0%, transparent 70%), #f5f7fa',
+      }}
     >
       {/* The bar arrives with the journey: the cover and the preamble stand alone. */}
       {!booting && step.id !== 'start' && step.id !== 'uses' && (
@@ -540,7 +557,9 @@ export function Journey({
 
       {!booting && step.id === 'start' && <Cover onBegin={() => go(1)} catalogue={catalogue} />}
 
-      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-36 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : 'pt-8 sm:pt-12'}`}>
+      {!booting && side === 'field' && c && <FieldBand>{narration}</FieldBand>}
+
+      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-36 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : side === 'field' ? '-mt-16' : 'pt-8 sm:pt-12'}`}>
 
         {!booting && step.id === 'summary' && (
           <Results
@@ -557,7 +576,7 @@ export function Journey({
 
         {c && (
           <>
-            <Narration step={step} index={index} title={c.title} sub={c.sub} persona={c.persona} halt={c.halt} eyebrow={c.eyebrow} />
+            {side !== 'field' && narration}
             {c.pre}
             {c.frame && <Stage>{c.frame}</Stage>}
             {c.body}
