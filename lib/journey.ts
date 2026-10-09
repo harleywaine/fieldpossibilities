@@ -270,7 +270,8 @@ export function sourceFor(
     const freightDays = FREIGHT_DAYS[site][region];
     return { site, makeDays, freightDays, totalDays: makeDays + freightDays, costIndex: SITES[site].cost };
   });
-  const proposed = options.reduce((a, b) => (b.totalDays < a.totalDays ? b : a)).site;
+  // Pencilled in: the site nearest the customer. The planner picks; the system doesn't know which site can make what.
+  const proposed = nearest;
   const licence = m === 'BOEING' ? 'Boeing tooling, made under licence'
     : m === 'MCDONNELL DOUGLAS' ? 'McDonnell Douglas tooling, made under the Boeing licence'
     : m === 'FIL TOOLING' ? 'Field’s own FIL design'

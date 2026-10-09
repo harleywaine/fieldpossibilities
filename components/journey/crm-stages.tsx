@@ -784,23 +784,14 @@ function SupplyMap({ region, planned }: { region: Region; planned: Array<{ site:
   const y = (lat: number) => ((70 - lat) / 115) * H;
   const customer = CUSTOMER_GEO[region];
   const cx = x(customer.lon); const cy = y(customer.lat);
-  const curve = (sx: number, sy: number) => `M${sx},${sy} Q${(sx + cx) / 2},${Math.min(sy, cy) - 60} ${cx},${cy}`;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Where the lines are made and where they go" className="h-auto w-full">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Field's sites and the customer" className="h-auto w-full">
       <defs>
         <linearGradient id="mapfade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#02193a" /><stop offset="1" stopColor="#02356f" /></linearGradient>
       </defs>
       <rect width={W} height={H} rx="12" fill="url(#mapfade)" />
       {Array.from({ length: 11 }, (_, i) => -150 + i * 30).map((lon) => <line key={lon} x1={x(lon)} x2={x(lon)} y1={0} y2={H} stroke="white" strokeOpacity="0.07" />)}
       {[60, 40, 20, 0, -20, -40].map((lat) => <line key={lat} x1={0} x2={W} y1={y(lat)} y2={y(lat)} stroke="white" strokeOpacity={lat === 0 ? 0.14 : 0.07} />)}
-      {planned.map((p) => {
-        const g = GEO[p.site];
-        return (
-          <g key={p.site}>
-            <path d={curve(x(g.lon), y(g.lat))} fill="none" stroke="#7EA7D7" strokeOpacity="0.9" strokeWidth={1.5 + Math.min(p.count, 4)} strokeLinecap="round" strokeDasharray="6 8" className="map-route" />
-          </g>
-        );
-      })}
       {(Object.keys(GEO) as Array<keyof typeof GEO>).map((id) => {
         const g = GEO[id];
         const p = planned.find((q) => q.site === id);
@@ -929,7 +920,7 @@ export function SupplyScreen({
         </div>
       </div>
 
-      <Card title="Source per line" icon={Truck} action="stock, site lead times and costs are simulated" pad={false}>
+      <Card title="Source per line" icon={Truck} action="indicative lead times; the planner picks the site" pad={false}>
         <ul className="divide-y divide-ink-100">
           {lines.map((l, i) => {
             const s = sourceOf(l);
@@ -951,8 +942,7 @@ export function SupplyScreen({
                   <div className="mt-2.5 grid gap-1.5 sm:grid-cols-4">
                     {s.options.map((o) => {
                       const on = chosen(l) === o.site;
-                      const fastest = o.site === s.proposed;
-                      const cheapest = o.costIndex === Math.min(...s.options.map((x) => x.costIndex));
+                      const nearest = o.site === s.proposed;
                       const over = deadline !== null && o.totalDays > deadline;
                       return (
                         <button
@@ -966,14 +956,8 @@ export function SupplyScreen({
                             <span className={`mono ${over ? 'text-action-600' : 'text-ink-700'}`}>{o.totalDays} days</span>
                           </span>
                           <span className="mt-0.5 block text-[10.5px] leading-snug text-ink-500">
-                            make {o.makeDays} d, ship {o.freightDays} d · cost {o.costIndex < 1 ? `−${Math.round((1 - o.costIndex) * 100)}%` : 'base'}
+                            make {o.makeDays} d, ship {o.freightDays} d{nearest ? ' · nearest site' : ''}
                           </span>
-                          {(fastest || cheapest) && (
-                            <span className="mt-1 flex gap-1">
-                              {fastest && <Badge tone="blue">fastest</Badge>}
-                              {cheapest && <Badge tone="green">cheapest</Badge>}
-                            </span>
-                          )}
                         </button>
                       );
                     })}
@@ -999,7 +983,7 @@ export function SupplyScreen({
       </Card>
       <p className="mt-3 text-[11px] leading-relaxed text-ink-400">
         The four factories and the Boeing licences are Field’s, as published. Which site makes which tool, what is in stock where,
-        site lead times, freight and cost differences are invented for this demo.
+        and the per-site lead times and freight days are placeholders for a table Field would own. The nearest site is pencilled in; the planner decides.
       </p>
     </div>
   );

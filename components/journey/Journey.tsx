@@ -411,13 +411,13 @@ export function Journey({
     },
     supplier: {
       title: 'Where will each line come from?',
-      sub: `Field makes Boeing-licensed tooling in Poole, Singapore, China and India, and buys some ranges in. The system proposes the fastest source for a customer in ${region}; a planner confirms or overrules it.`,
+      sub: `Field makes Boeing-licensed tooling in Poole, Singapore, China and India, and buys some ranges in. For a customer in ${region} the nearest site is pencilled in for each line, with indicative lead times to hand. The planner picks the site, or sends the request to the supplier.`,
       persona: PERSONAS.supplier,
       halt: {
         done: sim.supplierSent,
         text: sim.supplierSent
           ? `Plan confirmed${boughtIn.length ? ', supplier requests sent' : ''}. Stock, site lead times and replies are simulated.`
-          : `A source is proposed for every line${supplierLines.length ? `, including the ${supplierLines.length === 1 ? 'one' : supplierLines.length} the line check flagged` : ''}. Change any site you disagree with, then confirm the plan.`,
+          : `The nearest site is pencilled in for every line${supplierLines.length ? `, including the ${supplierLines.length === 1 ? 'one' : supplierLines.length} the checks flagged` : ''}. Pick the site for each, then confirm the plan.`,
       },
       frame: rfq && crm('Supply', you('supplier'),
         <SupplyScreen
