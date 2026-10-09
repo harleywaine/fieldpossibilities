@@ -117,10 +117,17 @@ export function Narration({
     <section className="grid items-end gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div>
         {step.side && (
-          <p className={`enter inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11.5px] font-medium ${pill}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${step.side === 'customer' ? 'bg-[#0ea5e9]' : 'bg-[#7EA7D7]'}`} />
-            <span className={`mono ${dark ? 'text-white/50' : 'text-ink-400'}`}>{String(t + 1).padStart(2, '0')}</span>
-            {step.side === 'customer' ? 'The customer’s side · Field’s website' : 'Inside Field · the CRM'}
+          <p className="enter flex flex-wrap items-center gap-2.5">
+            <span className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-[12px] font-bold uppercase tracking-[0.14em] ${
+              step.side === 'customer' ? 'bg-[#0369a1] text-white' : 'bg-white text-signal-800'
+            }`}>
+              {step.side === 'customer' ? <UserRound className="h-3.5 w-3.5" strokeWidth={2.6} /> : <Building2 className="h-3.5 w-3.5" strokeWidth={2.4} />}
+              {step.side === 'customer' ? 'The customer’s side' : 'Inside Field'}
+            </span>
+            <span className={`text-[12.5px] font-medium ${dark ? 'text-white/70' : 'text-[#0369a1]'}`}>
+              <span className="mono mr-1.5 opacity-60">{String(t + 1).padStart(2, '0')}</span>
+              {step.side === 'customer' ? 'On fieldinternational.com, as a customer' : 'In Field’s own system, as the team'}
+            </span>
           </p>
         )}
         {eyebrow && (
@@ -211,6 +218,16 @@ export function Handover({ company, onNext }: { company: string; onNext: () => v
         </button>
       </div>
     </section>
+  );
+}
+
+/** The customer's sky band behind the narration on the customer's side. */
+export function CustomerBand({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative overflow-hidden bg-[linear-gradient(180deg,#cfe4f7_0%,#e2eef9_100%)]">
+      <div aria-hidden className="absolute inset-x-0 bottom-0 h-px bg-[#0369a1]/15" />
+      <div className="relative mx-auto w-full max-w-6xl px-4 pb-8 pt-8 sm:px-8 sm:pb-10 sm:pt-12">{children}</div>
+    </div>
   );
 }
 

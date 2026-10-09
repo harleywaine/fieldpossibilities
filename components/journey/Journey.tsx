@@ -11,7 +11,7 @@ import { priceLines, marginOf, MIN_MARGIN } from '@/lib/simulation/pricing.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
 import { duration } from '@/lib/journey.ts';
-import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts, Handover, FieldBand } from '@/components/journey/shell.tsx';
+import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts, Handover, FieldBand, CustomerBand } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, PersonaBar, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import { SiteSearchProof } from '@/components/journey/site-search.tsx';
 import {
@@ -333,7 +333,7 @@ export function Journey({
       cta: 'Start the enquiry',
     },
     request: {
-      title: 'What do you need?',
+      title: 'You’re the customer.',
       sub: 'Describe the job on Field’s website the way you would to a supplier. Part numbers aren’t needed.',
       halt: { done: Boolean(found), text: found ? 'You described the job and searched.' : 'Describe the job and search. Nothing happens until you do.' },
       pre: <PersonaBar accounts={accounts} chosen={sim.persona} onPick={pick} />,
@@ -558,8 +558,9 @@ export function Journey({
       {!booting && step.id === 'start' && <Cover onBegin={() => go(1)} catalogue={catalogue} />}
 
       {!booting && side === 'field' && c && <FieldBand>{narration}</FieldBand>}
+      {!booting && side === 'customer' && c && <CustomerBand>{narration}</CustomerBand>}
 
-      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-36 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : side === 'field' ? '-mt-16' : 'pt-8 sm:pt-12'}`}>
+      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-36 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : side === 'field' ? '-mt-16' : side === 'customer' ? 'pt-2 sm:pt-4' : 'pt-8 sm:pt-12'}`}>
 
         {!booting && step.id === 'summary' && (
           <Results
@@ -576,7 +577,7 @@ export function Journey({
 
         {c && (
           <>
-            {side !== 'field' && narration}
+            {!side && narration}
             {c.pre}
             {c.frame && <Stage>{c.frame}</Stage>}
             {c.body}
