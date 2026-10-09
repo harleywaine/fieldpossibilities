@@ -1162,7 +1162,7 @@ function Row({ k, v }: { k: string; v: string }) {
 
 export function ApprovalScreen({
   rfq, customer, contact, included, held, leadDays, deliveryDays, decision, onDecide, reviewed, supplierAsked, approver,
-  prices, margin, pricedBy, belowMin, lateLines, plan, onPlan, expedite, queried, sourceLabel,
+  prices, margin, pricedBy, belowMin, floored, lateLines, plan, onPlan, expedite, queried, sourceLabel, boughtIn, region, paymentTerms, exWorks,
 }: {
   rfq: SimRfq; customer: string; contact: Contact; included: SimLine[]; held: SimLine[];
   /** Lead time with the delivery plan applied. */
@@ -1172,8 +1172,18 @@ export function ApprovalScreen({
   prices: Record<number, number>; margin: number; pricedBy: string; belowMin: number;
   lateLines: SimLine[]; plan: DeliveryPlan | null; onPlan: (p: DeliveryPlan) => void;
   expedite: Record<number, { accepted: boolean; surchargePct: number }>; queried: SimLine[]; sourceLabel: (l: SimLine) => string;
+  /** Lines held at the margin floor because the discount would have taken them under it. */
+  floored: number;
+  boughtIn: (l: SimLine) => boolean; region: Region; paymentTerms: string; exWorks: string;
 }) {
   const total = included.reduce((a, l) => a + (prices[l.line] ?? 0), 0);
+  // The rule that sends a quote up for sign-off; nothing tripped means the specialist could send it.
+  const reasons = [
+    ...(lateLines.length ? [`${plural(lateLines.length, 'line')} late against the deadline`] : []),
+    ...(belowMin ? [`${plural(belowMin, 'line')} below the 20% margin floor`] : []),
+    ...(floored ? [`${plural(floored, 'line')} held at the floor, discount trimmed`] : []),
+    ...(total > 50_000 ? ['value over £50k'] : []),
+  ];
   const deadline = rfq.deadlineDays;
   const lateCount = lateLines.length;
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -1257,15 +1267,24 @@ export function ApprovalScreen({
                     return (
                       <li key={l.line} className="step-in flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-[12px]" style={T(150 + i * 200)}>
                         <span className="mono font-medium text-signal-700">{l.partNumber}</span>
-                        <span className="text-ink-500">{sourceLabel(l)} replies:</span>
                         {e.accepted
-                          ? <span className="flex items-center gap-1.5 text-strong-600"><CheckCircle2 className="h-3.5 w-3.5" />can deliver within {duration(deadline!)} for +{e.surchargePct}%</span>
-                          : <span className="flex items-center gap-1.5 text-action-600"><XCircle className="h-3.5 w-3.5" />cannot pull {duration(leadDays(l))} forward</span>}
-                        <span className="ml-auto text-[10.5px] text-ink-400">simulated</span>
+                          ? <span className="flex items-center gap-1.5 text-strong-600"><CheckCircle2 className="h-3.5 w-3.5" />
+                              {boughtIn(l)
+                                ? `${sourceLabel(l)} offers ${duration(deadline!)} for a ${e.surchargePct}% surcharge`
+                                : `${sourceLabel(l).split(',')[0]} can prioritise it to meet ${duration(deadline!)}, at added cost`}
+                            </span>
+                          : <span className="flex items-center gap-1.5 text-action-600"><XCircle className="h-3.5 w-3.5" />
+                              {boughtIn(l)
+                                ? `${sourceLabel(l)} cannot improve on ${duration(leadDays(l))}`
+                                : `${sourceLabel(l).split(',')[0]} cannot bring ${duration(leadDays(l))} forward`}
+                            </span>}
                       </li>
                     );
                   })}
                 </ul>
+              )}
+              {plan === 'expedite' && (
+                <p className="mt-1.5 text-[10.5px] text-ink-400">Replies are shown as they would come back, usually within a day. Simulated here.</p>
               )}
               {plan === 'phased' && (
                 <p className="mt-3 text-[11.5px] text-ink-500">
@@ -1283,7 +1302,8 @@ export function ApprovalScreen({
           <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-signal-600 pb-4">
             <span className="flex flex-col gap-1">
               <FieldLogo height={46} />
-              <span className="text-[9.5px] leading-tight text-ink-400">18-20 Nuffield Road, Poole, Dorset BH17 0RB · salesuk@fieldinternational.com</span>
+              <span className="text-[9.5px] leading-tight text-ink-400">Field International Ltd · 18-20 Nuffield Road, Poole, Dorset BH17 0RB</span>
+              <span className="text-[9.5px] leading-tight text-ink-400">Your contact: {DESKS[region].name} · {DESKS[region].email}</span>
             </span>
             <span className="text-right">
               <span className="block text-[18px] font-light tracking-[0.12em] text-ink-900">QUOTATION</span>
@@ -1326,6 +1346,7 @@ export function ApprovalScreen({
             <span className={lateCount && !plan ? 'font-medium text-action-600' : 'text-ink-500'}>{deliveryLine}</span>
             <span className="font-semibold text-ink-950">Total {gbpExact(total)} <span className="text-[10px] font-bold tracking-[0.08em] text-[#5b3fc4]">SYNTHETIC</span></span>
           </div>
+          <p className="mt-2 text-[10.5px] text-ink-500">Valid 30 days · Payment {paymentTerms} · Ex works {exWorks} · Prices in GBP, excluding VAT</p>
           <p className="mt-4 text-[10.5px] leading-relaxed text-ink-400">
             {queried.length > 0 && `${plural(queried.length, 'line')} held while the customer answers Engineering’s question. `}
             {held.length - queried.length > 0 && `${plural(held.length - queried.length, 'line')} removed at review. `}
@@ -1343,6 +1364,14 @@ export function ApprovalScreen({
                 <span className="block text-[11px] text-ink-400">{decision === 'approved' ? 'Approved' : 'Your approval is required'}</span>
               </span>
             </div>
+            <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-400">Why this needs sign-off</p>
+            {reasons.length ? (
+              <ul className="mt-1 space-y-1 text-[12px] text-ink-700">
+                {reasons.map((r) => <li key={r} className="flex items-start gap-1.5"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-caution-500" />{r}</li>)}
+              </ul>
+            ) : (
+              <p className="mt-1 text-[12px] text-ink-500">Nothing tripped the sign-off rules. {pricedBy} could send this without approval; it stops here for the demo.</p>
+            )}
             <ul className="mt-4 space-y-2.5">
               {checks.map((c) => (
                 <li key={c.label} className="flex items-start gap-2.5">
@@ -1363,7 +1392,7 @@ export function ApprovalScreen({
                 title={lateCount > 0 && !plan ? 'Choose how the late lines are handled first' : undefined}
                 className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-strong-600 text-[12.5px] font-medium text-white transition-colors hover:bg-strong-500 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <CheckCircle2 className="h-4 w-4" /> {decision === 'approved' ? 'Approved and sent' : 'Approve and send'}
+                <CheckCircle2 className="h-4 w-4" /> {decision === 'approved' ? 'Approved · sent (mock-up)' : 'Approve and send to the customer'}
               </button>
               <button
                 onClick={() => onDecide('returned')}

@@ -138,6 +138,12 @@ export function Journey({
   };
   // SIMULATED replies to the bought-in requests, stable per part.
   const replies = Object.fromEntries(boughtIn.map((l) => [l.line, simulatedLeadDays(l.partNumber, l.leadTimeDays)]));
+  /** The site most of the quote ships from, for the quote's delivery terms. */
+  const exWorks = (() => {
+    const counts = new Map<string, number>();
+    for (const l of included) { const site = siteOf(l); if (site) counts.set(SITES[site].name, (counts.get(SITES[site].name) ?? 0) + 1); }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'Poole';
+  })();
   /** Door-to-door days for a line under the supply plan. */
   const leadDays = (l: SimLine): number => {
     const s = sourceOf(l);
@@ -466,8 +472,10 @@ export function Journey({
           reviewed={reviewLines.length} supplierAsked={supplierLines.length} approver={PERSONAS.approval!.name}
           prices={finalPrices} margin={quoteMargin} pricedBy={PERSONAS.pricing!.name}
           belowMin={linePrices.filter((p) => marginOf(finalPrices[p.line]!, p.landed) < MIN_MARGIN).length}
+          floored={linePrices.filter((p) => p.floored).length}
           lateLines={lateLines} plan={sim.plan} onPlan={(plan) => patch({ plan, risk: null })} expedite={expedite}
           queried={held.filter((l) => sim.review[l.line] === 'query')} sourceLabel={sourceLabel}
+          boughtIn={(l) => sourceOf(l).kind === 'bought-in'} region={region} paymentTerms={account?.paymentTerms ?? '30 days'} exWorks={exWorks}
           onDecide={(d) => {
             patch({ approval: d });
             if (d === 'returned') go(stepIndex('review'));
