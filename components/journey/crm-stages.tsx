@@ -12,6 +12,7 @@ import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm
 import { MIN_MARGIN, gbpExact, marginOf, type LinePrice } from '@/lib/simulation/pricing.ts';
 import { PageHeader } from '@/components/journey/frames.tsx';
 import { FieldLogo, PHOTOS } from '@/components/journey/brand.tsx';
+import { LAND_110M } from '@/components/journey/world-land.ts';
 import {
   Avatar, Badge, Button, Card, Fields, Stat, StagePath, Tabs, Td, Th, Thumb, type Tone,
 } from '@/components/journey/ui.tsx';
@@ -790,8 +791,7 @@ function SupplyMap({ region, planned }: { region: Region; planned: Array<{ site:
         <linearGradient id="mapfade" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#02193a" /><stop offset="1" stopColor="#02356f" /></linearGradient>
       </defs>
       <rect width={W} height={H} rx="12" fill="url(#mapfade)" />
-      {Array.from({ length: 11 }, (_, i) => -150 + i * 30).map((lon) => <line key={lon} x1={x(lon)} x2={x(lon)} y1={0} y2={H} stroke="white" strokeOpacity="0.07" />)}
-      {[60, 40, 20, 0, -20, -40].map((lat) => <line key={lat} x1={0} x2={W} y1={y(lat)} y2={y(lat)} stroke="white" strokeOpacity={lat === 0 ? 0.14 : 0.07} />)}
+      <path d={LAND_110M} fill="#ffffff" fillOpacity="0.13" stroke="#ffffff" strokeOpacity="0.28" strokeWidth="0.7" strokeLinejoin="round" />
       {(Object.keys(GEO) as Array<keyof typeof GEO>).map((id) => {
         const g = GEO[id];
         const p = planned.find((q) => q.site === id);
@@ -809,7 +809,7 @@ function SupplyMap({ region, planned }: { region: Region; planned: Array<{ site:
       <g transform={`translate(${cx},${cy})`}>
         <circle r="16" fill="#A21212" fillOpacity="0.3"><animate attributeName="r" values="12;20;12" dur="2.4s" repeatCount="indefinite" /></circle>
         <circle r="6" fill="#A21212" stroke="white" strokeWidth="2" />
-        <text y={-18} textAnchor="middle" fontSize="13" fontWeight={600} fill="white">{customer.label}</text>
+        <text y={30} textAnchor="middle" fontSize="13" fontWeight={600} fill="white">{customer.label}</text>
       </g>
     </svg>
   );
