@@ -121,11 +121,13 @@ export function generateDataset(): DemoDataset {
     const daysAgo = r.int(20, 900);
     const lineCount = r.int(3, 14);
     const status = r.pick(['won', 'lost', 'quoted', 'open'] as const);
+    // An enquiry still open after months would be a failing, not a record: open ones are recent.
+    const age = status === 'open' ? (daysAgo % 19) + 3 : daysAgo;
     const ref = `RFQ-${rfqSeq}`;
 
     const rfq: Rfq = {
       id: ref, reference: ref, customerId: c.id, ownerId: owner.id,
-      receivedAt: r.dateAgo(daysAgo), aircraft,
+      receivedAt: r.dateAgo(age), aircraft,
       engine: r.chance(0.35) ? r.pick(ENGINES_FOR[aircraft] ?? ['CFM56']) : null,
       application, programme: r.pick(PROGRAMMES),
       requiredDeliveryWeeks: r.chance(0.7) ? r.int(6, 20) : null,

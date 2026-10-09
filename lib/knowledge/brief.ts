@@ -96,11 +96,14 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
   }
 
   // ---- Requirement -------------------------------------------------------
-  const openRfq = customerId
+  let openRfq = customerId
     ? (demoDb().prepare(
         `SELECT * FROM rfqs WHERE customer_id = ? AND status = 'open'
          ORDER BY received_at DESC LIMIT 1`).get(customerId) as any)
     : null;
+  // An open enquiry on file only describes the requirement if it is about the aircraft being asked about.
+  const askedAircraft = question.match(/\b(?:boeing|airbus|b|a)?\s?-?(\d{3})\b/i)?.[1] ?? null;
+  if (openRfq && askedAircraft && !String(openRfq.aircraft).includes(askedAircraft)) openRfq = null;
 
   let requirement: string | null = null;
   if (openRfq) {
@@ -217,6 +220,23 @@ export function buildEnquiryBrief(question: string): EnquiryBrief {
       citations: [toCitation(tech)],
     });
     openQuestions.push('Has Engineering confirmed applicability for the specific aircraft variant?');
+  }
+
+  // ---- Commercial notes, quoted from THIS customer's account history ------
+  if (customerId) {
+    const hist = demoDb().prepare(
+      `SELECT * FROM documents WHERE document_type = 'account-history' AND customer_id = ? LIMIT 1`).get(customerId) as any;
+    const notes: string[] = hist?.body?.split('COMMERCIAL NOTES')[1]?.split('\n').map((l: string) => l.trim()).filter(Boolean) ?? [];
+    if (hist && notes.length) {
+      const chunk = retrieval.chunks.find((c) => c.documentId === hist.document_id);
+      fields.push({
+        label: 'Commercial notes', value: notes.join(' '),
+        citations: [chunk ? toCitation(chunk) : {
+          documentId: hist.document_id, title: hist.title, path: hist.path, documentType: hist.document_type,
+          updatedAt: hist.updated_at, excerpt: notes.join(' ').slice(0, 260), staleMonths: hist.stale_months,
+        }],
+      });
+    }
   }
 
   // ---- Potential issue, derived from THIS customer's history -------------

@@ -194,7 +194,7 @@ export function InboxScreen({
 
 /* -------------------------------------------------------------- 2 account */
 
-const BRIEF = ['Previous interactions', 'Previous quote', 'Technical position', 'Potential issue'];
+const BRIEF = ['Commercial notes', 'Potential issue', 'Previous interactions', 'Previous quote', 'Technical position'];
 const ACTIVITY: Record<string, LucideIcon> = { email: Mail, 'meeting-notes': Users, quote: FileText, 'account-history': History };
 
 export function AccountScreen({
@@ -209,7 +209,12 @@ export function AccountScreen({
     : open.length ? { tone: 'amber', text: plural(open.length, 'open case') }
     : { tone: 'green', text: 'No open cases' };
   const fields = brief ? BRIEF.map((l) => brief.fields.find((f: any) => f.label === l)).filter(Boolean) : [];
+  const docsRead = brief ? (brief.retrieval?.documents ?? []).filter((d: any) => d.customer_id === account.id).length : 0;
   const maxYear = Math.max(1, ...account.history.map((h) => h.enquiries));
+  const newContact = !account.contacts.some((p) => p.email.toLowerCase() === contact.email.toLowerCase());
+  // A long-standing account whose records start later reads as a gap unless it says so.
+  const firstYear = account.history[0]?.year ?? null;
+  const recordsFrom = firstYear && Number(firstYear) > Number(account.since.slice(0, 4)) + 1 ? firstYear : null;
 
   return (
     <div>
@@ -220,7 +225,7 @@ export function AccountScreen({
         badges={<><Badge>{account.type}</Badge><Badge>{account.region}</Badge><Badge tone={health.tone} dot>{health.text}</Badge></>}
         meta={[
           <><MapPin className="h-3.5 w-3.5" />{account.country}</>,
-          <><Calendar className="h-3.5 w-3.5" />Customer since {account.since.slice(0, 4)}</>,
+          <><Calendar className="h-3.5 w-3.5" />Customer since {account.since.slice(0, 4)}{recordsFrom ? ` · records from ${recordsFrom}` : ''}</>,
           <><CreditCard className="h-3.5 w-3.5" />{account.paymentTerms} terms</>,
           ...(account.owner ? [<><Avatar name={account.owner.name} size={18} />{account.owner.name}</>] : []),
         ]}
@@ -229,12 +234,12 @@ export function AccountScreen({
       <div className="mb-4">
         <Tabs active="Overview" tabs={[
           { label: 'Overview' }, { label: 'Enquiries', count: account.stats.enquiries + 1 },
-          { label: 'Cases', count: account.cases.length }, { label: 'Contacts', count: 2 }, { label: 'Documents' },
+          { label: 'Cases', count: account.cases.length }, { label: 'Contacts', count: account.contacts.length + (newContact ? 1 : 0) }, { label: 'Documents' },
         ]} />
       </div>
 
       <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-5">
-        <Stat label="Annual spend" value={gbp(account.annualSpendGbp)} sub="indicative" />
+        <Stat label="Est. tooling budget" value={gbp(account.annualSpendGbp)} sub="all suppliers, indicative" />
         <Stat label="Won to date" value={account.stats.wonGbp ? gbp(account.stats.wonGbp) : '–'} sub={plural(account.stats.won, 'order')} />
         <Stat label="Win rate" value={account.stats.winRatePct === null ? '–' : `${account.stats.winRatePct}%`} sub={`${account.stats.won} of ${account.stats.decided} decided`} />
         <Stat label="Open quotes" value={account.stats.pipelineGbp ? gbp(account.stats.pipelineGbp) : '–'} sub="awaiting the customer" />
@@ -323,7 +328,7 @@ export function AccountScreen({
               <h3 className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-900">
                 <Sparkles className="h-3.5 w-3.5 text-[#6d4fe0]" /> Before you reply
               </h3>
-              <span className="text-[10.5px] text-ink-400">{brief ? `${brief.retrieval?.documents?.length ?? 0} documents read` : 'reading…'}</span>
+              <span className="text-[10.5px] text-ink-400">{brief ? `${docsRead} documents on this account read` : 'reading…'}</span>
             </header>
             {!brief ? (
               <div className="space-y-2 p-4">
@@ -350,14 +355,29 @@ export function AccountScreen({
 
           <Card title="Contacts" icon={Users} pad={false}>
             <ul className="divide-y divide-ink-100">
-              <li className="flex items-center gap-2.5 px-4 py-2.5">
-                <Avatar name={personOf(contact.email)} size={26} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[12px] font-medium text-ink-900">{contact.email}</span>
-                  <span className="block text-[10.5px] text-ink-400">Added from this enquiry</span>
-                </span>
-                <Badge tone="blue">New</Badge>
-              </li>
+              {account.contacts.map((p) => {
+                const sender = p.email.toLowerCase() === contact.email.toLowerCase();
+                return (
+                  <li key={p.email} className="flex items-center gap-2.5 px-4 py-2.5">
+                    <Avatar name={p.name} size={26} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[12px] font-medium text-ink-900">{p.name}</span>
+                      <span className="block truncate text-[10.5px] text-ink-400">{p.role} · {p.email}</span>
+                    </span>
+                    {sender && <Badge tone="blue">Sent this enquiry</Badge>}
+                  </li>
+                );
+              })}
+              {newContact && (
+                <li className="flex items-center gap-2.5 px-4 py-2.5">
+                  <Avatar name={personOf(contact.email)} size={26} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[12px] font-medium text-ink-900">{contact.email}</span>
+                    <span className="block text-[10.5px] text-ink-400">Added from this enquiry</span>
+                  </span>
+                  <Badge tone="blue">New</Badge>
+                </li>
+              )}
               {account.owner && (
                 <li className="flex items-center gap-2.5 px-4 py-2.5">
                   <Avatar name={account.owner.name} size={26} />

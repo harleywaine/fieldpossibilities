@@ -50,6 +50,8 @@ export interface CrmAccount {
   /** Every year with an enquiry on record, oldest first. */
   history: Array<{ year: string; enquiries: number; wonGbp: number }>;
   cases: CrmCase[];
+  /** The people at the customer Field deals with. Synthetic. */
+  contacts: Array<{ name: string; role: string; email: string }>;
   activity: CrmActivity[];
 }
 
@@ -67,6 +69,21 @@ export interface CrmInboxItem {
  * the delivery the Singapore account nearly walked over, the supplier with
  * "occasional quality escapes", the price-sensitive newer account.
  */
+const slugOf = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+const at = (name: string) => `procurement@${slugOf(name)}.example`;
+
+/** Contacts on each account. The procurement address is the one that sends the enquiries on file. */
+const CONTACTS: Record<string, Array<{ name: string; role: string; email: string }>> = {
+  'CUST-001': [{ name: 'Wei Lin Tan', role: 'Procurement Manager', email: at('Singapore Aero MRO') }, { name: 'Daniel Koh', role: 'Tooling Engineer', email: 'daniel.koh@singapore-aero-mro.example' }],
+  'CUST-002': [{ name: 'Mette Sørensen', role: 'Purchasing Lead', email: at('Nordic Wings Technic') }],
+  'CUST-003': [{ name: 'Khalid Mansour', role: 'Procurement Manager', email: at('Gulf Technical Services') }, { name: 'Priya Nair', role: 'Base Maintenance Planner', email: 'priya.nair@gulf-technical-services.example' }],
+  'CUST-004': [{ name: 'Ciara Walsh', role: 'Fleet Engineering Buyer', email: at('Atlantic Cargo Air') }],
+  'CUST-005': [{ name: 'Tomás Herrera', role: 'Supply Chain Lead', email: at('Andes Regional Airlines') }],
+  'CUST-006': [{ name: 'Hannah Clarke', role: 'Procurement Officer', email: at('Pacific Line Maintenance') }],
+  'CUST-007': [{ name: 'Jonas Keller', role: 'Tooling Engineer', email: at('Rhein Aviation Technik') }, { name: 'Sabine Vogt', role: 'Purchasing', email: 'sabine.vogt@rhein-aviation-technik.example' }],
+  'CUST-008': [{ name: 'Marie Tremblay', role: 'Buyer', email: at('Cascade Aerospace Support') }],
+};
+
 const CASES: Record<string, CrmCase[]> = {
   'CUST-001': [
     { id: 'CS-2291', opened: '2026-08-20', kind: 'Query', status: 'Open', subject: 'Hold open equipment: which revision is current?', detail: 'Customer quotes a later revision than the one supplied under QT-09841. Engineering to confirm.' },
@@ -159,6 +176,7 @@ export function listAccounts(): CrmAccount[] {
         };
       }),
       cases: CASES[c.id] ?? [],
+      contacts: CONTACTS[c.id] ?? [],
       activity: docs
         .filter((d) => d.customer_id === c.id)
         .slice(0, 5)
