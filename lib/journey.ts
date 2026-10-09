@@ -183,6 +183,22 @@ export function simulatedExpedite(partNumber: string | null): { accepted: boolea
   return { accepted: u < 0.6, surchargePct: 6 + Math.round(u * 6) };
 }
 
+/**
+ * SIMULATED: once an order is placed, one line slips in production. Stable per
+ * order: the line whose part number hashes highest, by 5 to 14 days.
+ */
+export function simulatedSlip(partNumbers: Array<string | null>): { index: number; days: number } | null {
+  if (!partNumbers.length) return null;
+  let best = -1; let bestH = -1;
+  partNumbers.forEach((p, i) => {
+    let h = 2166136261;
+    for (const ch of `${p ?? 'x'}:slip`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+    const u = Math.abs(h);
+    if (u > bestH) { bestH = u; best = i; }
+  });
+  return { index: best, days: 5 + (bestH % 10) };
+}
+
 /* ---------------------------------------------------------- channel and desks */
 
 /** How the enquiry reaches Field: the website's part-finder, or an email to a regional desk. */

@@ -1411,18 +1411,18 @@ export function ApprovalScreen({
 /* ---------------------------------------------------------------- 8 order */
 
 /** What Operations can still do once an expedite has been refused. */
-export const LATE_OPTIONS = ['Ship the rest now and the late lines when ready', 'Agree a new date with the customer'];
+export const LATE_OPTIONS = ['Ship the rest on the agreed date; the late line follows', 'Agree a new date with the customer'];
 const LATE_DETAIL: Record<string, string> = {
-  'Ship the rest now and the late lines when ready': 'A part shipment by the deadline, with an advice note; the late lines follow.',
-  'Agree a new date with the customer': 'The account owner calls the customer with the realistic date before it slips.',
+  'Ship the rest on the agreed date; the late line follows': 'A part shipment on the date agreed, with an advice note; the slipped line follows when ready.',
+  'Agree a new date with the customer': 'The account owner calls the customer with the new date before it becomes a complaint.',
 };
 
 export function OrderScreen({
-  rfq, customer, included, leadDays, catalogueDays, plan, expedite, stillLate, decision, onDecide, sourceLabel,
+  rfq, customer, included, leadDays, slipDays, catalogueDays, plan, expedite, stillLate, decision, onDecide, sourceLabel,
 }: {
   rfq: SimRfq; customer: string; included: SimLine[];
-  /** Lead time with the delivery plan applied, and as the catalogue published it. */
-  leadDays: (l: SimLine) => number; catalogueDays: (l: SimLine) => number;
+  /** Days to ship now (agreed date plus any slip), the slip alone, and the lead time as the catalogue published it. */
+  leadDays: (l: SimLine) => number; slipDays: (l: SimLine) => number; catalogueDays: (l: SimLine) => number;
   plan: DeliveryPlan | null; expedite: Record<number, { accepted: boolean; surchargePct: number }>;
   stillLate: SimLine[]; decision: string | null; onDecide: (d: string) => void; sourceLabel: (l: SimLine) => string;
 }) {
@@ -1433,7 +1433,9 @@ export function OrderScreen({
   const pct = (d: number) => `${(d / span) * 100}%`;
   const ticks = Array.from({ length: totalWeeks / 2 + 1 }, (_, i) => i * 2);
   const late = stillLate;
-  const afterDeadline = (l: SimLine) => deadline !== null && leadDays(l) > deadline;
+  /** The date agreed on the quote, before any slip. */
+  const agreed = (l: SimLine) => leadDays(l) - slipDays(l);
+  const afterDeadline = (l: SimLine) => deadline !== null && agreed(l) > deadline;
   const so = rfq.reference.replace('RFQ', 'SO');
   const planLabel = PLANS.find((p) => p.id === plan)?.title ?? 'No late lines';
   // A phased order ships in two groups; everything else is one schedule.
@@ -1445,7 +1447,7 @@ export function OrderScreen({
     : [{ label: null, lines: included }];
   // The marker on the chart: the customer's deadline, or the later date they agreed to.
   const marker = plan === 'realistic' && deadline !== null && included.some(afterDeadline)
-    ? { at: Math.max(...included.map(leadDays)), label: 'Agreed date' }
+    ? { at: Math.max(...included.map(agreed)), label: 'Agreed date' }
     : deadline !== null ? { at: deadline, label: 'Deadline' } : null;
 
   return (
@@ -1488,15 +1490,17 @@ export function OrderScreen({
                     )}
                     {g.lines.map((l, i) => {
                       const d = leadDays(l);
-                      // Red only when the line will actually miss what the customer accepted.
-                      const over = late.some((x) => x.line === l.line) || (plan !== 'realistic' && plan !== 'phased' && afterDeadline(l));
+                      // Red only when the line will miss what the customer accepted: a slip after the order.
+                      const over = late.some((x) => x.line === l.line);
                       const pulled = plan === 'expedite' && expedite[l.line]?.accepted;
                       const inside = d / span > 0.22;
                       return (
                         <li key={l.line} className="flex h-11 items-center border-b border-ink-50 last:border-0">
                           <span className="w-[92px] shrink-0 pr-2 sm:w-[128px] sm:pr-3">
                             <span className="mono block text-[11.5px] font-medium text-signal-700">{l.partNumber}</span>
-                            <span className="block truncate text-[10.5px] text-ink-400">{pulled ? `expedited, was ${duration(catalogueDays(l), true)}` : sourceLabel(l)}</span>
+                            <span className={`block truncate text-[10.5px] ${over ? 'text-action-600' : 'text-ink-400'}`}>
+                              {over ? `slipped ${slipDays(l)} days, agreed ${duration(agreed(l), true)}` : pulled ? `expedited, was ${duration(catalogueDays(l), true)}` : sourceLabel(l)}
+                            </span>
                           </span>
                           <span className="relative h-5 flex-1">
                             <span
@@ -1527,7 +1531,7 @@ export function OrderScreen({
               <div className="p-4">
                 <p className="text-[12px] leading-snug text-ink-600">
                   <span className="mono font-medium text-ink-900">{late.map((l) => l.partNumber).join(', ')}</span>{' '}
-                  could not be expedited and {late.length === 1 ? 'is' : 'are'} still due after the customer’s deadline. Choose how to handle it:
+                  {late.length === 1 ? 'has' : 'have'} slipped {slipDays(late[0]!)} days in production and will miss the date agreed on the quote. Choose how to handle it:
                 </p>
                 <div className="mt-3 space-y-2">
                   {LATE_OPTIONS.map((o) => {
@@ -1554,13 +1558,7 @@ export function OrderScreen({
           ) : (
             <Card title="Tracking" icon={CheckCircle2}>
               <p className="text-[12px] leading-snug text-ink-600">
-                {plan === 'phased'
-                  ? 'Two shipments, both agreed with the customer on the quote. The system flags either if it slips.'
-                  : plan === 'realistic'
-                    ? 'The customer accepted the quoted dates, so nothing is late against what was agreed. The system flags any line that slips past it.'
-                    : plan === 'expedite'
-                      ? 'Every late line was pulled forward to the deadline. The system flags any that slip.'
-                      : 'Every line is due inside the deadline. The system flags any that slip.'}
+                Every line is on the date agreed on the quote. The system flags any that slip in production.
               </p>
             </Card>
           )}

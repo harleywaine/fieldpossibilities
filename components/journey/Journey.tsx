@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  STEPS, PERSONAS, SITES, PLAYABLE, stepIndex, simulatedLeadDays, simulatedExpedite, matchAccount, sourceFor,
+  STEPS, PERSONAS, SITES, PLAYABLE, stepIndex, simulatedLeadDays, simulatedExpedite, simulatedSlip, matchAccount, sourceFor,
   type StepId, type StepMetric, type DeliveryPlan, type Region, type SiteId, type Channel,
 } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
@@ -163,9 +163,12 @@ export function Journey({
     return d;
   };
   const deliveryDays = included.length ? Math.max(...included.map(plannedDays)) : null;
-  // Phasing and honest dates settle the late lines at quote time; only a refused
-  // expedite leaves Operations something to decide once the order is in.
-  const stillLate = sim.plan === 'expedite' ? lateLines.filter((l) => plannedDays(l) > deadline!) : [];
+  // The quote settled every date with the customer. What Operations decides later is a
+  // SIMULATED slip: once the order is placed, one line runs late in production.
+  const slip = simulatedSlip(included.map((l) => l.partNumber));
+  const slipDays = (l: SimLine) => (slip && included[slip.index]?.line === l.line ? slip.days : 0);
+  const shippedDays = (l: SimLine) => plannedDays(l) + slipDays(l);
+  const stillLate = included.filter((l) => slipDays(l) > 0);
   const planDone = lateCount === 0 || Boolean(sim.plan);
   const riskDone = stillLate.length === 0 || Boolean(sim.risk);
 
@@ -485,26 +488,26 @@ export function Journey({
     },
     manufacture: {
       title: sim.plan === 'phased'
-        ? 'The customer accepts a phased delivery. The order goes into production.'
+        ? 'The customer accepts the phased delivery. An order is raised.'
         : sim.plan === 'realistic'
-          ? 'The customer accepts the dates quoted. The order goes into production.'
-          : 'The customer accepts. The order goes into production.',
+          ? 'The customer accepts the dates quoted. An order is raised.'
+          : 'The customer accepts. An order is raised.',
       sub: stillLate.length
-        ? 'The expedite didn’t come off on every line. One thing needs a decision before it ships.'
-        : sim.plan === 'expedite' ? 'The expedited lines are tracked against the deadline until they ship.' : 'The system tracks every line until it ships.',
+        ? 'Some weeks later, one line has slipped in production. The system flags it; Operations decides before the customer finds out.'
+        : 'Some weeks later. The system tracks every line against the dates agreed on the quote until it ships.',
       persona: PERSONAS.manufacture,
       halt: stillLate.length ? {
         done: Boolean(sim.risk),
         text: sim.risk
           ? `Decided: ${sim.risk.toLowerCase()}.`
-          : `${stillLate.length} ${stillLate.length === 1 ? 'line' : 'lines'} couldn’t be expedited and will arrive after the deadline. Choose how to handle it.`,
+          : `${stillLate.map((l) => l.partNumber).join(', ')} has slipped ${slip?.days ?? 0} days in production and will miss the date agreed on the quote. Choose how to handle it.`,
       } : undefined,
       frame: rfq && crm('Orders', you('manufacture'),
         <OrderScreen
-          rfq={rfq} customer={customerName} included={included} leadDays={plannedDays} catalogueDays={leadDays}
+          rfq={rfq} customer={customerName} included={included} leadDays={shippedDays} slipDays={slipDays} catalogueDays={leadDays}
           plan={sim.plan} expedite={expedite} stillLate={stillLate} decision={sim.risk} onDecide={(d) => patch({ risk: d })} sourceLabel={sourceLabel}
         />),
-      blocked: riskDone ? undefined : `Decide how to handle the late ${stillLate.length === 1 ? 'line' : 'lines'} to continue`,
+      blocked: riskDone ? undefined : 'Decide how to handle the slipped line to continue',
     },
   };
 
