@@ -240,22 +240,10 @@ export function FieldBand({ children }: { children: React.ReactNode }) {
 /* ------------------------------------------------------------------- stage */
 
 export function Stage({ children }: { children: React.ReactNode }) {
+  // The mock screens carry their own edge and shadow, so they take the full container width.
   return (
-    <div
-      className="enter relative mt-6 sm:mt-8 sm:rounded-[28px] sm:bg-[radial-gradient(120%_80%_at_50%_0%,#ffffff_0%,#eef2f8_55%,#e6ecf5_100%)] sm:p-5 sm:ring-1 sm:ring-ink-100 lg:p-7"
-      style={{ animationDelay: '220ms' }}
-    >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden rounded-[28px] opacity-60 sm:block"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(4,35,72,0.10) 1px, transparent 1px)',
-          backgroundSize: '18px 18px',
-          maskImage: 'radial-gradient(90% 70% at 50% 100%, black, transparent)',
-          WebkitMaskImage: 'radial-gradient(90% 70% at 50% 100%, black, transparent)',
-        }}
-      />
-      <div className="relative">{children}</div>
+    <div className="enter relative mt-6 sm:mt-8" style={{ animationDelay: '220ms' }}>
+      {children}
     </div>
   );
 }
