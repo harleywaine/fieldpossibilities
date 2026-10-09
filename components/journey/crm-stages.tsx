@@ -1276,7 +1276,7 @@ export function ApprovalScreen({
                           : <span className="flex items-center gap-1.5 text-action-600"><XCircle className="h-3.5 w-3.5" />
                               {boughtIn(l)
                                 ? `${sourceLabel(l)} cannot improve on ${duration(leadDays(l))}`
-                                : `${sourceLabel(l).split(',')[0]} cannot bring ${duration(leadDays(l))} forward`}
+                                : `${sourceLabel(l).split(',')[0]} cannot improve on ${duration(leadDays(l))}`}
                             </span>}
                       </li>
                     );
