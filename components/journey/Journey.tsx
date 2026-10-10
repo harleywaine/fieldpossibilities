@@ -316,6 +316,8 @@ export function Journey({
     hint?: string;
     cta?: string;
     hideContinue?: boolean;
+    /** The page body carries its own way forward, so the control shows no Continue. */
+    ownCta?: boolean;
   };
 
   const screens: Record<Exclude<StepId, 'start' | 'summary'>, Screen> = {
@@ -347,7 +349,7 @@ export function Journey({
         : 'Each one comes from Field’s real catalogue, with the reason it was picked. Add the ones you want and request a quote.',
       halt: { done: Boolean(contact), text: contact ? 'You sent the request to Field.' : 'Add the parts you want quoted, then request the quote.' },
       body: found && (contact ? <Handover company={contact.company} onNext={() => go(stepIndex('inbox'))} /> : <SiteSearchProof />),
-      cta: contact ? 'Open Field’s inbox' : undefined,
+      ownCta: Boolean(contact),
       frame: found && (
         <BrowserFrame path={contact ? 'find-a-part/request-sent' : 'find-a-part/results'} basket={basket}>
           <PartsScreen
@@ -557,7 +559,7 @@ export function Journey({
       {!booting && side === 'field' && c && <FieldBand>{narration}</FieldBand>}
       {!booting && side === 'customer' && c && <CustomerBand>{narration}</CustomerBand>}
 
-      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-28 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : side === 'field' ? '-mt-16' : side === 'customer' ? 'pt-2 sm:pt-4' : 'pt-8 sm:pt-12'}`}>
+      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-16 sm:px-8 sm:pb-20 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : side === 'field' ? '-mt-16' : side === 'customer' ? 'pt-2 sm:pt-4' : 'pt-8 sm:pt-12'}`}>
 
         {!booting && step.id === 'summary' && (
           <Results
@@ -576,20 +578,19 @@ export function Journey({
             {c.pre}
             {c.frame && <Stage>{c.frame}</Stage>}
             {c.body}
+            {!isLast && (
+              <Dock
+                canBack={index > 0}
+                onBack={() => go(index - 1)}
+                onNext={c.hideContinue || c.ownCta ? undefined : () => go(index + 1)}
+                cta={c.cta ?? 'Continue'}
+                blocked={c.blocked}
+                hint={c.hideContinue ? c.hint : undefined}
+              />
+            )}
           </>
         )}
       </main>
-
-      {c && !isLast && (
-        <Dock
-          canBack={index > 0}
-          onBack={() => go(index - 1)}
-          onNext={c.hideContinue ? undefined : () => go(index + 1)}
-          cta={c.cta ?? 'Continue'}
-          blocked={c.blocked}
-          hint={c.hideContinue ? c.hint : undefined}
-        />
-      )}
     </div>
   );
 }

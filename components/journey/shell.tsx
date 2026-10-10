@@ -252,9 +252,9 @@ export function Stage({ children }: { children: React.ReactNode }) {
 /* -------------------------------------------------------------------- dock */
 
 /**
- * The way through: Back and Continue in the bottom-right corner, with the
- * reason whenever Continue is locked. Nothing else lives here, so it covers a
- * corner of the page and no more.
+ * The way through, at the end of every page: Back, Continue, and the reason
+ * whenever Continue is locked. It sits in the flow of the page, so it covers
+ * nothing.
  */
 export function Dock({
   canBack, onBack, onNext, cta, blocked, hint,
@@ -264,31 +264,37 @@ export function Dock({
 }) {
   const reason = blocked ?? hint;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-6xl justify-end px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8 sm:pb-5">
-      <div className="pointer-events-auto flex max-w-full items-center gap-2 rounded-2xl bg-signal-900/[0.97] p-1.5 text-white shadow-[0_28px_60px_-24px_rgba(2,25,58,0.75)] ring-1 ring-white/10 backdrop-blur-xl">
+    <div className="mt-8 border-t border-ink-900/10 pt-5 sm:mt-10">
+      {reason && (
+        <p className="mb-3 flex items-start gap-1.5 text-[12.5px] leading-snug text-caution-600 sm:hidden">
+          <Lock className="mt-0.5 h-3 w-3 shrink-0" />{reason}
+        </p>
+      )}
+      <div className="flex items-center justify-between gap-3">
         <button
           onClick={onBack}
           disabled={!canBack}
-          aria-label="Back"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-25"
+          className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-[13px] font-medium text-ink-600 ring-1 ring-inset ring-ink-900/10 transition-colors hover:bg-white hover:text-ink-900 disabled:opacity-30"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" /> Back
         </button>
-        {reason && (
-          <span className="flex min-w-0 items-start gap-1.5 px-1 text-[11.5px] leading-snug text-[#fcd38d] sm:max-w-[320px]">
-            <Lock className="mt-0.5 h-3 w-3 shrink-0" /><span className="line-clamp-2">{reason}</span>
-          </span>
-        )}
-        {onNext && (
-          <button
-            onClick={onNext}
-            disabled={Boolean(blocked)}
-            className="group inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-white pl-4 pr-3.5 text-[13px] font-semibold text-[#0a1a2f] shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:bg-signal-50 disabled:bg-white/10 disabled:text-white/35"
-          >
-            {cta}
-            <ArrowRight className="h-4 w-4 transition-transform group-enabled:group-hover:translate-x-0.5" />
-          </button>
-        )}
+        <div className="flex min-w-0 items-center gap-3">
+          {reason && (
+            <span className="hidden items-center gap-1.5 text-[12.5px] text-caution-600 sm:flex">
+              <Lock className="h-3.5 w-3.5 shrink-0" /> {reason}
+            </span>
+          )}
+          {onNext && (
+            <button
+              onClick={onNext}
+              disabled={Boolean(blocked)}
+              className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-xl bg-[#0a1a2f] pl-5 pr-4 text-[13.5px] font-semibold text-white transition-colors hover:bg-signal-800 disabled:bg-ink-900/10 disabled:text-ink-400"
+            >
+              {cta}
+              <ArrowRight className="h-4 w-4 transition-transform group-enabled:group-hover:translate-x-0.5" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
