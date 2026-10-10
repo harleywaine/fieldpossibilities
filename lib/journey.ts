@@ -5,8 +5,8 @@
  * The first screens are the customer's side (a mock of Field's website); the
  * rest are Field's side (a mock CRM). Steps marked `human` stop and wait for the
  * viewer's decision — the machine prepares and the person decides. Where a step
- * has a people-time cost it points at a row in the metrics table, so the ledger
- * is computed, not written.
+ * is work a person does today it names that task, so the summary can say what
+ * changes at it.
  */
 
 export type StepId =
@@ -20,8 +20,9 @@ export interface JourneyStep {
   rail: string;
   side?: Side;
   human?: boolean;
-  metric?: string;
-  ledgerLabel?: string;
+  /** The task a person does at this step today: a key into STEP_CHANGES. */
+  change?: string;
+  task?: string;
 }
 
 export const STEPS: JourneyStep[] = [
@@ -29,12 +30,12 @@ export const STEPS: JourneyStep[] = [
   { id: 'uses', rail: 'Where AI helps' },
   { id: 'request', rail: 'Your request', side: 'customer' },
   { id: 'parts', rail: 'Parts and quote', side: 'customer' },
-  { id: 'inbox', rail: 'Inbox', side: 'field', metric: 'Customer enquiry handling', ledgerLabel: 'Logging the enquiry' },
-  { id: 'account', rail: 'Account', side: 'field', metric: 'Internal knowledge retrieval', ledgerLabel: 'Researching the account' },
-  { id: 'check', rail: 'Checks', side: 'field', metric: 'RFQ preparation', ledgerLabel: 'Checking every line' },
-  { id: 'review', rail: 'Engineering', side: 'field', human: true, metric: 'Technical applicability check', ledgerLabel: 'Technical review' },
-  { id: 'supplier', rail: 'Supply', side: 'field', human: true, metric: 'Supplier follow-up', ledgerLabel: 'Planning the supply' },
-  { id: 'pricing', rail: 'Pricing', side: 'field', human: true, metric: 'Quote pricing', ledgerLabel: 'Pricing the quote' },
+  { id: 'inbox', rail: 'Inbox', side: 'field', change: 'Customer enquiry handling', task: 'Logging the enquiry' },
+  { id: 'account', rail: 'Account', side: 'field', change: 'Internal knowledge retrieval', task: 'Researching the account' },
+  { id: 'check', rail: 'Checks', side: 'field', change: 'RFQ preparation', task: 'Checking every line' },
+  { id: 'review', rail: 'Engineering', side: 'field', human: true, change: 'Technical applicability check', task: 'Technical review' },
+  { id: 'supplier', rail: 'Supply', side: 'field', human: true, change: 'Supplier follow-up', task: 'Planning the supply' },
+  { id: 'pricing', rail: 'Pricing', side: 'field', human: true, change: 'Quote pricing', task: 'Pricing the quote' },
   { id: 'approval', rail: 'Quote sign-off', side: 'field', human: true },
   { id: 'manufacture', rail: 'Order', side: 'field', human: true },
   { id: 'summary', rail: 'Summary' },
@@ -50,8 +51,6 @@ export const PERSONAS: Partial<Record<StepId, { name: string; role: string }>> =
   approval: { name: 'Alison Reid', role: 'Commercial Director' },
   manufacture: { name: 'Michael Byrne', role: 'Operations Manager' },
 };
-
-export interface StepMetric { before: number; after: number; volume: number }
 
 /**
  * The ways AI is used in the journey, in the order the viewer meets them. Each
@@ -71,45 +70,35 @@ export const AI_USES: Array<{ step: StepId; title: string; does: string; data: '
 ];
 
 /**
- * What each time estimate covers, in words. The minutes themselves come from
- * the metrics table, so this text and the value model can't disagree.
+ * What a person does at each step today, and what they would do with the
+ * system, in words. No minutes: nothing has been timed at Field, and the
+ * summary says so.
  */
-export const ESTIMATE_NOTES: Record<string, { today: string; withAi: string }> = {
+export const STEP_CHANGES: Record<string, { today: string; withSystem: string }> = {
   'Customer enquiry handling': {
     today: 'Reading the email, finding the customer, entering the enquiry and passing it to the right person.',
-    withAi: 'The system does all of that; a person glances at the result.',
+    withSystem: 'The system does all of that; a person glances at the result.',
   },
   'Internal knowledge retrieval': {
     today: 'Searching old quotes, emails and notes for this customer’s history.',
-    withAi: 'The system reads them and writes a brief; a person reads the brief.',
+    withSystem: 'The system reads them and writes a brief; a person reads the brief.',
   },
   'RFQ preparation': {
     today: 'Looking up each part and checking it fits and can be delivered in time.',
-    withAi: 'The checks run automatically; a person deals only with the lines flagged.',
+    withSystem: 'The checks run automatically; a person deals only with the lines flagged.',
   },
   'Technical applicability check': {
     today: 'An engineer researches each uncertain part from scratch.',
-    withAi: 'The engineer gets the question and the record side by side. The judgement still takes time, so the saving is smaller.',
+    withSystem: 'The engineer gets the question and the record side by side. The judgement is still theirs.',
   },
   'Quote pricing': {
     today: 'Finding the supplier cost, adding freight, applying the margin and the customer’s terms, and checking what they paid last time.',
-    withAi: 'The price is built and checked for you; a person reviews it and sets the final figure.',
+    withSystem: 'The price is built and checked for you; a person reviews it and sets the final figure.',
   },
   'Supplier follow-up': {
     today: 'Checking stock, asking each factory for a date, writing to suppliers for bought-in lines and chasing replies.',
-    withAi: 'Stock and site lead times are proposed per line and the supplier requests drafted; a planner confirms the plan.',
+    withSystem: 'Stock and site lead times are proposed per line and the supplier requests drafted; a planner confirms the plan.',
   },
-};
-
-/** Used only if the synthetic dataset hasn't been generated. */
-export const FALLBACK_METRICS: Record<string, StepMetric> = {
-  'Customer enquiry handling': { before: 18, after: 6, volume: 4200 },
-  'Internal knowledge retrieval': { before: 22, after: 5, volume: 2600 },
-  'RFQ preparation': { before: 55, after: 12, volume: 1900 },
-  'Technical applicability check': { before: 35, after: 20, volume: 900 },
-  'Supplier follow-up': { before: 25, after: 9, volume: 1800 },
-  // Not in the value model's table: an assumption made for the pricing step alone.
-  'Quote pricing': { before: 30, after: 10, volume: 1900 },
 };
 
 export const EXAMPLE_REQUESTS = [
@@ -117,14 +106,6 @@ export const EXAMPLE_REQUESTS = [
   'Handling equipment for a 737-800 horizontal stabilizer, needed within 8 weeks.',
   'Landing gear jacking equipment for a 747 heavy check.',
 ];
-
-export function formatMinutes(total: number): string {
-  const m = Math.round(total);
-  if (m < 60) return `${m} min`;
-  const h = Math.floor(m / 60);
-  const r = m % 60;
-  return r ? `${h} h ${r} min` : `${h} h`;
-}
 
 export const weeks = (days: number) => Math.round((days / 7) * 10) / 10;
 

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
-  ArrowLeft, ArrowRight, Check, Clock, FileSearch, ListChecks, Lock, RotateCcw, UserRound,
-  Building2, Search, Sparkles, MessageSquareText, Inbox, Wrench, Truck, Factory, Info, X,
+  ArrowLeft, ArrowRight, Check, FileSearch, ListChecks, Lock, RotateCcw, UserRound,
+  Building2, Search, Sparkles, MessageSquareText, Inbox, Wrench, Truck, Factory,
 } from 'lucide-react';
-import { STEPS, AI_USES, ESTIMATE_NOTES, formatMinutes, type JourneyStep, type StepMetric } from '@/lib/journey.ts';
+import { STEPS, AI_USES, STEP_CHANGES, type JourneyStep } from '@/lib/journey.ts';
 import { Avatar } from '@/components/journey/ui.tsx';
 import { FieldLogo, FieldWordmark, PHOTOS } from '@/components/journey/brand.tsx';
 import { ModuleDialog, type ModuleId } from '@/components/journey/modules.tsx';
@@ -251,24 +251,21 @@ export function Stage({ children }: { children: React.ReactNode }) {
 
 /* -------------------------------------------------------------------- dock */
 
-export interface Ledger {
-  totalBefore: number; before: number; after: number;
-  latest: { s: JourneyStep; m: StepMetric } | null;
-}
-
+/**
+ * The way through: Back and Continue in the bottom-right corner, with the
+ * reason whenever Continue is locked. Nothing else lives here, so it covers a
+ * corner of the page and no more.
+ */
 export function Dock({
-  canBack, onBack, onNext, cta, blocked, hint, ledger, showLedger, estimates,
+  canBack, onBack, onNext, cta, blocked, hint,
 }: {
   canBack: boolean; onBack: () => void; onNext?: () => void; cta: string;
-  blocked?: string; hint?: string; ledger: Ledger; showLedger: boolean; estimates: EstimateRow[];
+  blocked?: string; hint?: string;
 }) {
-  const [explain, setExplain] = useState(false);
-  const w = (m: number) => `${Math.max(1.5, (m / ledger.totalBefore) * 100)}%`;
+  const reason = blocked ?? hint;
   return (
-    <>
-    {explain && <EstimatesDialog rows={estimates} onClose={() => setExplain(false)} />}
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto max-w-6xl px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8 sm:pb-5">
-      <div className="pointer-events-auto flex items-center gap-3 rounded-2xl bg-signal-900/[0.97] p-2 text-white shadow-[0_28px_60px_-24px_rgba(2,25,58,0.75)] ring-1 ring-white/10 backdrop-blur-xl sm:gap-5 sm:p-2.5">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto flex max-w-6xl justify-end px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8 sm:pb-5">
+      <div className="pointer-events-auto flex max-w-full items-center gap-2 rounded-2xl bg-signal-900/[0.97] p-1.5 text-white shadow-[0_28px_60px_-24px_rgba(2,25,58,0.75)] ring-1 ring-white/10 backdrop-blur-xl">
         <button
           onClick={onBack}
           disabled={!canBack}
@@ -277,76 +274,23 @@ export function Dock({
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-
-        {/* phones: the one thing worth knowing — why it's locked, or the time so far */}
-        <div className="min-w-0 flex-1 sm:hidden">
-          {blocked || hint ? (
-            <p className="flex items-start gap-1.5 text-[11.5px] leading-snug text-[#fcd38d]">
-              <Lock className="mt-0.5 h-3 w-3 shrink-0" /><span className="line-clamp-2">{blocked ?? hint}</span>
-            </p>
-          ) : showLedger ? (
-            <button onClick={() => setExplain(true)} className="text-left leading-tight">
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-white/40">People’s time <Info className="inline h-3 w-3" /></span>
-              <span className="mono block text-[12px] text-white/60">{formatMinutes(ledger.before)} → <span className="font-medium text-white">{formatMinutes(ledger.after)}</span></span>
-            </button>
-          ) : null}
-        </div>
-
-        <div className="hidden min-w-0 flex-1 sm:block">
-          {showLedger ? (
-            <div className="grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/40">Today</span>
-              <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
-                <span className="block h-full rounded-full bg-white/35 transition-[width] duration-700 ease-out" style={{ width: w(ledger.before) }} />
-              </span>
-              <span className="mono w-20 text-right text-[12px] text-white/60">{formatMinutes(ledger.before)}</span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-signal-300">With AI</span>
-              <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
-                <span className="block h-full rounded-full bg-gradient-to-r from-signal-400 to-[#7dd3fc] transition-[width] duration-700 ease-out" style={{ width: w(ledger.after) }} />
-              </span>
-              <span className="mono w-20 text-right text-[12px] font-medium text-white">{formatMinutes(ledger.after)}</span>
-            </div>
-          ) : (
-            <p className="flex items-center gap-2 text-[12px] text-white/50">
-              <Clock className="h-3.5 w-3.5" /> People’s time is counted from the moment the enquiry reaches Field.
-            </p>
-          )}
-        </div>
-
-        <button
-          onClick={() => setExplain(true)}
-          className="hidden shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11.5px] text-white/55 transition-colors hover:bg-white/10 hover:text-white sm:flex"
-        >
-          <Info className="h-3.5 w-3.5" /> How is this estimated?
-        </button>
-
-        {showLedger && ledger.latest && (
-          <p key={ledger.latest.s.id} className="step-in hidden max-w-[210px] shrink-0 border-l border-white/10 pl-4 text-[11px] leading-snug text-white/50 xl:block">
-            <span className="block text-white/80">{ledger.latest.s.ledgerLabel}</span>
-            {ledger.latest.m.before} min today → {ledger.latest.m.after} min with AI
-          </p>
+        {reason && (
+          <span className="flex min-w-0 items-start gap-1.5 px-1 text-[11.5px] leading-snug text-[#fcd38d] sm:max-w-[320px]">
+            <Lock className="mt-0.5 h-3 w-3 shrink-0" /><span className="line-clamp-2">{reason}</span>
+          </span>
         )}
-
-        <div className="ml-auto flex shrink-0 items-center gap-3 sm:ml-0">
-          {(blocked || hint) && (
-            <span className="hidden items-center gap-1.5 text-[12px] text-[#fcd38d] md:flex">
-              <Lock className="h-3.5 w-3.5" /> {blocked ?? hint}
-            </span>
-          )}
-          {onNext && (
-            <button
-              onClick={onNext}
-              disabled={Boolean(blocked)}
-              className="group inline-flex h-11 items-center gap-2 rounded-xl bg-white pl-4 pr-3.5 text-[13px] font-semibold sm:h-10 text-[#0a1a2f] shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:bg-signal-50 disabled:bg-white/10 disabled:text-white/35"
-            >
-              {cta}
-              <ArrowRight className="h-4 w-4 transition-transform group-enabled:group-hover:translate-x-0.5" />
-            </button>
-          )}
-        </div>
+        {onNext && (
+          <button
+            onClick={onNext}
+            disabled={Boolean(blocked)}
+            className="group inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-white pl-4 pr-3.5 text-[13px] font-semibold text-[#0a1a2f] shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] transition-all hover:bg-signal-50 disabled:bg-white/10 disabled:text-white/35"
+          >
+            {cta}
+            <ArrowRight className="h-4 w-4 transition-transform group-enabled:group-hover:translate-x-0.5" />
+          </button>
+        )}
       </div>
     </div>
-    </>
   );
 }
 
@@ -415,23 +359,18 @@ export function Cover({ onBegin, catalogue }: { onBegin: () => void; catalogue: 
 
 /* ----------------------------------------------------------------- results */
 
+/** A step a person works today, named so the summary can say what changes at it. */
+export interface StepChange { process: string; label: string; /** This step did not happen in the enquiry just followed. */ skipped?: boolean }
+
 export function Results({
   decisions, considered, docs, checks, rows, onRestart,
 }: {
   decisions: number;
   considered: number; docs: number; checks: number;
-  rows: EstimateRow[];
+  rows: StepChange[];
   onRestart: () => void;
 }) {
-  // This enquiry's time counts only the steps it went through; the year counts every step at its volume.
-  const counted = rows.filter((r) => !r.skipped);
-  const before = counted.reduce((a, r) => a + r.before, 0);
-  const after = counted.reduce((a, r) => a + r.after, 0);
-  const saved = before - after;
   const [mock, setMock] = useState<ModuleId | null>(null);
-  // Each step's saving at its own assumed yearly volume, so this agrees with the table below.
-  const hoursPerYear = Math.round(rows.reduce((a, r) => a + (r.before - r.after) * r.volume, 0) / 60);
-  const pct = before ? Math.round((saved / before) * 100) : 0;
   const stats = [
     { icon: FileSearch, v: considered.toLocaleString(), t: 'catalogue records considered' },
     { icon: Building2, v: docs ? String(docs) : '–', t: 'documents on the account read' },
@@ -442,27 +381,18 @@ export function Results({
     <div className="space-y-5">
       {mock && <ModuleDialog id={mock} onClose={() => setMock(null)} />}
       <section
-        className="enter relative overflow-hidden rounded-[24px] bg-signal-900 px-6 py-9 text-white sm:rounded-[32px] sm:px-12 sm:py-14"
+        className="enter relative overflow-hidden rounded-[24px] bg-signal-900 px-6 py-9 text-white sm:rounded-[32px] sm:px-12 sm:py-12"
         style={{ backgroundImage: 'radial-gradient(60% 80% at 90% 0%, rgba(17,96,173,0.5), transparent 70%)' }}
       >
         {/* Field's globe watermark, as on the dark bands of their own site. */}
         <img src={PHOTOS.watermark} alt="" aria-hidden draggable={false} className="pointer-events-none absolute -right-10 -top-6 w-[520px] opacity-[0.07]" />
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-300">One enquiry, start to finish · estimated times</p>
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-end">
-          <div>
-            <p className="font-display text-[44px] font-medium leading-none tracking-[-0.04em] sm:text-[64px]">
-              {formatMinutes(after)}
-            </p>
-            <p className="mt-3 text-[15px] text-signal-100/70">
-              of people’s time with AI, against <span className="text-white">{formatMinutes(before)}</span> today,{' '}
-              <span className="text-[#7dd3fc]">{pct}% less</span>.
-            </p>
-          </div>
-          <div className="space-y-3">
-            <Bar label="Today" value={formatMinutes(before)} pct={100} cls="bg-white/30" />
-            <Bar label="With AI" value={formatMinutes(after)} pct={(after / before) * 100} cls="bg-gradient-to-r from-signal-400 to-[#7dd3fc]" />
-          </div>
-        </div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-300">One enquiry, start to finish</p>
+        <h2 className="mt-4 max-w-2xl font-display text-[32px] font-medium leading-[1.05] tracking-[-0.04em] text-white sm:text-[44px]">
+          From a sentence on the website to an order in production.
+        </h2>
+        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-signal-100/70">
+          What the system did along the way, counted from the enquiry you just followed, and what it left to you.
+        </p>
       </section>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -475,63 +405,20 @@ export function Results({
         ))}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
-        <section className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-6" style={{ animationDelay: '450ms' }}>
-          <p className="text-[13px] font-semibold text-ink-950">Where the time goes</p>
-          <table className="mt-3 w-full text-[12.5px]">
-            <thead>
-              <tr className="text-left text-[10.5px] uppercase tracking-[0.06em] text-ink-400">
-                <th className="py-2 font-semibold">Step</th><th className="text-right font-semibold sm:hidden">Time</th><th className="hidden text-right font-semibold sm:table-cell">Today</th><th className="hidden text-right font-semibold sm:table-cell">With AI</th><th className="text-right font-semibold">Saved</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-100">
-              {rows.map((r) => r.skipped ? (
-                <tr key={r.label} className="text-ink-400">
-                  <td className="py-2.5">{r.label}</td>
-                  <td className="text-right text-[11.5px] sm:hidden">not needed this time</td>
-                  <td className="hidden text-right text-[11.5px] sm:table-cell" colSpan={2}>not needed this time</td>
-                  <td className="mono text-right">–</td>
-                </tr>
-              ) : (
-                <tr key={r.label}>
-                  <td className="py-2.5 text-ink-800">{r.label}</td>
-                  <td className="mono whitespace-nowrap text-right text-ink-500 sm:hidden">{r.before} → <span className="text-ink-900">{r.after}</span></td>
-                  <td className="mono hidden text-right text-ink-400 sm:table-cell">{r.before} min</td>
-                  <td className="mono hidden text-right text-ink-900 sm:table-cell">{r.after} min</td>
-                  <td className="mono whitespace-nowrap text-right text-strong-600">−{r.before - r.after} min</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-
-        <section className="enter flex flex-col rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-6" style={{ animationDelay: '520ms' }}>
-          <p className="text-[13px] font-semibold text-ink-950">Across a year</p>
-          <p className="mt-3 font-display text-[36px] font-medium leading-none tracking-[-0.03em] text-ink-950">
-            {hoursPerYear.toLocaleString()} <span className="text-[18px] font-normal text-ink-400">hours</span>
-          </p>
-          <p className="mt-2 text-[12.5px] leading-relaxed text-ink-500">
-            of people’s time a year: each step’s saving multiplied by how often that step is assumed to happen
-            (from {Math.min(...rows.map((r) => r.volume)).toLocaleString()} to {Math.max(...rows.map((r) => r.volume)).toLocaleString()} times a year).
-            Every figure here is an estimate, not a measurement. See{' '}
-            <a href="#estimates" className="text-signal-600 underline decoration-signal-200 underline-offset-[3px] hover:text-signal-800">how they were made</a>.
-          </p>
-          <div className="mt-auto flex flex-wrap gap-2 pt-6">
-            <button onClick={onRestart} className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#0a1a2f] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-signal-800">
-              <RotateCcw className="h-4 w-4" /> Try another request
-            </button>
-          </div>
-        </section>
-      </div>
-
-      <WhatIf rows={rows} />
-
-      <section id="estimates" className="enter scroll-mt-32 rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '560ms' }}>
-        <h2 className="mb-4 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">Where the time estimates come from</h2>
-        <Estimates rows={rows} />
+      <section className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '450ms' }}>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-500">Step by step</p>
+        <h2 className="mt-2 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">What changes at each step</h2>
+        <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-ink-500">
+          What a person does today, as we understand it, and what they would do with the system. Nothing has been
+          timed at Field: how long each step takes is Field’s to say, and the numbers go in when we have them.
+        </p>
+        <StepChanges rows={rows} />
+        <p className="mt-4 text-[12px] text-ink-500">
+          Quote sign-off and the order aren’t listed: they are decisions, and they stay with a person.
+        </p>
       </section>
 
-      <section className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '580ms' }}>
+      <section className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '520ms' }}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-500">Where this goes next</p>
         <h2 className="mt-2 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">One enquiry is the spine. These hang off it.</h2>
         <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-ink-500">
@@ -557,89 +444,64 @@ export function Results({
         </ol>
       </section>
 
-      <p className="enter flex items-start gap-2.5 px-1 text-[13px] leading-relaxed text-ink-500" style={{ animationDelay: '600ms' }}>
-        <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-signal-500" />
-        Everything you’ve just used was built from Field’s public catalogue alone. When you want it pointed at the
-        real thing, reply to the message this link arrived in.
-      </p>
+      <div className="enter flex flex-col gap-4 px-1 sm:flex-row sm:items-center sm:justify-between" style={{ animationDelay: '600ms' }}>
+        <p className="flex items-start gap-2.5 text-[13px] leading-relaxed text-ink-500">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-signal-500" />
+          <span>
+            Everything you’ve just used was built from Field’s public catalogue alone. When you want it pointed at the
+            real thing, reply to the message this link arrived in.
+          </span>
+        </p>
+        <button onClick={onRestart} className="inline-flex h-10 shrink-0 items-center gap-2 self-start rounded-xl bg-[#0a1a2f] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-signal-800 sm:self-auto">
+          <RotateCcw className="h-4 w-4" /> Try another request
+        </button>
+      </div>
     </div>
   );
 }
 
-/**
- * The viewer's own numbers. Three dials the board will reach for: how many
- * enquiries a year, what an hour of people's time costs, and how much of the
- * work the system actually touches. Hours are the unit; money follows hours,
- * and capacity is named as capacity, not cash.
- */
-function WhatIf({ rows }: { rows: EstimateRow[] }) {
-  const [scale, setScale] = useState(1);
-  const [rate, setRate] = useState(63);
-  const [adoption, setAdoption] = useState(75);
-  const enquiries = Math.round(Math.max(...rows.map((r) => r.volume)) * scale);
-  const hours = Math.round(rows.reduce((a, r) => a + (r.before - r.after) * r.volume * scale, 0) / 60 * (adoption / 100));
-  const fte = Math.round((hours / 1650) * 10) / 10;
-  const value = hours * rate;
-  const cash = Math.round(value * 0.3);
-  const money = (n: number) => `£${Math.round(n / 1000).toLocaleString()}k`;
+/** The steps in words: what a person does today, and what they would do with the system. */
+function StepChanges({ rows }: { rows: StepChange[] }) {
+  const tone = (r: StepChange) => (r.skipped ? 'text-ink-400' : 'text-ink-600');
+  const label = (r: StepChange) => (
+    <>
+      {r.label}
+      {r.skipped && <span className="mt-1 block text-[11px] font-normal text-ink-400">Not needed on this enquiry</span>}
+    </>
+  );
   return (
-    <section className="enter rounded-2xl bg-white p-5 ring-1 ring-ink-100 sm:p-7" style={{ animationDelay: '540ms' }}>
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-signal-500">Make the numbers yours</p>
-          <h2 className="mt-2 font-display text-[22px] font-medium tracking-[-0.03em] text-ink-950">Three dials, and the whole year moves.</h2>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-ink-500">
-            The step times stay as estimated above. These are the figures Field knows and we don’t.
-          </p>
-          <div className="mt-5 space-y-4">
-            {[
-              { label: 'Enquiries a year', value: enquiries.toLocaleString(), min: 0.25, max: 3, step: 0.25, v: scale, set: setScale, note: `${scale}× the assumed volumes` },
-              { label: 'Loaded cost of an hour', value: `£${rate}`, min: 40, max: 120, step: 1, v: rate, set: setRate, note: 'salary, employer costs and overhead' },
-              { label: 'Share of the work the system touches', value: `${adoption}%`, min: 25, max: 100, step: 5, v: adoption, set: setAdoption, note: 'not every enquiry will go through it' },
-            ].map((d) => (
-              <label key={d.label} className="block">
-                <span className="flex items-baseline justify-between text-[12.5px]">
-                  <span className="font-medium text-ink-800">{d.label}</span>
-                  <span className="mono font-medium text-ink-950">{d.value}</span>
-                </span>
-                <input type="range" min={d.min} max={d.max} step={d.step} value={d.v} onChange={(e) => d.set(Number(e.target.value))} className="mt-1.5 w-full" aria-label={d.label} />
-                <span className="block text-[11px] text-ink-400">{d.note}</span>
-              </label>
+    <>
+      <ul className="mt-4 space-y-2 sm:hidden">
+        {rows.map((r) => (
+          <li key={r.process} className="rounded-xl p-3.5 ring-1 ring-ink-100">
+            <p className={`text-[13px] font-semibold ${r.skipped ? 'text-ink-500' : 'text-ink-900'}`}>{label(r)}</p>
+            <p className={`mt-1.5 text-[12px] leading-snug ${tone(r)}`}><span className="text-ink-400">Today: </span>{STEP_CHANGES[r.process]?.today}</p>
+            <p className={`mt-1 text-[12px] leading-snug ${tone(r)}`}><span className="text-ink-400">With the system: </span>{STEP_CHANGES[r.process]?.withSystem}</p>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-4 hidden overflow-hidden rounded-xl ring-1 ring-ink-100 sm:block">
+        <table className="w-full text-[12.5px]">
+          <thead>
+            <tr className="bg-ink-25 text-left text-[10.5px] uppercase tracking-[0.05em] text-ink-500">
+              <th className="w-44 px-3 py-2 font-semibold">Step</th>
+              <th className="px-3 font-semibold">What a person does today</th>
+              <th className="px-3 font-semibold">With the system</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-ink-100 align-top">
+            {rows.map((r) => (
+              <tr key={r.process}>
+                <td className={`px-3 py-2.5 font-medium ${r.skipped ? 'text-ink-500' : 'text-ink-900'}`}>{label(r)}</td>
+                <td className={`px-3 py-2.5 ${tone(r)}`}>{STEP_CHANGES[r.process]?.today}</td>
+                <td className={`px-3 py-2.5 ${tone(r)}`}>{STEP_CHANGES[r.process]?.withSystem}</td>
+              </tr>
             ))}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3 self-start">
-          {[
-            { v: hours.toLocaleString(), t: 'hours of people’s time a year' },
-            { v: String(fte), t: 'full-time people, at 1,650 productive hours each' },
-            { v: money(value), t: 'of capacity, at your hourly cost' },
-            { v: money(cash), t: 'if 30% of that capacity turns into cash or growth' },
-          ].map((s, i) => (
-            <div key={s.t} className={`rounded-2xl p-4 ring-1 ${i === 0 ? 'bg-[#07162a] text-white ring-transparent' : 'bg-ink-25 ring-ink-100'}`}>
-              <p className={`font-display text-[28px] font-medium leading-none tracking-[-0.03em] ${i === 0 ? 'text-white' : 'text-ink-950'}`}>{s.v}</p>
-              <p className={`mt-1.5 text-[12px] leading-snug ${i === 0 ? 'text-signal-100/70' : 'text-ink-500'}`}>{s.t}</p>
-            </div>
-          ))}
-          <p className="col-span-2 text-[11.5px] leading-relaxed text-ink-400">
-            Capacity is not a saving until someone decides what to do with it: more quotes out of the same team, faster replies, or a hire not made. The 30% is a placeholder for that decision, not a forecast.
-          </p>
-        </div>
+          </tbody>
+        </table>
       </div>
-    </section>
-  );
-}
-
-function Bar({ label, value, pct, cls }: { label: string; value: string; pct: number; cls: string }) {
-  return (
-    <div>
-      <div className="mb-1.5 flex justify-between text-[12px]">
-        <span className="text-signal-100/60">{label}</span>
-        <span className="mono text-white">{value}</span>
-      </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-white/[0.07]">
-        <div className={`h-full rounded-full ${cls}`} style={{ width: `${pct}%` }} />
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -769,117 +631,12 @@ export function AiUses({ catalogue }: { catalogue: CatalogueFacts | null }) {
             <li>How an enquiry moves inside Field: who handles it, in what order, in which systems. We haven’t seen Field’s internal systems.</li>
             <li>The customers, their history, the staff and the suppliers. All synthetic, made up for this demo.</li>
             <li>Every price, cost and margin. Field publishes no prices, so the pricing step uses invented ones, marked on every screen.</li>
-            <li>How long each step takes today. The end of the journey explains how those estimates were made.</li>
           </ul>
         </div>
       </section>
       <p className="px-1 text-[12.5px] leading-relaxed text-ink-500">
         So read each one as a possibility to test against how Field actually works, not a finding.
       </p>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------- estimates */
-
-export interface EstimateRow { process: string; label: string; before: number; after: number; volume: number; /** This step did not happen in the enquiry just followed. */ skipped?: boolean }
-
-export function Estimates({ rows }: { rows: EstimateRow[] }) {
-  return (
-    <div className="space-y-4 text-[13px] leading-relaxed text-ink-600">
-      <p>
-        <span className="font-semibold text-ink-900">They are our assumptions, not measurements.</span>{' '}
-        Nothing has been timed at Field. Each figure is our estimate of how long the task takes a person at a
-        technical tooling supplier handling an enquiry by email, written into this demo when it was built.
-      </p>
-      <p>
-        <span className="font-semibold text-ink-900">“With AI” is not zero.</span>{' '}
-        It assumes the system does the preparation and a person still reads and checks the result. That checking
-        time is what’s left.
-      </p>
-      <p>
-        <span className="font-semibold text-ink-900">They will change with how Field works today.</span>{' '}
-        If enquiries already arrive through a web form, logging takes less time now and there’s less to save. If
-        engineers review lines in batches, or suppliers are called rather than emailed, those numbers move. The
-        yearly volumes are assumptions too.
-      </p>
-
-      <ul className="space-y-2 sm:hidden">
-        {rows.map((r) => (
-          <li key={r.process} className="rounded-xl p-3.5 ring-1 ring-ink-100">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="text-[13px] font-semibold text-ink-900">{r.label}</p>
-              <p className="mono shrink-0 text-[12px] text-ink-500">{r.before} → <span className="font-medium text-ink-900">{r.after} min</span></p>
-            </div>
-            <p className="mt-1.5 text-[12px] leading-snug text-ink-600"><span className="text-ink-400">Today: </span>{ESTIMATE_NOTES[r.process]?.today}</p>
-            <p className="mt-1 text-[12px] leading-snug text-ink-600"><span className="text-ink-400">With AI: </span>{ESTIMATE_NOTES[r.process]?.withAi}</p>
-            <p className="mt-1.5 text-[11px] text-ink-400">Assumed {r.volume.toLocaleString()} times a year</p>
-          </li>
-        ))}
-      </ul>
-
-      <div className="hidden overflow-x-auto rounded-xl ring-1 ring-ink-100 sm:block">
-        <table className="w-full min-w-[640px] text-[12px]">
-          <thead>
-            <tr className="bg-ink-25 text-left text-[10.5px] uppercase tracking-[0.05em] text-ink-500">
-              <th className="px-3 py-2 font-semibold">Step</th>
-              <th className="px-3 font-semibold">What a person does today</th>
-              <th className="px-3 font-semibold">With AI</th>
-              <th className="px-3 text-right font-semibold">Today</th>
-              <th className="px-3 text-right font-semibold">With AI</th>
-              <th className="px-3 text-right font-semibold">Per year</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-ink-100 align-top">
-            {rows.map((r) => (
-              <tr key={r.process}>
-                <td className="px-3 py-2.5 font-medium text-ink-900">{r.label}</td>
-                <td className="px-3 py-2.5 text-ink-600">{ESTIMATE_NOTES[r.process]?.today}</td>
-                <td className="px-3 py-2.5 text-ink-600">{ESTIMATE_NOTES[r.process]?.withAi}</td>
-                <td className="mono whitespace-nowrap px-3 py-2.5 text-right text-ink-500">{r.before} min</td>
-                <td className="mono whitespace-nowrap px-3 py-2.5 text-right text-ink-900">{r.after} min</td>
-                <td className="mono whitespace-nowrap px-3 py-2.5 text-right text-ink-500">{r.volume.toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-[12px] text-ink-500">
-        Quote sign-off and the order aren’t counted: they are decisions, and they take as long as they need.
-      </p>
-      <p>
-        <span className="font-semibold text-ink-900">How to make them real.</span>{' '}
-        Time a sample of real enquiries at each step, or take the times from Field’s email and order systems, and
-        replace these figures with them. Every number here comes from one table, so the whole journey updates.
-      </p>
-    </div>
-  );
-}
-
-export function EstimatesDialog({ rows, onClose }: { rows: EstimateRow[]; onClose: () => void }) {
-  useEffect(() => {
-    document.body.dataset.dialog = 'open';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => { delete document.body.dataset.dialog; window.removeEventListener('keydown', onKey); };
-  }, [onClose]);
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#07162a]/50 backdrop-blur-sm sm:items-center sm:p-4" onClick={onClose}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Where the time estimates come from"
-        onClick={(e) => e.stopPropagation()}
-        className="step-in max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_40px_80px_-30px_rgba(4,24,47,0.6)] sm:rounded-2xl sm:p-8"
-      >
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 className="font-display text-[24px] font-medium tracking-[-0.03em] text-ink-950">Where the time estimates come from</h2>
-          <button onClick={onClose} aria-label="Close" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-400 hover:bg-ink-50 hover:text-ink-900">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <Estimates rows={rows} />
-      </div>
     </div>
   );
 }

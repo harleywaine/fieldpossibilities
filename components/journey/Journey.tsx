@@ -4,14 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   STEPS, PERSONAS, SITES, PLAYABLE, stepIndex, simulatedLeadDays, simulatedExpedite, simulatedSlip, matchAccount, sourceFor,
-  type StepId, type StepMetric, type DeliveryPlan, type Region, type SiteId, type Channel,
+  type StepId, type DeliveryPlan, type Region, type SiteId, type Channel,
 } from '@/lib/journey.ts';
 import type { SimRfq, SimLine } from '@/lib/simulation/rfq.ts';
 import { priceLines, marginOf, MIN_MARGIN } from '@/lib/simulation/pricing.ts';
 import type { CrmAccount, CrmInboxItem, CrmSupplier } from '@/lib/simulation/crm.ts';
 import { BrowserFrame, CrmFrame, type CrmModule } from '@/components/journey/frames.tsx';
 import { duration } from '@/lib/journey.ts';
-import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type EstimateRow, type CatalogueFacts, Handover, FieldBand, CustomerBand } from '@/components/journey/shell.tsx';
+import { TopBar, Narration, Stage, Dock, Cover, Results, AiUses, type Halt, type StepChange, type CatalogueFacts, Handover, FieldBand, CustomerBand } from '@/components/journey/shell.tsx';
 import { RequestScreen, PartsScreen, PersonaBar, type QuoteForm } from '@/components/journey/customer-stages.tsx';
 import { SiteSearchProof } from '@/components/journey/site-search.tsx';
 import {
@@ -65,9 +65,9 @@ const NEW_LEADS = { name: 'Tom Whitfield', role: 'Sales Engineer' };
  * (this tab only), and every step has its own URL.
  */
 export function Journey({
-  metrics, accounts, inbox, suppliers, catalogue,
+  accounts, inbox, suppliers, catalogue,
 }: {
-  metrics: Record<string, StepMetric>; accounts: CrmAccount[]; inbox: CrmInboxItem[]; suppliers: CrmSupplier[];
+  accounts: CrmAccount[]; inbox: CrmInboxItem[]; suppliers: CrmSupplier[];
   catalogue: CatalogueFacts | null;
 }) {
   const params = useSearchParams();
@@ -265,21 +265,6 @@ export function Journey({
     setSim((s) => ({ ...EMPTY, form: s.form }));
     go(0);
   };
-
-  // ---------------------------------------------------------------- ledger
-  const ledger = useMemo(() => {
-    const rows = STEPS.map((s, i) => ({ s, i, m: s.metric ? metrics[s.metric] : undefined }))
-      .filter((r): r is { s: (typeof STEPS)[number]; i: number; m: StepMetric } => Boolean(r.m));
-    const totalBefore = rows.reduce((a, r) => a + r.m.before, 0);
-    const totalAfter = rows.reduce((a, r) => a + r.m.after, 0);
-    const done = rows.filter((r) => r.i <= index);
-    return {
-      totalBefore, totalAfter,
-      before: done.reduce((a, r) => a + r.m.before, 0),
-      after: done.reduce((a, r) => a + r.m.after, 0),
-      latest: done[done.length - 1] ?? null,
-    };
-  }, [metrics, index]);
 
   // -------------------------------------------------------------- screens
   const decisions = Object.keys(sim.review).length + (sim.supplierSent ? 1 : 0) + (sim.pricesConfirmed ? 1 : 0)
@@ -531,10 +516,9 @@ export function Journey({
     return () => window.removeEventListener('keydown', onKey);
   }, [next, go, index, step.id]);
 
-  const breakdown: EstimateRow[] = STEPS.filter((s) => s.metric && metrics[s.metric]).map((s) => ({
-    process: s.metric!, label: s.ledgerLabel ?? s.rail,
-    before: metrics[s.metric!]!.before, after: metrics[s.metric!]!.after, volume: metrics[s.metric!]!.volume,
-    // Engineering only happens when a line needs it; this enquiry's total says so.
+  const breakdown: StepChange[] = STEPS.filter((s) => s.change).map((s) => ({
+    process: s.change!, label: s.task ?? s.rail,
+    // Engineering only happens when a line needs it; the summary says so.
     skipped: s.id === 'review' && reviewLines.length === 0,
   }));
 
@@ -573,7 +557,7 @@ export function Journey({
       {!booting && side === 'field' && c && <FieldBand>{narration}</FieldBand>}
       {!booting && side === 'customer' && c && <CustomerBand>{narration}</CustomerBand>}
 
-      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-36 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : side === 'field' ? '-mt-16' : side === 'customer' ? 'pt-2 sm:pt-4' : 'pt-8 sm:pt-12'}`}>
+      <main key={step.id} className={`mx-auto w-full max-w-6xl px-4 pb-28 sm:px-8 ${step.id === 'start' ? 'hidden' : step.id === 'uses' ? 'pt-10 sm:pt-16' : side === 'field' ? '-mt-16' : side === 'customer' ? 'pt-2 sm:pt-4' : 'pt-8 sm:pt-12'}`}>
 
         {!booting && step.id === 'summary' && (
           <Results
@@ -604,9 +588,6 @@ export function Journey({
           cta={c.cta ?? 'Continue'}
           blocked={c.blocked}
           hint={c.hideContinue ? c.hint : undefined}
-          ledger={ledger}
-          showLedger={index >= stepIndex('inbox')}
-          estimates={breakdown}
         />
       )}
     </div>
